@@ -1,0 +1,78 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/Layout/Sidebar.css */
+/* ARCHIVO NUEVO */
+.sidebar {
+  width: 240px; /* Ancho del sidebar */
+  background-color: var(--dark-color, #343a40); /* Mismo color que el navbar para consistencia */
+  color: #f8f9fa; /* Texto claro */
+  height: calc(100vh - 60px); /* Altura total menos la altura del navbar (ajustar si es diferente) */
+  position: fixed; /* Fijo en la pantalla */
+  top: 60px; /* Debajo del navbar (ajustar si la altura del navbar es diferente) */
+  left: 0;
+  padding: 20px 0;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  overflow-y: auto; /* Scroll si el contenido es muy largo */
+  transition: width 0.3s ease; /* Para futuras animaciones de colapsar */
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  margin: 0;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #adb5bd; /* Color de texto más sutil */
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  border-left: 3px solid transparent; /* Para el indicador activo */
+}
+
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #f8f9fa; /* Texto más brillante al hacer hover */
+}
+
+.sidebar-link.active {
+  background-color: rgba(var(--primary-rgb, 52, 152, 219), 0.15); /* Usa el color primario con opacidad */
+  color: var(--primary-color-light, #7cceff); /* Un tono más claro del primario o blanco */
+  border-left-color: var(--primary-color, #3498db);
+  font-weight: 500;
+}
+
+.sidebar-link span:first-child { /* El icono */
+  margin-right: 12px;
+  font-size: 1.2em;
+  width: 24px; /* Ancho fijo para alinear iconos */
+  text-align: center;
+  line-height: 1;
+}
+
+.sidebar-separator {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 15px 20px;
+}
+
+/* Para un futuro sidebar colapsable (ejemplo) */
+/*
+.sidebar.collapsed {
+  width: 70px;
+}
+.sidebar.collapsed .sidebar-link span:last-child {
+  display: none;
+}
+.sidebar.collapsed .sidebar-link {
+  justify-content: center;
+}
+*/
+
+/* Ajustes para que el contenido principal no se solape con el sidebar */
+/* Esto se manejará mejor en el CSS del Layout general o App.css */

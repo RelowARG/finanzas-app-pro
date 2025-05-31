@@ -1,0 +1,182 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/AddTransactionPage.css */
+/* ARCHIVO NUEVO */
+
+.add-transaction-page .form-container {
+  /* Estilos específicos para el contenedor del formulario si son necesarios */
+}
+
+.add-transaction-page h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: var(--dark-color);
+}
+
+.type-selector {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+  gap: 10px;
+}
+
+.button-type {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: 2px solid var(--primary-color);
+  background-color: #fff;
+  color: var(--primary-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+  width: auto !important; /* Override global button width */
+}
+
+.button-type.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+.button-type:not(.active):hover {
+  background-color: rgba(var(--primary-rgb), 0.1);
+}
+
+.type-selector .button-type.active:first-child { /* Gasto */
+  border-color: var(--danger-color);
+  background-color: var(--danger-color);
+}
+.type-selector .button-type:not(.active):first-child {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+.type-selector .button-type:not(.active):first-child:hover {
+   background-color: rgba(231, 76, 60, 0.1); /* danger-color con opacidad */
+}
+
+
+.type-selector .button-type.active:last-child { /* Ingreso */
+  border-color: var(--secondary-color);
+  background-color: var(--secondary-color);
+}
+.type-selector .button-type:not(.active):last-child {
+  color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+.type-selector .button-type:not(.active):last-child:hover {
+   background-color: rgba(46, 204, 113, 0.1); /* secondary-color con opacidad */
+}
+
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px; /* Espacio entre grupos si no están en el grid */
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #454545;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25);
+  outline: none;
+}
+
+.form-actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end; /* Alinea botones a la derecha */
+}
+
+.form-actions .button-primary,
+.form-actions .button-secondary {
+  width: auto !important; /* Para que no ocupen todo el ancho */
+  padding: 10px 25px !important;
+}
+.form-actions .button-secondary {
+    background-color: #6c757d !important; /* Color gris para cancelar */
+}
+.form-actions .button-secondary:hover {
+    background-color: #5a6268 !important;
+}
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: normal; /* Para que no herede el bold de la label principal si está dentro */
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto; /* Para que no ocupe todo el ancho */
+  margin-right: 5px; /* Espacio entre el checkbox y el texto */
+  accent-color: var(--primary-color); /* Color del check */
+}
+
+.form-grid-halves { /* Si no lo tienes definido globalmente */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px; /* O el gap que prefieras */
+}
+
+@media (max-width: 600px) {
+  .form-grid-halves {
+    grid-template-columns: 1fr; 
+  }
+}.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: normal; /* Para que no herede el bold de la label principal si está dentro */
+  margin-top: 10px; /* Espacio antes del checkbox */
+  margin-bottom: 10px; /* Espacio después del checkbox si los campos de cuotas están visibles */
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto; /* Para que no ocupe todo el ancho */
+  margin-right: 5px; /* Espacio entre el checkbox y el texto */
+  accent-color: var(--primary-color); /* Color del check */
+  transform: scale(1.2); /* Hacer el checkbox un poco más grande */
+}
+
+.form-grid-halves { /* Si no lo tienes definido globalmente */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px; /* O el gap que prefieras */
+}
+
+/* Estilo para los campos de cuotas cuando están visibles */
+.form-grid-halves[style*="margin-bottom: 15px"] { /* Selector un poco específico para el div de cuotas */
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: var(--border-radius);
+    margin-top: 5px; /* Espacio después del checkbox */
+}
+
+
+@media (max-width: 600px) {
+  .form-grid-halves {
+    grid-template-columns: 1fr; 
+  }
+}

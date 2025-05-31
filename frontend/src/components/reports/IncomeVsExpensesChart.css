@@ -1,0 +1,51 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/reports/IncomeVsExpensesChart.css */
+/* ARCHIVO NUEVO */
+.income-expenses-chart-widget {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-top: 20px;
+}
+
+.income-expenses-chart-widget .chart-container {
+  height: 380px; /* Un poco más alto para gráficos de barras/líneas */
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.income-expenses-chart-widget .no-data-message {
+  text-align: center;
+  padding: 30px;
+  font-style: italic;
+  color: #555;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+}
+
+.income-expenses-chart-widget .report-summary-details {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  font-size: 0.95rem;
+}
+
+.income-expenses-chart-widget .report-summary-details p {
+  margin: 6px 0;
+  display: flex;
+  justify-content: space-between;
+}
+.income-expenses-chart-widget .report-summary-details p strong {
+  color: #333;
+}
+
+/* Reutilizar clases de color del DashboardComponents.css o App.css */
+.income-expenses-chart-widget .text-positive {
+  color: var(--secondary-color, #2ecc71) !important;
+  font-weight: bold;
+}
+
+.income-expenses-chart-widget .text-negative {
+  color: var(--danger-color, #e74c3c) !important;
+  font-weight: bold;
+}

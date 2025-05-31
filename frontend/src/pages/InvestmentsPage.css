@@ -1,0 +1,96 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/InvestmentsPage.css */
+/* ACTUALIZA ESTE ARCHIVO */
+
+.investments-page {
+  /* Estilos para la página de inversiones */
+}
+
+.investments-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px; /* Reducido porque la nota de actualización irá debajo */
+  padding-bottom: 15px;
+  border-bottom: 2px solid #1abc9c;
+}
+
+.investments-page-header h1 {
+  margin: 0;
+  color: var(--dark-color, #333);
+  font-size: 2rem;
+}
+
+.investments-page-header .header-actions { /* Contenedor para los botones */
+    display: flex;
+    gap: 10px;
+}
+
+.investments-page-header .button-primary,
+.investments-page-header .button-secondary { /* Estilos para ambos botones del header */
+  width: auto !important; /* Para que no ocupen todo el ancho */
+  padding: 8px 15px !important; /* Ajuste de padding */
+  font-size: 0.9rem !important;
+}
+
+.investments-page-header .button-primary {
+  background-color: #1abc9c !important;
+  border-color: #1abc9c !important;
+  color: white !important;
+}
+.investments-page-header .button-primary:hover {
+  background-color: #16a085 !important;
+}
+.investments-page-header .button-secondary { /* Estilo para el botón de actualizar */
+  background-color: #7f8c8d !important; /* Un gris */
+  border-color: #7f8c8d !important;
+  color: white !important;
+}
+.investments-page-header .button-secondary:hover {
+  background-color: #6c7a7b !important;
+}
+.investments-page-header .icon-add {
+  font-size: 0.9em;
+}
+
+.last-updated-notice {
+  font-size: 0.8rem;
+  color: #6c757d;
+  text-align: right;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.loading-text,
+.no-investments-message {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #666;
+  padding: 20px;
+}
+
+.investments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .investments-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+   .investments-page-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch; /* Para que los elementos internos ocupen el ancho */
+  }
+  .investments-page-header .header-actions {
+    flex-direction: column; /* Botones uno debajo del otro en móvil */
+  }
+  .investments-page-header .button-primary,
+  .investments-page-header .button-secondary {
+    width: 100% !important; /* Que ocupen todo el ancho en móvil */
+  }
+  .last-updated-notice {
+      text-align: center;
+  }
+}

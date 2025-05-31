@@ -1,0 +1,111 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/accounts/AccountItem.css */
+/* ARCHIVO NUEVO */
+.account-item-card {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius, 8px); /* Usar variable global o default */
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.account-item-card:hover {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.account-item-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.account-item-icon {
+  font-size: 1.8rem; /* Tamaño del emoji/icono */
+  margin-right: 15px;
+  line-height: 1; /* Para alinear mejor el emoji */
+}
+
+.account-item-name {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--primary-color, #3498db);
+  font-weight: 600;
+  flex-grow: 1; /* Para que el nombre ocupe el espacio */
+}
+
+.account-item-body p {
+  margin: 5px 0;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.account-item-body p span {
+  font-weight: 500;
+  color: #333;
+}
+
+.account-item-type span {
+  text-transform: capitalize;
+}
+
+.account-item-balance {
+  font-size: 1.1rem !important; /* Mayor destaque para el saldo */
+}
+.account-item-balance span {
+  font-weight: bold !important;
+}
+
+.balance-positive span {
+  color: var(--secondary-color, #2ecc71);
+}
+
+.balance-negative span {
+  color: var(--danger-color, #e74c3c);
+}
+
+.account-item-currency-note,
+.account-item-detail {
+  font-size: 0.85rem !important;
+  color: #777 !important;
+}
+
+.account-item-actions {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 10px; /* Espacio entre botones */
+  flex-wrap: wrap; /* Para que los botones se ajusten en pantallas pequeñas */
+}
+
+.button-small {
+  padding: 6px 12px !important;
+  font-size: 0.85rem !important;
+  width: auto !important; /* Para que no ocupen todo el ancho */
+}
+
+.button-edit {
+  background-color: var(--primary-color, #3498db) !important;
+}
+.button-edit:hover {
+  background-color: #2980b9 !important;
+}
+
+.button-delete {
+  background-color: var(--danger-color, #e74c3c) !important;
+}
+.button-delete:hover {
+  background-color: #c0392b !important;
+}
+
+.button-view {
+  background-color: #546e7a !important; /* Un gris azulado */
+}
+.button-view:hover {
+  background-color: #455a64 !important;
+}

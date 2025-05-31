@@ -1,0 +1,83 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/investments/InvestmentSummary.css */
+/* ACTUALIZA ESTE ARCHIVO */
+.investment-summary-widget {
+  background-color: #e9f5ff; /* Un azul muy claro */
+  padding: 15px 20px; /* Reducido el padding */
+  border-radius: var(--border-radius, 8px);
+  margin-bottom: 25px; /* Reducido un poco el margen inferior */
+  border: 1px solid #bde0fe; /* Borde azul claro */
+  box-shadow: var(--box-shadow, 0 2px 4px rgba(0,0,0,0.06)); /* Sombra más sutil, como las cards */
+}
+
+.summary-title {
+  margin-top: 0;
+  margin-bottom: 15px; /* Reducido */
+  color: var(--primary-color, #007bff);
+  text-align: center;
+  font-size: 1.25rem; /* Reducido, similar al nombre de InvestmentCard */
+  font-weight: 600;
+}
+
+.summary-currency-block {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #cce5ff;
+}
+.summary-currency-block:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.summary-currency-block h4 {
+  margin-top: 0;
+  margin-bottom: 8px; /* Reducido */
+  color: var(--dark-color, #343a40);
+  font-size: 1rem; /* Reducido */
+  font-weight: 500;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0; /* Reducido el padding vertical */
+  font-size: 0.9rem; /* Reducido */
+}
+
+.summary-label {
+  color: #495057;
+}
+
+.summary-value {
+  font-weight: 600;
+  color: var(--dark-color, #343a40);
+}
+
+.summary-value.value-prominent {
+  font-size: 1.05em; /* Relativo al nuevo font-size de .summary-item */
+  color: var(--primary-color, #007bff);
+}
+
+.summary-value.profit-positive {
+  color: var(--secondary-color, #28a745) !important;
+}
+
+.summary-value.profit-negative {
+  color: var(--danger-color, #dc3545) !important;
+}
+
+.summary-count {
+    font-size: 0.75rem; /* Reducido */
+    color: #6c757d;
+    text-align: right;
+    margin-top: 3px; /* Reducido */
+}
+
+.summary-note {
+    font-size: 0.75rem; /* Reducido */
+    color: #6c757d;
+    text-align: center;
+    margin-top: 10px;
+    font-style: italic;
+}

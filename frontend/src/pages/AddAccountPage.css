@@ -1,0 +1,110 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/AddAccountPage.css */
+/* (Este archivo puede ser usado también por EditAccountPage.jsx) */
+
+.add-account-page .form-container { /* Clase específica si es necesario */
+  /* Estilos del form-container ya definidos en App.css o similar */
+}
+
+.add-account-page h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: var(--dark-color);
+}
+
+.add-account-page .form-group {
+  margin-bottom: 1.2rem; 
+}
+
+.add-account-page .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.add-account-page .form-group input[type="text"],
+.add-account-page .form-group input[type="number"],
+.add-account-page .form-group input[type="date"],
+.add-account-page .form-group select,
+.add-account-page .form-group textarea { /* Añadido textarea por si se usa en otros forms */
+  width: 100%;
+  padding: 0.6rem 0.85rem; 
+  border: 1px solid #ced4da;
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.add-account-page .form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+
+.add-account-page .form-group input:focus,
+.add-account-page .form-group select:focus,
+.add-account-page .form-group textarea:focus {
+    /* Usar un color de foco genérico o el primario de la app */
+    border-color: var(--primary-color, #3498db); 
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb, 52, 152, 219), 0.25);
+}
+
+/* Si usas form-grid-halves, asegúrate que esté definido (ej. en App.css o un CSS de formularios global) */
+/* .form-grid-halves {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+} */
+
+.add-account-page .form-actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
+
+.add-account-page .form-actions .button-primary {
+  /* Los colores de botón primario y secundario ya deberían estar definidos globalmente */
+  /* background-color: var(--primary-color) !important; */
+  /* border-color: var(--primary-color) !important; */
+}
+.add-account-page .form-actions .button-primary:hover {
+  /* background-color: #2980b9 !important; */ /* Ejemplo de hover si no está global */
+}
+
+.add-account-page .form-actions .button-secondary {
+    /* background-color: #6c757d !important;  */
+}
+.add-account-page .form-actions .button-secondary:hover {
+    /* background-color: #5a6268 !important; */
+}
+
+/* Responsive para el grid de dos columnas (si se usa form-grid-halves) */
+@media (max-width: 600px) {
+  .form-grid-halves {
+    grid-template-columns: 1fr; 
+    gap: 0; 
+  }
+  .form-grid-halves .form-group {
+      margin-bottom: 1.2rem;
+  }
+}
+.checkbox-label { /* Puede ser global o específico de la página */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: normal; /* Evita heredar bold de la label principal */
+  margin-top: 10px;
+  margin-bottom: 5px; /* Ajusta según sea necesario */
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto; 
+  margin-right: 5px; 
+  accent-color: var(--primary-color); /* Color del check */
+  transform: scale(1.2);
+}

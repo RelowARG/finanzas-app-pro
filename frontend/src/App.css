@@ -1,0 +1,215 @@
+/* Ruta: finanzas-app-pro/frontend/src/App.css */
+/* REVISA Y AJUSTA ESTE ARCHIVO */
+
+/* Asegúrate que las variables de color estén definidas aquí o en index.css */
+:root {
+  --primary-color: #3498db;
+  --primary-rgb: 52, 152, 219; /* Para usar con opacidad en rgba */
+  --primary-color-light: #7cceff; /* Un tono más claro para texto sobre fondo primario oscuro */
+  --secondary-color: #2ecc71;
+  --danger-color: #e74c3c;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+  --text-color: #212529;
+  --background-color: #ffffff;
+  --border-radius: 0.25rem;
+  --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  margin: 0;
+  padding: 0;
+  background-color: var(--light-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  /* Eliminar display:flex y place-items:center de aquí si estaban en index.css, 
+     ya que el layout principal lo maneja App.jsx y Layout.jsx */
+}
+
+/* Los estilos de .main-content, .page-container, .navbar, .footer, etc.,
+   que estaban aquí, ahora podrían estar más centralizados en Layout.css
+   o mantenerse aquí si son verdaderamente globales y no específicos del layout.
+   Por simplicidad, los he movido a Layout.css o asumido que están en sus
+   componentes (Navbar.css, etc.). Revisa y elimina duplicados. */
+
+/* Estilos de Navbar (si no tiene su propio CSS) */
+.navbar {
+  background-color: var(--dark-color);
+  color: white;
+  padding: 0 1rem; /* Ajustado para altura fija */
+  height: 60px; /* Altura fija para el navbar */
+  display: flex; /* Para alinear items verticalmente si es necesario */
+  align-items: center; /* Para alinear items verticalmente */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  /* position: sticky; y top: 0; z-index: 1030; ya están en Layout.css */
+}
+
+.nav-container {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.nav-logo {
+  color: white;
+  text-decoration: none;
+  font-size: 1.75rem;
+  font-weight: bold;
+}
+
+.nav-menu {
+  list-style: none;
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.nav-links {
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius);
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+}
+
+.nav-links:hover, .nav-links.active {
+  color: white;
+  background-color: rgba(255,255,255,0.1);
+}
+
+.nav-button {
+  background: none;
+  border: 1px solid transparent;
+  color: rgba(255,255,255,0.75);
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius);
+}
+.nav-button:hover {
+  color: white;
+  background-color: var(--danger-color);
+}
+
+/* Estilos de Formularios (pueden quedarse aquí si son globales) */
+.auth-form, .form-container {
+  max-width: 480px;
+  margin: 30px auto;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+/* ... (resto de estilos de formulario como estaban) ... */
+.auth-form h2, .form-container h3 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: var(--dark-color);
+  font-weight: 500;
+}
+
+.auth-form div, .form-container div {
+  margin-bottom: 1rem;
+}
+
+.auth-form label, .form-container label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"],
+.form-container input[type="text"],
+.form-container input[type="number"],
+.form-container select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.auth-form input:focus, .form-container input:focus, .form-container select:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+
+button, .button {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  text-align: center;
+  width: 100%; /* Botones de formulario anchos por defecto */
+}
+/* Ajustes específicos si es necesario */
+.form-container button,
+.dashboard-nav .button, /* Si tienes botones en el dashboard nav */
+.account-item-actions .button { /* Botones dentro de AccountItem */
+  width: auto; 
+}
+
+
+button:hover, .button:hover {
+  background-color: #2980b9; 
+}
+
+button:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.button-secondary {
+  background-color: var(--secondary-color);
+}
+.button-secondary:hover {
+  background-color: #27ae60; 
+}
+
+.error-message {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Estilos de .page-container (si es global) */
+.page-container {
+  background-color: var(--background-color);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 20px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Footer (ya está en Layout.css, pero si hay estilos adicionales globales) */
+/* .footer { ... } */
+

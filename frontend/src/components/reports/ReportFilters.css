@@ -1,0 +1,56 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/reports/ReportFilters.css */
+/* ARCHIVO NUEVO */
+
+.report-filters-form {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  margin-bottom: 30px;
+  border: 1px solid #dee2e6;
+}
+
+.report-filters-form h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  color: var(--dark-color);
+}
+
+.report-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px 20px;
+  margin-bottom: 20px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: #495057;
+}
+
+.filter-group input[type="date"],
+.filter-group select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ced4da;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.filter-actions .button {
+  width: auto !important;
+  padding: 10px 20px !important;
+}

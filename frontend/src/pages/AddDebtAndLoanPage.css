@@ -1,0 +1,135 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/AddDebtAndLoanPage.css */
+/* NUEVO ARCHIVO (puedes basarte en AddAccountPage.css o AddInvestmentPage.css) */
+
+.add-debt-loan-page .form-container {
+  /* Estilos del form-container ya definidos en App.css o similar */
+}
+
+.add-debt-loan-page h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: var(--dark-color);
+}
+
+.add-debt-loan-page .form-group {
+  margin-bottom: 1.1rem; 
+}
+
+.add-debt-loan-page .form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #495057;
+}
+.add-debt-loan-page .form-group label.checkbox-label { /* Para el checkbox */
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+}
+.add-debt-loan-page .form-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+    accent-color: #e67e22;
+}
+
+
+.add-debt-loan-page .form-group input[type="text"],
+.add-debt-loan-page .form-group input[type="number"],
+.add-debt-loan-page .form-group input[type="date"],
+.add-debt-loan-page .form-group select,
+.add-debt-loan-page .form-group textarea {
+  width: 100%;
+  padding: 0.55rem 0.8rem; 
+  border: 1px solid #ced4da;
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.add-debt-loan-page .form-group textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.add-debt-loan-page .form-group input:focus,
+.add-debt-loan-page .form-group select:focus,
+.add-debt-loan-page .form-group textarea:focus {
+    border-color: #e67e22; /* Color temático de deudas/préstamos para el foco */
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(230, 126, 34, 0.25); 
+}
+
+.form-grid-halves { /* Reutilizar si ya existe globalmente */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.form-separator { /* Reutilizar si ya existe globalmente */
+    border: 0;
+    border-top: 1px solid #dee2e6;
+    margin: 25px 0;
+}
+.add-debt-loan-page h4 { /* Para el título de "Detalles Específicos" */
+    font-size: 1.05rem;
+    color: var(--dark-color);
+    margin-bottom: 15px;
+    margin-top: 0;
+}
+
+.add-debt-loan-page .form-actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
+
+.add-debt-loan-page .form-actions .button-primary {
+  background-color: #e67e22 !important; 
+  border-color: #e67e22 !important;
+}
+.add-debt-loan-page .form-actions .button-primary:hover {
+  background-color: #d35400 !important;
+}
+
+.add-debt-loan-page .form-actions .button-secondary {
+    background-color: #6c757d !important; 
+}
+.add-debt-loan-page .form-actions .button-secondary:hover {
+    background-color: #5a6268 !important;
+}
+
+@media (max-width: 600px) {
+  .form-grid-halves {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+   .form-grid-halves .form-group {
+      margin-bottom: 1.1rem;
+  }
+}
+.add-debt-loan-page .form-section {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee; /* Separador visual más sutil que hr */
+}
+
+.add-debt-loan-page .form-section h5 {
+  font-size: 1rem; /* Ligeramente más pequeño que h4 */
+  color: #333;
+  margin-bottom: 15px;
+  margin-top: 5px;
+  font-weight: 600;
+}
+
+.add-debt-loan-page .form-group label.checkbox-label {
+    font-weight: 500; /* Hacer el texto del checkbox un poco más notorio */
+    color: #495057;
+}
+
+.add-debt-loan-page .form-grid-thirds { /* Si no está definido globalmente */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+}

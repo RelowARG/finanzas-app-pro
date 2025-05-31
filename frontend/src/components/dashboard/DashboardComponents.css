@@ -1,0 +1,288 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css */
+/* ARCHIVO NUEVO */
+
+.dashboard-widget {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: var(--border-radius, 8px);
+  box-shadow: var(--box-shadow, 0 2px 5px rgba(0,0,0,0.075));
+  margin-bottom: 20px;
+}
+
+.dashboard-widget h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: var(--primary-color, #3498db);
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  font-size: 1.3rem;
+}
+
+/* Balance Overview */
+.balance-overview-widget .balance-total {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.balance-overview-widget .balance-total span {
+    font-size: 1.1rem;
+    font-weight: normal;
+    color: #555;
+}
+
+.balance-overview-widget .balance-details p {
+  margin: 5px 0;
+  font-size: 1rem;
+  display: flex;
+  justify-content: space-between;
+}
+.balance-overview-widget .balance-details span {
+  font-weight: 500;
+}
+
+/* Text Colors */
+.text-positive {
+  color: var(--secondary-color, #2ecc71) !important;
+}
+.text-negative {
+  color: var(--danger-color, #e74c3c) !important;
+}
+
+
+/* Recent Transactions */
+.recent-transactions-widget .transactions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recent-transactions-widget .transaction-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.recent-transactions-widget .transaction-item:last-child {
+  border-bottom: none;
+}
+
+.transaction-icon {
+  font-size: 1.5rem;
+  margin-right: 15px;
+  min-width: 30px; /* Para alinear texto si el icono varía */
+  text-align: center;
+}
+
+.transaction-info {
+  flex-grow: 1;
+}
+.transaction-description {
+  display: block;
+  font-weight: 500;
+  color: #333;
+}
+.transaction-category {
+  display: block;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.transaction-details {
+  text-align: right;
+  min-width: 120px; /* Para alinear montos */
+}
+.transaction-amount {
+  display: block;
+  font-weight: bold;
+  font-size: 1rem;
+}
+.transaction-date {
+  display: block;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* Spending Chart Placeholder */
+.spending-chart-widget .chart-placeholder {
+  text-align: center;
+  color: #777;
+}
+
+/* Quick Actions */
+.quick-actions-widget .actions-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.button-quick-action {
+  width: 100% !important; /* Ocupar todo el ancho de la celda del grid */
+  padding: 12px 15px !important;
+  font-size: 0.95rem !important;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.button-income {
+  background-color: var(--secondary-color, #2ecc71) !important;
+}
+.button-income:hover {
+  background-color: #27ae60 !important;
+}
+.button-expense {
+  background-color: var(--danger-color, #e74c3c) !important;
+}
+.button-expense:hover {
+  background-color: #c0392b !important;
+}
+.button-account {
+  background-color: var(--primary-color, #3498db) !important;
+}
+.button-account:hover {
+  background-color: #2980b9 !important;
+}
+.button-transfer {
+  background-color: #f39c12 !important; /* Naranja */
+}
+.button-transfer:hover {
+  background-color: #e67e22 !important;
+}
+.balance-overview-widget .balance-total {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 10px; /* Reducido un poco */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.balance-overview-widget .balance-total span {
+    font-size: 1.1rem;
+    font-weight: normal;
+    color: #555;
+}
+
+/* NUEVO ESTILO PARA LA NOTA */
+.balance-overview-note {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 15px;
+  text-align: center;
+  font-style: italic;
+}
+.balance-overview-widget .balance-total {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 10px; 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.balance-overview-widget .balance-total span {
+    font-size: 1.1rem;
+    font-weight: normal;
+    color: #555;
+}
+
+.balance-overview-note {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 15px;
+  text-align: center;
+  font-style: italic;
+}
+
+/* ESTILOS ANTERIORES PARA QUICK ACTIONS (AHORA MODIFICADOS O ELIMINADOS SI SE QUITA EL WIDGET) */
+/* .quick-actions-widget { ... } Ya no se usará como widget tarjeta */
+/* .quick-actions-widget h3 { ... } */
+
+/* NUEVOS ESTILOS PARA LA BARRA DE ACCIONES RÁPIDAS */
+.dashboard-quick-actions-bar {
+  display: flex;
+  flex-wrap: wrap; /* Para que los botones se ajusten en pantallas pequeñas */
+  gap: 15px; /* Espacio entre botones */
+  justify-content: center; /* Centrar los botones en la barra */
+  padding: 15px 0; /* Un poco de padding vertical */
+  margin-bottom: 25px; /* Espacio antes del siguiente contenido */
+  /* background-color: #f8f9fa; /* Un fondo sutil opcional */
+  /* border-radius: var(--border-radius); */
+  /* box-shadow: var(--box-shadow); */ /* Opcional, si se quiere un leve sombreado */
+}
+
+/* Los estilos de .actions-buttons y .button-quick-action pueden necesitar ajustes
+   si se quita el h3 y el contenedor de widget.
+   Ahora .actions-buttons será el mismo que .dashboard-quick-actions-bar */
+
+.dashboard-quick-actions-bar .button-quick-action {
+  /* width: auto !important; */ /* Para que no ocupen todo el ancho si son pocos */
+  flex-grow: 1; /* Para que los botones se distribuyan si son pocos */
+  flex-basis: 180px; /* Base para el tamaño antes de crecer/encogerse */
+  max-width: 220px; /* Un ancho máximo por botón */
+  padding: 12px 15px !important;
+  font-size: 0.9rem !important; /* Un poco más pequeño para que quepan más */
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Mantener los colores de los botones */
+.button-income {
+  background-color: var(--secondary-color, #2ecc71) !important;
+}
+.button-income:hover {
+  background-color: #27ae60 !important;
+}
+.button-expense {
+  background-color: var(--danger-color, #e74c3c) !important;
+}
+.button-expense:hover {
+  background-color: #c0392b !important;
+}
+.button-account {
+  background-color: var(--primary-color, #3498db) !important;
+}
+.button-account:hover {
+  background-color: #2980b9 !important;
+}
+.button-transfer { /* Si se usa en el futuro */
+  background-color: #f39c12 !important;
+}
+.button-transfer:hover {
+  background-color: #e67e22 !important;
+}
+/* Estilos para BalanceOverview */
+.balance-overview-widget .balance-total-multi-currency { /* Nueva clase */
+  margin-bottom: 10px;
+}
+.balance-currency-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.2rem; /* Un poco más grande para destacar */
+  padding: 5px 0;
+}
+.balance-currency-item span:first-child {
+    font-weight: 500;
+    color: #444;
+    font-size: 0.9em;
+}
+.balance-currency-item strong {
+    font-weight: bold;
+    font-size: 1.1em; /* Relativo al 1.2rem de .balance-currency-item */
+}
+
+
+.balance-overview-note {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 15px;
+  text-align: center;
+  font-style: italic;
+}

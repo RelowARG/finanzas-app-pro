@@ -1,0 +1,95 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/RecurringTransactionsPage.css */
+/* ARCHIVO NUEVO */
+.recurring-tx-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #8e44ad; /* Un color púrpura para recurrentes */
+}
+
+.recurring-tx-page .page-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.recurring-tx-page .button-primary {
+  background-color: #8e44ad !important;
+  border-color: #8e44ad !important;
+}
+.recurring-tx-page .button-primary:hover {
+  background-color: #732d91 !important;
+}
+
+.recurring-tx-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.recurring-tx-item-placeholder {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  padding: 15px;
+  box-shadow: var(--box-shadow);
+}
+
+.recurring-tx-item-placeholder .info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #eee;
+}
+.recurring-tx-item-placeholder .info .icon {
+  font-size: 1.5rem;
+}
+.recurring-tx-item-placeholder .info .desc {
+  font-weight: 600;
+  flex-grow: 1;
+}
+.recurring-tx-item-placeholder .info .amount {
+  font-weight: bold;
+}
+.recurring-tx-item-placeholder .info .amount.ingreso {
+  color: var(--secondary-color);
+}
+.recurring-tx-item-placeholder .info .amount.egreso {
+  color: var(--danger-color);
+}
+
+.recurring-tx-item-placeholder .details {
+  font-size: 0.85rem;
+  color: #555;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 5px 10px;
+  margin-bottom: 10px;
+}
+.recurring-tx-item-placeholder .details span {
+    background-color: #f8f9fa;
+    padding: 3px 6px;
+    border-radius: 3px;
+}
+
+
+.recurring-tx-item-placeholder .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+.recurring-tx-item-placeholder .actions .button-small {
+    font-size: 0.8rem !important;
+    padding: 5px 10px !important;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+  color: #666;
+}

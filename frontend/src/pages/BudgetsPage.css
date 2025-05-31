@@ -1,0 +1,64 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/BudgetsPage.css */
+/* ARCHIVO NUEVO */
+
+.budgets-page {
+  /* Estilos para la página de presupuestos */
+}
+
+.budgets-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f39c12; /* Color temático para presupuestos (naranja) */
+}
+
+.budgets-page-header h1 {
+  margin: 0;
+  color: var(--dark-color, #333);
+  font-size: 2rem;
+}
+
+.budgets-page-header .button-primary {
+  background-color: #f39c12 !important; /* Color temático */
+  border-color: #f39c12 !important;
+  color: white !important;
+}
+.budgets-page-header .button-primary:hover {
+  background-color: #e67e22 !important; /* Un poco más oscuro */
+}
+.budgets-page-header .icon-add {
+  font-size: 0.9em;
+}
+
+.loading-text,
+.no-budgets-message {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #666;
+  padding: 30px 20px;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+}
+.no-budgets-message p {
+    margin-bottom: 15px;
+}
+
+
+.budgets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .budgets-grid {
+    grid-template-columns: 1fr; /* Una columna en móviles */
+  }
+   .budgets-page-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+}

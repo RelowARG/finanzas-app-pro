@@ -1,0 +1,327 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/debtAndLoan/DebtAndLoanItem.css */
+/* NUEVO ARCHIVO */
+
+.item-card {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  padding: 15px;
+  box-shadow: var(--box-shadow);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.item-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.item-card.debt-item {
+  border-left: 5px solid var(--danger-color, #e74c3c);
+}
+.item-card.loan-item {
+  border-left: 5px solid var(--secondary-color, #2ecc71);
+}
+.item-card.completed {
+  border-left-color: #7f8c8d; /* Gris para completados */
+  opacity: 0.8;
+}
+.item-card.defaulted {
+    border-left-color: #343a40; /* Oscuro para incumplidos */
+}
+
+
+.item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #eee;
+}
+
+.item-icon {
+  font-size: 1.6rem;
+}
+
+.item-description {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--dark-color);
+  flex-grow: 1;
+  margin: 0;
+}
+
+.item-status {
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.status-pending { background-color: #fff3cd; color: #856404; }
+.status-in_progress { background-color: #d1ecf1; color: #0c5460; }
+.status-completed { background-color: #d4edda; color: #155724; }
+.status-defaulted { background-color: #f8d7da; color: #721c24; }
+
+
+.item-body p {
+  margin: 6px 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+.item-body p strong {
+  color: #555;
+  min-width: 120px; /* Para alinear labels */
+  display: inline-block;
+}
+
+.item-body .text-success { color: var(--secondary-color); font-weight: bold; }
+.item-body .text-danger { color: var(--danger-color); font-weight: bold; }
+
+.progress-bar-container-dl {
+  width: 100%;
+  background-color: #e9ecef;
+  border-radius: 5px;
+  height: 16px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.progress-bar-dl {
+  height: 100%;
+  background-color: #5cb85c; /* Verde por defecto para progreso */
+  color: white;
+  font-size: 0.7rem;
+  line-height: 16px;
+  text-align: center;
+  font-weight: bold;
+  transition: width 0.3s ease;
+}
+.debt-item .progress-bar-dl {
+  background-color: var(--danger-color); /* Rojo si es deuda */
+}
+.loan-item .progress-bar-dl {
+  background-color: var(--secondary-color); /* Verde si es préstamo */
+}
+.completed .progress-bar-dl {
+    background-color: #7f8c8d;
+}
+
+
+.credit-card-loan-details {
+    background-color: #fdf6e3; /* Un amarillo pálido */
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 5px;
+    font-size: 0.85rem;
+}
+.credit-card-loan-details p { margin: 3px 0;}
+
+.item-notes {
+  font-size: 0.8rem;
+  color: #666;
+  background-color: #f8f9fa;
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+  white-space: pre-wrap;
+}
+
+.item-actions {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.item-actions .button-small {
+  font-size: 0.8rem !important;
+  padding: 5px 10px !important;
+}
+.item-actions .button-action { /* Para el botón de registrar pago */
+    background-color: #5bc0de !important; /* Celeste info */
+    border-color: #46b8da !important;
+}
+.item-actions .button-action:hover {
+    background-color: #31b0d5 !important;
+}
+
+.payment-form {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+}
+.payment-form h5 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.payment-form .form-group { margin-bottom: 10px; }
+.payment-form .form-group label { font-size: 0.85rem; margin-bottom: 3px;}
+.payment-form .form-group input, .payment-form .form-group textarea {
+  padding: 6px 10px;
+  font-size: 0.9rem;
+}
+.payment-form .error-message.small-error {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    margin-bottom: 10px;
+}.item-body .specific-details {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: var(--border-radius);
+}
+
+.item-body .specific-details h5 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--dark-color);
+}
+
+.item-body .specific-details p {
+  margin: 4px 0;
+  font-size: 0.85rem;
+}
+
+.progress-bar-dl.bg-completed {
+    background-color: #28a745; /* Un verde más brillante para completado */
+}
+
+.item-status.status-cancelled {
+    background-color: #e9ecef; /* Gris claro */
+    color: #495057;
+}
+.item-card.cancelled {
+  border-left-color: #adb5bd; 
+  opacity: 0.7;
+}
+.item-card.cancelled .item-description {
+    text-decoration: line-through;
+}
+.item-body .text-warning { /* Para préstamos con saldo pendiente */
+    color: #ffc107; /* Amarillo/Naranja advertencia */
+    font-weight: bold;
+}.item-summary-clickable {
+  cursor: pointer;
+  padding-bottom: 10px; /* Espacio antes de la línea si no está expandido */
+}
+
+.item-card:not(.expanded) .item-summary-clickable {
+   border-bottom: none; /* Sin borde si no está expandido */
+}
+.item-card.expanded .item-summary-clickable {
+  border-bottom: 1px dashed #eee; /* Borde si está expandido, antes de los detalles */
+  margin-bottom: 10px;
+}
+
+
+.item-header {
+  /* ... (estilos existentes) ... */
+  position: relative; /* Para el indicador de expansión */
+}
+
+.expand-indicator {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  font-size: 1.2rem;
+  color: #777;
+  transition: transform 0.2s ease-in-out;
+}
+.item-card.expanded .expand-indicator {
+  transform: rotate(45deg);
+}
+
+
+.item-body-summary {
+  /* Contiene la información visible cuando está colapsado */
+}
+.item-body-summary p {
+    margin: 4px 0;
+    font-size: 0.85rem;
+}
+.item-body-summary .progress-bar-container-dl {
+    margin-top: 8px;
+    margin-bottom: 0; /* Sin margen inferior si es lo último visible */
+}
+
+
+.item-body-detailed {
+  /* Estilos para la sección que se expande */
+  /* Por defecto podría ser display: none; y .expanded .item-body-detailed { display: block; } */
+  /* O usar transiciones de altura */
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out, padding-top 0.4s ease-out, margin-top 0.4s ease-out;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.item-card.expanded .item-body-detailed {
+  max-height: 1000px; /* Un valor suficientemente grande para el contenido */
+  padding-top: 10px;
+  margin-top: 10px;
+  transition: max-height 0.5s ease-in-out, padding-top 0.5s ease-in-out, margin-top 0.5s ease-in-out;
+}
+
+.item-body-detailed p {
+  margin: 6px 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+.item-body-detailed p strong {
+  color: #555;
+  min-width: 120px; 
+  display: inline-block;
+}
+.item-body-detailed .specific-details {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: var(--border-radius);
+}
+.item-body-detailed .specific-details h5 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--dark-color);
+}
+.item-body-detailed .specific-details p {
+  margin: 4px 0;
+  font-size: 0.85rem;
+}
+.item-body-detailed .item-notes {
+  font-size: 0.8rem;
+  color: #666;
+  background-color: #f0f0f0; /* Un poco más oscuro para diferenciarlo de specific-details */
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+  white-space: pre-wrap;
+}
+
+.item-body-detailed .item-actions {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #eee; /* Separador para las acciones dentro de la parte expandida */
+}
+
+.item-body-detailed .payment-form {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f0f0f0; /* Fondo diferente para el form de pago */
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+}

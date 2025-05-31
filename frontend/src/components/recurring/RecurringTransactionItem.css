@@ -1,0 +1,153 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/recurring/RecurringTransactionItem.css */
+/* ARCHIVO NUEVO */
+.recurring-tx-card {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius, 8px);
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  box-shadow: var(--box-shadow, 0 1px 3px rgba(0,0,0,0.05));
+  transition: box-shadow 0.2s ease-in-out;
+  border-left: 5px solid #8e44ad; /* Color temático para recurrentes */
+}
+
+.recurring-tx-card.inactive {
+  border-left-color: #bdc3c7; /* Gris para inactivos */
+  opacity: 0.7;
+}
+.recurring-tx-card.inactive .recurring-tx-description {
+    text-decoration: line-through;
+}
+
+
+.recurring-tx-card:hover {
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+.recurring-tx-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #eee;
+}
+
+.recurring-tx-icon {
+  font-size: 1.6rem;
+  min-width: 28px;
+  text-align: center;
+}
+
+.recurring-tx-description {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--dark-color);
+  flex-grow: 1;
+}
+
+.recurring-tx-status {
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.status-active {
+  color: var(--secondary-color);
+  background-color: rgba(46, 204, 113, 0.15);
+}
+.status-inactive {
+  color: #7f8c8d;
+  background-color: #ecf0f1;
+}
+
+
+.recurring-tx-card-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 15px;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column; /* Label arriba, valor abajo */
+  padding: 4px 0;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: #777;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  font-weight: 500;
+}
+
+.detail-value.amount-positive {
+  color: var(--secondary-color);
+  font-weight: bold;
+}
+.detail-value.amount-negative {
+  color: var(--danger-color);
+  font-weight: bold;
+}
+
+.detail-value.type-badge {
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: white;
+  text-transform: capitalize;
+  display: inline-block; /* Para que el padding funcione bien */
+}
+.recurring-tx-card .type-ingreso .type-badge { /* Heredar color si es necesario */
+  background-color: var(--secondary-color);
+}
+.recurring-tx-card .type-egreso .type-badge {
+  background-color: var(--danger-color);
+}
+.recurring-tx-card .type-badge { /* Genérico por si viene de rtx.type directamente */
+    background-color: var(--primary-color); /* Color por defecto */
+}
+.recurring-tx-card .type-badge[class*="ingreso"] { /* Un poco más específico */
+    background-color: var(--secondary-color);
+}
+.recurring-tx-card .type-badge[class*="egreso"] {
+    background-color: var(--danger-color);
+}
+
+
+
+.detail-value.date-value {
+    font-style: italic;
+    color: #3498db;
+}
+.notes-item {
+    grid-column: 1 / -1; /* Que las notas ocupen todo el ancho */
+}
+.notes-value {
+    font-size: 0.8rem;
+    background-color: #f8f9fa;
+    padding: 5px;
+    border-radius: 3px;
+    white-space: pre-wrap; /* Para respetar saltos de línea en las notas */
+}
+
+.recurring-tx-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+.recurring-tx-card-actions .button-small {
+    font-size: 0.8rem !important;
+    padding: 5px 10px !important;
+}

@@ -1,0 +1,61 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/CategoriesPage.css */
+/* ARCHIVO NUEVO */
+.categories-page {
+  /* Estilos para la página de gestión de categorías */
+}
+
+.categories-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--primary-color); /* O un color temático para configuración */
+}
+
+.categories-page-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.categories-page-header .button-primary {
+  width: auto !important; /* Para que no ocupe todo el ancho */
+  font-size: 0.9rem !important;
+}
+
+.categories-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.categories-section h2 {
+  font-size: 1.3rem;
+  color: var(--dark-color);
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.global-categories-section {
+    background-color: #f8f9fa; /* Un fondo ligeramente diferente para las globales */
+    border-color: #e9ecef;
+}
+
+
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.loading-text,
+.categories-page p { /* Estilo para mensajes de "no hay categorías" */
+  color: #666;
+}
+.categories-page .error-message {
+    margin-bottom: 15px;
+}

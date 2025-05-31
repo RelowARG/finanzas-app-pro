@@ -1,0 +1,116 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/Layout/Layout.css */
+/* ARCHIVO NUEVO */
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.navbar {
+  /* Los estilos del Navbar ya están en App.css o su propio archivo */
+  /* Asegúrate que tenga una altura definida si Sidebar depende de ella, ej: height: 60px; */
+  height: 60px; /* Ejemplo, ajusta a tu Navbar.css */
+  position: sticky; /* O fixed, según prefieras */
+  top: 0;
+  z-index: 1030; /* Navbar por encima del sidebar y contenido */
+}
+
+.content-wrapper {
+  display: flex;
+  flex-grow: 1; /* Para que ocupe el espacio restante */
+  /* El top padding debe ser igual a la altura del navbar si el navbar es fixed/sticky y el sidebar no lo es */
+  /* padding-top: 60px; */ /* Ajustar si el navbar es fixed/sticky y el sidebar no lo es */
+}
+
+/* Cuando hay sidebar, el contenido principal necesita un margen a la izquierda */
+.content-wrapper.with-sidebar .main-content {
+  margin-left: 240px; /* Mismo ancho que el .sidebar */
+  padding: 20px; /* Padding interno del contenido */
+  width: calc(100% - 240px); /* Ocupa el resto del ancho */
+  transition: margin-left 0.3s ease, width 0.3s ease; /* Para futuras animaciones */
+}
+
+/* Cuando NO hay sidebar (ej. login/register page), el contenido ocupa todo */
+.content-wrapper:not(.with-sidebar) .main-content {
+  margin-left: 0;
+  padding: 20px;
+  width: 100%;
+}
+
+.main-content {
+  flex-grow: 1;
+  /* background-color: var(--light-color); Ya está en body, pero puede ser específico aquí */
+  /* El padding general ya se lo da .page-container usualmente, o aquí si es más global */
+}
+
+.footer {
+  /* Los estilos del Footer ya están en App.css o su propio archivo */
+  /* Si el sidebar es fixed, el footer podría necesitar un margin-left también */
+  text-align: center;
+  padding: 15px; /* Reducido un poco */
+  background-color: var(--dark-color);
+  color: rgba(255,255,255,0.7);
+  font-size: 0.85rem;
+  /* Si el sidebar es fixed y llega hasta abajo, el footer podría necesitar un margin-left */
+}
+
+.content-wrapper.with-sidebar .footer {
+    /* margin-left: 240px; */ /* Descomentar si el footer debe alinearse con el contenido cuando hay sidebar */
+}
+
+
+/* Ajustes para pantallas pequeñas donde el sidebar podría ocultarse o cambiar */
+@media (max-width: 768px) {
+  .sidebar {
+    /* Ejemplo: Ocultar sidebar y que el contenido ocupe todo */
+    /* width: 0; */
+    /* padding: 20px 0; */
+    /* transform: translateX(-100%); */ /* Otra forma de ocultar */
+    /* Por ahora, lo dejamos visible pero el contenido se ajustará */
+  }
+
+  .content-wrapper.with-sidebar .main-content {
+    /* margin-left: 0; */ /* Si el sidebar se oculta o se superpone */
+    /* width: 100%; */
+    /* Para este ejemplo, mantenemos el margen, pero podrías querer un sidebar "hamburguesa" */
+  }
+  
+  /* Si el sidebar se mantiene visible y fijo en móviles */
+  .sidebar {
+    width: 200px; /* Más angosto en móviles */
+  }
+  .content-wrapper.with-sidebar .main-content {
+    margin-left: 200px;
+    width: calc(100% - 200px);
+  }
+  .sidebar-link {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+  }
+  .sidebar-link span:first-child {
+    margin-right: 10px;
+    font-size: 1.1em;
+  }
+
+}
+
+@media (max-width: 576px) {
+    /* En pantallas muy pequeñas, podrías querer que el sidebar se oculte por defecto
+       y se muestre con un botón (tipo hamburguesa).
+       Por ahora, simplemente hacemos que el contenido principal no tenga margen
+       y el sidebar se superponga o se oculte (depende de la estrategia) */
+  .sidebar {
+    /* Ejemplo de ocultar y que se muestre con un toggle (no implementado aquí) */
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1031; /* Por encima del contenido pero debajo de un posible overlay */
+  }
+  .sidebar.open { /* Clase que se añadiría con JS para mostrarlo */
+      transform: translateX(0);
+  }
+  .content-wrapper.with-sidebar .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+}

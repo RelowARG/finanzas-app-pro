@@ -1,0 +1,119 @@
+/* finanzas-app-pro/frontend/src/pages/ExchangeRatesPage.css */
+.exchange-rates-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f39c12; /* Color naranja, similar a presupuestos o deudas */
+}
+
+.exchange-rates-page .page-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.rate-form-section {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 30px;
+}
+
+.rate-form-section h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  color: var(--dark-color);
+}
+
+.rate-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  align-items: end; /* Alinea el botón con la parte inferior de los inputs */
+}
+
+/* Reutilizando .form-group de otros formularios si es posible, o definir aquí */
+.exchange-rates-page .form-group {
+  margin-bottom: 15px; /* Espacio si no está en el grid */
+}
+
+.exchange-rates-page .form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.exchange-rates-page .form-group input,
+.exchange-rates-page .form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+}
+
+.exchange-rates-page .form-group button {
+  width: 100%; /* Para que ocupe el ancho de su celda en el grid */
+  padding: 10px; /* Consistente con los inputs */
+}
+
+.rate-history-section {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.rate-history-section h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+}
+
+.history-filter-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    align-items: flex-end; /* Alinear el input con su label si es necesario */
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.history-table th,
+.history-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.history-table th {
+  background-color: #f2f2f2;
+  font-weight: 600;
+}
+
+.no-history-message, .no-current-rate-message {
+  text-align: center;
+  font-style: italic;
+  color: #666;
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+}
+
+.success-message {
+  color: var(--secondary-color, green);
+  background-color: rgba(46, 204, 113, 0.1);
+  padding: 10px;
+  border-radius: var(--border-radius);
+  margin-top: 10px;
+  text-align: center;
+}

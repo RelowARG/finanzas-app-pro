@@ -1,0 +1,56 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/ReportsPage.css */
+.reports-page {
+  /* Estilos para la página de informes */
+}
+
+.reports-page-header {
+  display: flex;
+  justify-content: space-between; /* Si hubiera botones a la derecha */
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #9b59b6; /* Color temático para informes (púrpura) */
+}
+
+.reports-page-header h1 {
+  margin: 0;
+  color: var(--dark-color, #333);
+  font-size: 2rem;
+}
+
+.loading-text,
+.no-data-message { 
+  text-align: center;
+  font-size: 1.1rem;
+  color: #666;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.conversion-notes-container {
+  background-color: #fff9e6; /* Un amarillo pálido para notas */
+  border: 1px solid #ffe58f;
+  border-left: 4px solid #ffc107; /* Ámbar */
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: var(--border-radius);
+}
+
+.conversion-notes-container h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #856404; /* Marrón oscuro para el título de las notas */
+  font-size: 1rem;
+}
+
+.conversion-notes-container ul {
+  list-style-type: disc;
+  margin-left: 20px;
+  padding-left: 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.conversion-notes-container li {
+  margin-bottom: 5px;
+}

@@ -1,0 +1,83 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/transactions/TransactionItem.css */
+/* ARCHIVO NUEVO */
+
+.transaction-row {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.transaction-row:hover {
+  background-color: #f9f9f9;
+}
+
+.transaction-row td {
+  padding: 12px 10px;
+  vertical-align: middle;
+  font-size: 0.9rem;
+}
+
+.transaction-cell-icon {
+  font-size: 1.3rem;
+  text-align: center;
+  width: 40px; /* Ancho fijo para el icono */
+}
+
+.transaction-cell-description {
+  font-weight: 500;
+  color: #333;
+}
+
+.transaction-cell-category {
+  display: block;
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 2px;
+}
+
+.transaction-cell-date,
+.transaction-cell-account {
+  color: #555;
+  font-size: 0.85rem;
+}
+
+.transaction-cell-amount {
+  font-weight: bold;
+  text-align: right;
+  white-space: nowrap; /* Para que no se parta el monto */
+}
+
+.amount-positive {
+  color: var(--secondary-color, #2ecc71);
+}
+
+.amount-negative {
+  color: var(--danger-color, #e74c3c);
+}
+
+.transaction-cell-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.transaction-cell-actions .button-small {
+  margin-left: 5px;
+  padding: 4px 8px !important; /* Más pequeños aún */
+  font-size: 0.75rem !important;
+}
+.transaction-cell-installments {
+  display: block; 
+  font-size: 0.8rem; /* Más pequeño que la categoría */
+  color: #555; /* Un gris medio */
+  margin-top: 4px;
+  font-style: italic;
+}.transaction-cell-installments {
+  display: block; 
+  font-size: 0.8rem; /* Más pequeño que la categoría */
+  color: #555; /* Un gris medio */
+  margin-top: 4px;
+  font-style: italic;
+  background-color: #e9ecef; /* Fondo sutil para destacar que es una cuota */
+  padding: 2px 5px;
+  border-radius: 3px;
+  display: inline-block; /* Para que el padding y background se ajusten al texto */
+}

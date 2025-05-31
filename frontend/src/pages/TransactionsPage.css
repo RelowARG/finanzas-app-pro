@@ -1,0 +1,70 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/TransactionsPage.css */
+/* ARCHIVO NUEVO */
+
+.transactions-page {
+  /* Estilos para la página de transacciones */
+}
+
+.transactions-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px; /* Reducido un poco el margen inferior */
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--secondary-color, #2ecc71); /* Color diferente para esta sección */
+}
+
+.transactions-page-header h1 {
+  margin: 0;
+  color: var(--dark-color, #333);
+  font-size: 2rem;
+}
+
+.transactions-page-header .button-primary {
+  background-color: var(--secondary-color, #2ecc71) !important;
+  color: white !important;
+}
+.transactions-page-header .button-primary:hover {
+  background-color: #27ae60 !important; /* Un poco más oscuro */
+}
+.transactions-page-header .icon-add {
+  font-size: 0.9em;
+}
+
+.transactions-summary {
+  background-color: #fff;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.transactions-summary span {
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.transactions-summary .amount-positive {
+  /* color: var(--secondary-color); */ /* Ya se aplica por la clase */
+  background-color: rgba(46, 204, 113, 0.1);
+}
+.transactions-summary .amount-negative {
+  /* color: var(--danger-color); */ /* Ya se aplica por la clase */
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+
+.loading-text {
+  /* Ya definido globalmente o en otras páginas, asegurarse de que exista */
+  text-align: center;
+  font-size: 1.1rem;
+  color: #666;
+  padding: 20px;
+}

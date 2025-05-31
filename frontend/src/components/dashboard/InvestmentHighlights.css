@@ -1,0 +1,109 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/dashboard/InvestmentHighlights.css */
+/* ARCHIVO NUEVO */
+
+.investment-highlights-widget {
+  /* Utiliza .dashboard-widget para estilos base */
+}
+
+.investment-highlights-widget h3 {
+  color: #1abc9c; /* Color temático de inversiones */
+  border-bottom-color: #1abc9c;
+}
+
+.total-investments-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+  padding: 10px 0;
+  margin-bottom: 15px;
+  border-bottom: 1px dashed #e0e0e0;
+}
+.total-investments-value span:first-child {
+  font-weight: 500;
+  color: #333;
+}
+.currency-values {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.total-value-currency-item {
+  font-weight: bold;
+  color: var(--primary-color); /* O usar el color de inversiones */
+  font-size: 1.2rem;
+  margin-left: 10px; /* Si hay múltiples monedas */
+}
+.total-value-currency-item:first-child {
+    margin-left: 0;
+}
+
+
+.top-investments-list {
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.top-investments-list h4 {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.top-investments-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.top-investments-list li {
+  margin-bottom: 8px;
+}
+
+.top-investments-list li a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #454545;
+  padding: 6px 8px;
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.top-investments-list li a:hover {
+  background-color: #f0f8ff; /* Un azul muy claro al hover */
+}
+
+.inv-icon {
+  margin-right: 10px;
+  font-size: 1.1em;
+}
+
+.inv-name {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inv-value {
+  font-weight: 500;
+  margin-left: 10px;
+  white-space: nowrap;
+  color: var(--primary-color);
+}
+
+.button-view-all {
+  display: block;
+  width: 100% !important; /* Ocupar todo el ancho */
+  margin-top: 15px;
+  text-align: center;
+  background-color: #e9ecef !important;
+  color: #495057 !important;
+  border: 1px solid #ced4da !important;
+}
+.button-view-all:hover {
+  background-color: #dde2e6 !important;
+}

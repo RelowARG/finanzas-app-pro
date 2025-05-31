@@ -1,0 +1,40 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/reports/CategoryExpensesChart.css */
+/* ARCHIVO NUEVO */
+.category-expenses-chart-widget {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-top: 20px; /* Espacio si hay filtros arriba */
+}
+
+.chart-container {
+  height: 350px; /* Altura del gráfico, ajustar según necesidad */
+  position: relative; /* Para Chart.js */
+  margin-bottom: 20px;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 30px;
+  font-style: italic;
+  color: #555;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+}
+
+.report-summary-details {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  font-size: 0.95rem;
+}
+
+.report-summary-details p {
+  margin: 5px 0;
+  display: flex;
+  justify-content: space-between;
+}
+.report-summary-details p strong {
+  color: #333;
+}

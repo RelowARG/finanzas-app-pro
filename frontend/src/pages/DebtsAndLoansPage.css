@@ -1,0 +1,77 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/DebtsAndLoansPage.css */
+/* NUEVO ARCHIVO */
+
+.debts-loans-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e67e22; /* Un color naranja/marrón para deudas/préstamos */
+}
+
+.debts-loans-page .page-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.debts-loans-page .button-primary {
+  background-color: #e67e22 !important;
+  border-color: #e67e22 !important;
+}
+.debts-loans-page .button-primary:hover {
+  background-color: #d35400 !important;
+}
+
+.filter-controls {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-controls label {
+  font-weight: 500;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccc;
+  min-width: 200px;
+}
+
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.loading-text,
+.no-data-message {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .debts-loans-page .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .items-grid {
+    grid-template-columns: 1fr;
+  }
+  .filter-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-select {
+    width: 100%;
+  }
+}

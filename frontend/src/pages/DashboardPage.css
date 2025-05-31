@@ -1,0 +1,89 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/DashboardPage.css */
+/* ARCHIVO NUEVO */
+
+.dashboard-page {
+  /* Estilos generales para la página del dashboard */
+}
+
+.dashboard-header {
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--primary-color, #3498db);
+}
+
+.dashboard-header h1 {
+  margin: 0 0 5px 0;
+  color: var(--dark-color, #333);
+  font-size: 2rem;
+}
+
+.welcome-message {
+  font-size: 1.1rem;
+  color: #555;
+  margin: 0;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Columna principal más ancha que la barra lateral */
+  gap: 25px; /* Espacio entre columnas y widgets */
+}
+
+.dashboard-main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Espacio entre widgets en la columna principal */
+}
+
+.dashboard-sidebar-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Espacio entre widgets en la barra lateral */
+}
+
+.loading-text { /* Ya definido en AccountsPage.css, pero puede estar aquí por si acaso */
+  text-align: center;
+  font-size: 1.1rem;
+  color: #666;
+  padding: 20px;
+}
+
+/* Adaptación para pantallas más pequeñas */
+@media (max-width: 992px) { /* Bootstrap lg breakpoint */
+  .dashboard-grid {
+    grid-template-columns: 1fr; /* Una sola columna */
+  }
+  .dashboard-sidebar-column {
+     /* En una sola columna, los widgets de la barra lateral siguen a los de la principal */
+  }
+}
+
+@media (max-width: 768px) { /* Bootstrap md breakpoint */
+  .dashboard-header h1 {
+    font-size: 1.75rem;
+  }
+  .welcome-message {
+    font-size: 1rem;
+  }
+}
+/* Spending Chart Widget (y su contenedor interno) */
+.spending-chart-widget .chart-container {
+  height: 280px; /* Altura predeterminada del contenedor del gráfico */
+  position: relative; /* Necesario para que Chart.js maneje bien el tamaño */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spending-chart-widget .chart-container canvas {
+  max-height: 100%; /* Asegura que el canvas no exceda el contenedor */
+  max-width: 100%;
+}
+
+.spending-chart-widget .error-message,
+.spending-chart-widget p { /* Estilo para mensajes dentro del chart widget */
+    padding: 10px;
+    text-align: center;
+    color: #555;
+}
+

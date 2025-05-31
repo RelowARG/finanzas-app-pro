@@ -1,0 +1,91 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/AddInvestmentPage.css */
+/* (Este archivo puede ser usado también por EditInvestmentPage.jsx o adaptado) */
+
+.add-investment-page .form-container { /* Clase específica si es necesario */
+  /* Estilos del form-container ya definidos en App.css o similar */
+}
+
+.add-investment-page h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: var(--dark-color);
+}
+
+.add-investment-page .form-group {
+  margin-bottom: 1.2rem; /* Un poco más de espacio */
+}
+
+.add-investment-page .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.add-investment-page .form-group input[type="text"],
+.add-investment-page .form-group input[type="number"],
+.add-investment-page .form-group input[type="date"],
+.add-investment-page .form-group select,
+.add-investment-page .form-group textarea {
+  width: 100%;
+  padding: 0.6rem 0.85rem; /* Padding ajustado */
+  border: 1px solid #ced4da;
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.add-investment-page .form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+
+.add-investment-page .form-group input:focus,
+.add-investment-page .form-group select:focus,
+.add-investment-page .form-group textarea:focus {
+    border-color: #1abc9c; /* Color temático de inversiones para el foco */
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(26, 188, 156, 0.25); /* Sombra de foco con color temático */
+}
+
+.form-grid-halves { /* Este estilo podría estar en un CSS más global si se usa en varios formularios */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.add-investment-page .form-actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
+
+.add-investment-page .form-actions .button-primary {
+  background-color: #1abc9c !important; /* Color temático */
+  border-color: #1abc9c !important;
+}
+.add-investment-page .form-actions .button-primary:hover {
+  background-color: #16a085 !important;
+}
+
+.add-investment-page .form-actions .button-secondary {
+    background-color: #6c757d !important; 
+}
+.add-investment-page .form-actions .button-secondary:hover {
+    background-color: #5a6268 !important;
+}
+
+/* Responsive para el grid de dos columnas */
+@media (max-width: 600px) {
+  .form-grid-halves {
+    grid-template-columns: 1fr; /* Una columna en pantallas más pequeñas */
+    gap: 0; /* Sin gap si es una sola columna, o mantenerlo si se prefiere */
+  }
+  .form-grid-halves .form-group {
+      margin-bottom: 1.2rem;
+  }
+}
