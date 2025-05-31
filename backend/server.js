@@ -15,7 +15,7 @@ const { processAllDueRecurringTransactions } = require('./services/recurringProc
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const HOST = '192.168.0.7'; // IP específica para escuchar
+const HOST = '0.0.0.0'; // <--- CAMBIO IMPORTANTE AQUÍ
 
 // Configuración de CORS ajustada para incluir la IP específica
 const defaultFrontendUrl = 'http://localhost:5173';
@@ -23,16 +23,22 @@ const frontendUrl = process.env.FRONTEND_URL || defaultFrontendUrl;
 
 // Lista de orígenes permitidos
 const allowedOrigins = [
-  frontendUrl, // El que ya tenías (desde .env o localhost)
-  `http://${HOST}:5173` // Acceso desde la IP específica (asumiendo puerto 5173 para frontend)
+  frontendUrl, 
+  // Si necesitas acceso desde otra IP específica durante el desarrollo con Vercel/Render, añádela aquí
+  // o mejor, configura FRONTEND_URL en Render con la URL de Vercel.
 ];
-// Si frontendUrl es una URL diferente a localhost:5173 y también diferente a la IP específica, se añadirán ambas.
-// Si frontendUrl es igual a localhost:5173, se añadirán localhost:5173 y la IP específica.
-// Usamos un Set para evitar duplicados si process.env.FRONTEND_URL fuera igual a `http://${HOST}:5173`
+// Usamos un Set para evitar duplicados
 const uniqueAllowedOrigins = [...new Set(allowedOrigins)];
 
 app.use(cors({
-  origin: uniqueAllowedOrigins,
+  origin: function (origin, callback) {
+    // Permitir solicitudes sin 'origin' (como Postman o apps móviles) O si el origen está en la lista
+    if (!origin || uniqueAllowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
@@ -44,14 +50,18 @@ const connectAndSyncDb = async () => {
     await db.sequelize.authenticate();
     console.log('Conexión a la base de datos MySQL establecida exitosamente.');
 
-    await db.sequelize.sync({ force: false });
+    // En producción, generalmente se manejan las migraciones por separado.
+    // Para Render, podrías tener un script de migración o dejar sync({ force: false })
+    // si es la primera vez y quieres que Sequelize cree las tablas.
+    // Considera usar migraciones para cambios futuros.
+    await db.sequelize.sync({ force: false }); 
     console.log('Modelos sincronizados con la base de datos.');
 
     await seedDefaultCategories();
 
   } catch (error) {
     console.error('No se pudo conectar o sincronizar la base de datos:', error);
-    process.exit(1);
+    process.exit(1); // Detener la app si la BD no funciona
   }
 };
 
@@ -67,9 +77,13 @@ app.use(errorHandler);
 const startServer = async () => {
   await connectAndSyncDb();
 
-  app.listen(PORT, HOST, () => { // Modificado para incluir HOST
-    console.log(`Servidor backend escuchando en http://${HOST}:${PORT}`); // Mensaje actualizado
-    console.log(`Permitiendo CORS para los orígenes: ${uniqueAllowedOrigins.join(', ')}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`Servidor backend escuchando en http://${HOST}:${PORT}`);
+    if(process.env.NODE_ENV === 'production'){
+        console.log(`Permitiendo CORS para el origen: ${process.env.FRONTEND_URL}`);
+    } else {
+        console.log(`Permitiendo CORS para los orígenes: ${uniqueAllowedOrigins.join(', ')}`);
+    }
 
 
     const cronSchedule = process.env.RECURRING_TX_CRON_SCHEDULE || '0 3 * * *';
@@ -82,7 +96,7 @@ const startServer = async () => {
         });
       }, {
         scheduled: true,
-        // timezone: "America/Argentina/Buenos_Aires" // Descomentar si tu servidor no está en esta zona horaria
+        // timezone: "America/Argentina/Buenos_Aires" // Descomentar si tu servidor Render no está en esta zona horaria por defecto
       });
       console.log(`[CronJob] Tarea de movimientos recurrentes programada con la expresión: "${cronSchedule}"`);
     } else {
