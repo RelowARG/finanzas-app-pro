@@ -28,8 +28,9 @@ import InvestmentHighlights from '../components/dashboard/InvestmentHighlights';
 import MonthlySavingsWidget from '../components/dashboard/MonthlySavingsWidget'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/MonthlySavingsWidget.jsx]
 import ControlPanelWidget from '../components/dashboard/ControlPanelWidget'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/ControlPanelWidget.jsx]
 import BalanceTrendWidget from '../components/dashboard/BalanceTrendWidget'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/BalanceTrendWidget.jsx]
-import AddCardPlaceholder from '../components/dashboard/AddCardPlaceholder'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/AddCardPlaceholder.jsx]
+// AddCardPlaceholder ya no se usa directamente aquí
 import SortableWidget from '../components/dashboard/SortableWidget'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/SortableWidget.jsx]
+import AccountDashboardSelectionModal from '../components/dashboard/AccountDashboardSelectionModal'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/AccountDashboardSelectionModal.jsx]
 
 import accountService from '../services/accounts.service'; // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
 import dashboardService from '../services/dashboard.service'; // [cite: finanzas-app-pro/frontend/src/services/dashboard.service.js]
@@ -62,15 +63,17 @@ const getDefaultWidgetConfig = () => ({
 });
 
 const LOCAL_STORAGE_KEY_WIDGET_ORDER = 'dashboardWidgetOrder';
+const LOCAL_STORAGE_KEY_DISPLAYED_ACCOUNTS = 'dashboardDisplayedAccounts';
+const MAX_SUMMARY_CARDS_DISPLAY = 5; 
 
 const DashboardPage = () => {
-  const { user } = useAuth(); // [cite: finanzas-app-pro/frontend/src/contexts/AuthContext.jsx]
+  const { user } = useAuth(); 
   
   const [apiData, setApiData] = useState({
     investmentHighlights: null,
     monthlyFinancialStatus: null,
-    balanceSummary: null,
-    summaryAccounts: [],
+    balanceSummary: null, 
+    allUserAccounts: [], 
     globalBudgetStatus: null,
     balanceTrendData: null,
     loadingAccounts: true,
@@ -80,8 +83,16 @@ const DashboardPage = () => {
     loadingGlobalBudget: true,
     loadingBalanceTrend: true,
   });
+  const [displayedAccountIds, setDisplayedAccountIds] = useState(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY_DISPLAYED_ACCOUNTS);
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [summaryAccountsToDisplay, setSummaryAccountsToDisplay] = useState([]);
+
+
   const [error, setError] = useState('');
   const [activeDragId, setActiveDragId] = useState(null);
+  const [showAccountSelectionModal, setShowAccountSelectionModal] = useState(false);
 
   const [widgetConfig, setWidgetConfig] = useState(() => {
     const savedOrder = localStorage.getItem(LOCAL_STORAGE_KEY_WIDGET_ORDER);
@@ -190,29 +201,33 @@ const DashboardPage = () => {
     ]);
 
 
-  const fetchDashboardData = useCallback(async () => {
+  const fetchDashboardData = useCallback(async (showLoadingIndicators = true) => {
     if (!user) return;
-    setApiData(prev => ({ ...prev, 
-        loadingInvestments: true, loadingMonthlyStatus: true, 
-        loadingAccounts: true, loadingBalanceSummary: true,
-        loadingGlobalBudget: true, loadingBalanceTrend: true,
-    }));
+    if (showLoadingIndicators) {
+        setApiData(prev => ({ ...prev, 
+            loadingInvestments: true, loadingMonthlyStatus: true, 
+            loadingAccounts: true, loadingBalanceSummary: true,
+            loadingGlobalBudget: true, loadingBalanceTrend: true,
+        }));
+    }
     setError('');
     try {
       const results = await Promise.allSettled([
-        dashboardService.getInvestmentHighlights(3), // [cite: finanzas-app-pro/frontend/src/services/dashboard.service.js]
-        dashboardService.getCurrentMonthFinancialStatus(), // [cite: finanzas-app-pro/frontend/src/services/dashboard.service.js]
-        accountService.getAllAccounts(), // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
-        dashboardService.getDashboardSummary(), // [cite: finanzas-app-pro/frontend/src/services/dashboard.service.js]
-        dashboardService.getGlobalBudgetStatus(), // [cite: finanzas-app-pro/frontend/src/services/dashboard.service.js]
-        dashboardService.getBalanceTrendData({ months: 6 }), // [cite: finanzas-app-pro/frontend/src/services/dashboard.service.js]
+        dashboardService.getInvestmentHighlights(3), 
+        dashboardService.getCurrentMonthFinancialStatus(), 
+        accountService.getAllAccounts(), 
+        dashboardService.getDashboardSummary(), 
+        dashboardService.getGlobalBudgetStatus(), 
+        dashboardService.getBalanceTrendData({ months: 6 }), 
       ]);
 
+      const allAccountsData = results[2].status === 'fulfilled' ? (results[2].value || []) : apiData.allUserAccounts; 
+      
       setApiData(prev => ({
         ...prev,
         investmentHighlights: results[0].status === 'fulfilled' ? results[0].value : prev.investmentHighlights,
         monthlyFinancialStatus: results[1].status === 'fulfilled' ? results[1].value : prev.monthlyFinancialStatus,
-        summaryAccounts: results[2].status === 'fulfilled' ? (results[2].value || []).filter(acc => acc.includeInDashboardSummary).slice(0, 3) : prev.summaryAccounts,
+        allUserAccounts: allAccountsData,
         balanceSummary: results[3].status === 'fulfilled' ? results[3].value : prev.balanceSummary,
         globalBudgetStatus: results[4].status === 'fulfilled' ? results[4].value : prev.globalBudgetStatus,
         balanceTrendData: results[5].status === 'fulfilled' ? results[5].value : prev.balanceTrendData,
@@ -236,11 +251,11 @@ const DashboardPage = () => {
         loadingGlobalBudget: false, loadingBalanceTrend: false,
       }));
     }
-  }, [user]);
+  }, [user]); 
 
   useEffect(() => {
     fetchDashboardData();
-  }, [fetchDashboardData]);
+  }, [fetchDashboardData]); 
   
   useEffect(() => {
     const orderToSave = {
@@ -250,13 +265,36 @@ const DashboardPage = () => {
     localStorage.setItem(LOCAL_STORAGE_KEY_WIDGET_ORDER, JSON.stringify(orderToSave));
   }, [widgetConfig]);
 
+  useEffect(() => {
+    if (apiData.allUserAccounts.length > 0) {
+      let accountsForDisplay;
+      if (displayedAccountIds.length > 0) {
+        accountsForDisplay = displayedAccountIds
+          .map(id => apiData.allUserAccounts.find(acc => acc.id.toString() === id.toString()))
+          .filter(Boolean) 
+          .slice(0, MAX_SUMMARY_CARDS_DISPLAY);
+      } else {
+        accountsForDisplay = apiData.allUserAccounts
+          .filter(acc => acc.includeInDashboardSummary) // Fallback a las marcadas en backend
+          .slice(0, MAX_SUMMARY_CARDS_DISPLAY);
+        // Si después de este fallback no hay ninguna, y hay cuentas, mostrar las primeras N
+        if (accountsForDisplay.length === 0 && apiData.allUserAccounts.length > 0) {
+            accountsForDisplay = apiData.allUserAccounts.slice(0, MAX_SUMMARY_CARDS_DISPLAY);
+        }
+      }
+      setSummaryAccountsToDisplay(accountsForDisplay);
+    } else {
+      setSummaryAccountsToDisplay([]);
+    }
+  }, [displayedAccountIds, apiData.allUserAccounts]);
+
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
   
-  // Definición de findWidgetAndContainerKey DENTRO del componente DashboardPage
   const findWidgetAndContainerKey = (id, configToSearch) => {
     for (const containerKey of ['left', 'right']) {
       const widgetIndex = configToSearch[containerKey].findIndex(w => w.id === id);
@@ -394,6 +432,12 @@ const DashboardPage = () => {
   };
   const accountTypeIcons = {efectivo: '💵', bancaria: '🏦', tarjeta_credito: '💳', inversion: '📈', digital_wallet: '📱', otro: '📁',};
 
+  const handleSaveAccountSelections = (selectedIds) => {
+    console.log("DashboardPage: Saving displayed account IDs", selectedIds);
+    setDisplayedAccountIds(selectedIds);
+    localStorage.setItem(LOCAL_STORAGE_KEY_DISPLAYED_ACCOUNTS, JSON.stringify(selectedIds));
+  };
+
   const activeDraggedWidgetObject = activeDragId ? (widgetConfig.left.find(w => w.id === activeDragId) || widgetConfig.right.find(w => w.id === activeDragId)) : null;
   
   return (
@@ -405,18 +449,18 @@ const DashboardPage = () => {
       measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
     >
       <div className="page-container dashboard-page">
-        <div className="dashboard-header">
-          <h1>Dashboard</h1>
-          {user && <p className="welcome-message">Bienvenido de nuevo, {user.name || user.email}!</p>}
-        </div>
-
         <div className="accounts-summary-row">
           {apiData.loadingAccounts ? ( <p className="loading-text-widget" style={{flexGrow: 1, textAlign:'center'}}>Cargando cuentas...</p> ) : (
             <>
-              {apiData.summaryAccounts.map(acc => (
-                <AccountSummaryCard key={acc.id} account={acc} bgColorClass={getAccountCardStyle(acc.name)} icon={accountTypeIcons[acc.type] || acc.icon || '🏦'}/>
+              {summaryAccountsToDisplay.map(acc => (
+                <AccountSummaryCard 
+                  key={acc.id} 
+                  account={acc} 
+                  bgColorClass={getAccountCardStyle(acc.name)} 
+                  icon={accountTypeIcons[acc.type] || acc.icon || '🏦'}
+                />
               ))}
-              <AccountSummaryCard /> 
+              <AccountSummaryCard onCustomizeClick={() => setShowAccountSelectionModal(true)} /> 
             </>
           )}
         </div>
@@ -441,7 +485,7 @@ const DashboardPage = () => {
                   <widgetItem.Component {...widgetItem.props} />
                 </SortableWidget>
               ))}
-              <AddCardPlaceholder />
+              {/* Ya no se necesita AddCardPlaceholder aquí si AccountSummaryCard lo maneja */}
             </div>
           </SortableContext>
         </div>
@@ -453,6 +497,17 @@ const DashboardPage = () => {
           </div>
         ) : null}
       </DragOverlay>
+
+      {showAccountSelectionModal && (
+        <AccountDashboardSelectionModal
+          isOpen={showAccountSelectionModal}
+          onClose={() => setShowAccountSelectionModal(false)}
+          allAccounts={apiData.allUserAccounts} 
+          currentlyDisplayedAccountIds={displayedAccountIds}
+          onSave={handleSaveAccountSelections}
+          maxSelection={MAX_SUMMARY_CARDS_DISPLAY}
+        />
+      )}
     </DndContext>
   );
 };
