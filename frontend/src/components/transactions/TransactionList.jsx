@@ -1,8 +1,7 @@
 // Ruta: finanzas-app-pro/frontend/src/components/transactions/TransactionList.jsx
-// ACTUALIZA ESTE ARCHIVO
 import React from 'react';
-import TransactionItem from './TransactionItem';
-import './TransactionList.css';
+import TransactionItem from './TransactionItem'; // [cite: finanzas-app-pro/frontend/src/components/transactions/TransactionItem.jsx]
+import './TransactionList.css'; // [cite: finanzas-app-pro/frontend/src/components/transactions/TransactionList.css]
 
 // Añadimos onDeleteTransaction como prop
 const TransactionList = ({ transactions, onDeleteTransaction }) => {

@@ -1,13 +1,12 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/TransactionsPage.jsx
-// ACTUALIZA ESTE ARCHIVO
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import transactionService from '../services/transactions.service';
-import TransactionList from '../components/transactions/TransactionList';
-import TransactionFilter from '../components/transactions/TransactionFilter';
-import './TransactionsPage.css'; // Asegúrate de que este archivo exista
+import transactionService from '../services/transactions.service'; // [cite: finanzas-app-pro/frontend/src/services/transactions.service.js]
+import TransactionList from '../components/transactions/TransactionList'; // [cite: finanzas-app-pro/frontend/src/components/transactions/TransactionList.jsx]
+import TransactionFilter from '../components/transactions/TransactionFilter'; // [cite: finanzas-app-pro/frontend/src/components/transactions/TransactionFilter.jsx]
+import './TransactionsPage.css'; // [cite: finanzas-app-pro/frontend/src/pages/TransactionsPage.css]
 
-const ITEMS_PER_PAGE = 15; // O el límite que prefieras
+const ITEMS_PER_PAGE = 15; 
 
 const TransactionsPage = () => {
   const [transactions, setTransactions] = useState([]);
@@ -31,7 +30,7 @@ const TransactionsPage = () => {
     setLoading(true);
     setError('');
     try {
-      const data = await transactionService.getAllTransactions({ ...filters, page, limit: ITEMS_PER_PAGE });
+      const data = await transactionService.getAllTransactions({ ...filters, page, limit: ITEMS_PER_PAGE }); // [cite: finanzas-app-pro/frontend/src/services/transactions.service.js]
       setTransactions(data.transactions || []);
       setTotalPages(data.totalPages || 0);
       setCurrentPage(data.currentPage || 1);
@@ -52,22 +51,35 @@ const TransactionsPage = () => {
 
   const handleFilterChange = (newFilters) => {
     setActiveFilters(newFilters);
-    setCurrentPage(1); // Resetear a la primera página cuando cambian los filtros
-    // fetchTransactions(newFilters, 1); // Se disparará por el useEffect de activeFilters o currentPage
+    setCurrentPage(1); 
   };
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
-      // fetchTransactions(activeFilters, newPage); // Se disparará por el useEffect de currentPage
     }
   };
   
-  // Calcular totales (se mantiene en el frontend, pero ahora sobre los datos paginados/filtrados)
+  const handleDeleteTransaction = async (transactionId) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este movimiento? Esta acción no se puede deshacer y afectará el saldo de la cuenta asociada.')) {
+      try {
+        setLoading(true); // Podrías tener un estado de loading específico para la eliminación
+        setError('');
+        await transactionService.deleteTransaction(transactionId); // [cite: finanzas-app-pro/frontend/src/services/transactions.service.js]
+        // alert('Movimiento eliminado exitosamente.'); // O usar una notificación/toast
+        fetchTransactions(activeFilters, currentPage); // Recargar transacciones
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || 'Error al eliminar el movimiento.');
+        setLoading(false); // Asegurarse de quitar el loading si hay error
+      }
+    }
+  };
+  
   const totals = React.useMemo(() => {
     return transactions.reduce((acc, tx) => {
-      if (tx.type === 'ingreso') acc.ingresos += parseFloat(tx.amount);
-      if (tx.type === 'egreso') acc.egresos += parseFloat(tx.amount); // amount ya es negativo
+      const amount = parseFloat(tx.amount) || 0;
+      if (tx.type === 'ingreso') acc.ingresos += amount;
+      if (tx.type === 'egreso') acc.egresos += amount; // El monto ya es negativo
       return acc;
     }, { ingresos: 0, egresos: 0 });
   }, [transactions]);
@@ -88,7 +100,6 @@ const TransactionsPage = () => {
         initialFilters={activeFilters} 
       />
 
-      {/* Solo mostrar resumen si hay transacciones y no hay error */}
       {!loading && !error && transactions.length > 0 && (
         <div className="transactions-summary">
           <span>Ingresos (pág.): <span className="amount-positive">${totals.ingresos.toFixed(2)}</span></span>
@@ -103,7 +114,10 @@ const TransactionsPage = () => {
       {loading ? (
         <p className="loading-text">Cargando movimientos...</p>
       ) : (
-        <TransactionList transactions={transactions} />
+        <TransactionList 
+            transactions={transactions} 
+            onDeleteTransaction={handleDeleteTransaction} // Pasar la función aquí
+        />
       )}
 
       {!loading && totalPages > 1 && (
