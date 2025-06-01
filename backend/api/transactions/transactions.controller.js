@@ -4,8 +4,9 @@ const Transaction = db.Transaction;
 const Account = db.Account;
 const Category = db.Category;
 const RecurringTransaction = db.RecurringTransaction;
-const { Op } = require('sequelize');
+const { Op, literal } = require('sequelize'); // Añadir 'literal' para ordenamiento complejo si es necesario
 
+// ... (createTransaction, getTransactionById, updateTransaction, deleteTransaction - sin cambios) ...
 // @desc    Crear un nuevo movimiento
 // @route   POST /api/transactions
 // @access  Private
@@ -54,7 +55,7 @@ const createTransaction = async (req, res, next) => {
       description,
       amount: transactionAmount, 
       currency: currency || account.currency, 
-      date, // date es YYYY-MM-DD
+      date,
       type,
       notes,
       icon: icon || category.icon, 
@@ -79,8 +80,7 @@ const createTransaction = async (req, res, next) => {
       (async () => { 
         try {
           console.log(`[InstallmentAutomation] Generando ${newTransaction.totalInstallments - 1} cuotas futuras para la transacción ID: ${newTransaction.id}`);
-          const baseDateForInstallments = new Date(newTransaction.date + 'T00:00:00Z'); // Usar Z para UTC y evitar problemas de timezone al sumar meses
-
+          const baseDateForInstallments = new Date(newTransaction.date + 'T00:00:00Z');
           for (let i = 2; i <= newTransaction.totalInstallments; i++) {
             const nextInstallmentDateObj = new Date(baseDateForInstallments);
             nextInstallmentDateObj.setUTCMonth(baseDateForInstallments.getUTCMonth() + (i - 1));
@@ -89,7 +89,6 @@ const createTransaction = async (req, res, next) => {
                  const tempCorrectMonth = new Date(Date.UTC(baseDateForInstallments.getUTCFullYear(), baseDateForInstallments.getUTCMonth() + (i - 1) + 1, 0)); 
                  nextInstallmentDateObj.setUTCDate(tempCorrectMonth.getUTCDate());
             }
-
             const year = nextInstallmentDateObj.getUTCFullYear();
             const month = String(nextInstallmentDateObj.getUTCMonth() + 1).padStart(2, '0');
             const day = String(nextInstallmentDateObj.getUTCDate()).padStart(2, '0');
@@ -127,18 +126,23 @@ const createTransaction = async (req, res, next) => {
     }
     console.error('Error en createTransaction:', error);
     if (error.name === 'SequelizeValidationError' || error.message.includes('requerido') || error.message.includes('cuota')) {
-        return res.status(400).json({ message: error.message, errors: error.errors?.map(e => e.message) });
+        return res.status(400).json({ message: error.message, errors: error.errors.map(e => e.message) });
     }
     next(error);
   }
 };
 
-// @desc    Obtener todos los movimientos del usuario (con filtros)
+
+// @desc    Obtener todos los movimientos del usuario (con filtros y ordenamiento)
 // @route   GET /api/transactions
 // @access  Private
 const getTransactions = async (req, res, next) => {
   const userId = req.user.id;
-  const { accountId, categoryId, type, dateFrom, dateTo, searchTerm, page = 1, limit = 10 } = req.query;
+  const { 
+    accountId, categoryId, type, dateFrom, dateTo, searchTerm, 
+    page = 1, limit = 10, 
+    sortBy, sortOrder
+  } = req.query;
   
   const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
   const whereClause = { userId };
@@ -147,34 +151,72 @@ const getTransactions = async (req, res, next) => {
   if (categoryId) whereClause.categoryId = categoryId;
   if (type) whereClause.type = type;
   if (searchTerm) {
-    whereClause.description = { [Op.iLike]: `%${searchTerm}%` }; // Op.iLike para case-insensitive (si tu DB lo soporta, ej. PostgreSQL)
-                                                              // Para MySQL, Op.like es case-insensitive por defecto en collations comunes.
+    // Buscar en descripción de transacción O nombre de categoría O nombre de cuenta
+    // Esto requiere que los joins estén presentes incluso si no se ordena por ellos.
+    // Por simplicidad en el filtro inicial, mantendremos la búsqueda solo en descripción por ahora.
+    // Para búsqueda más avanzada, se necesitaría un enfoque diferente.
+    whereClause.description = { [Op.iLike]: `%${searchTerm}%` }; 
   }
   
-  // Usar las cadenas de fecha directamente para columnas DATEONLY
   if (dateFrom && dateTo) {
     whereClause.date = { [Op.between]: [dateFrom, dateTo] };
-    console.log(`[TransactionsController] Filtering between dates (strings): ${dateFrom} and ${dateTo}`);
   } else if (dateFrom) {
     whereClause.date = { [Op.gte]: dateFrom };
-    console.log(`[TransactionsController] Filtering from date (string): ${dateFrom}`);
   } else if (dateTo) {
     whereClause.date = { [Op.lte]: dateTo };
-    console.log(`[TransactionsController] Filtering up to date (string): ${dateTo}`);
+  }
+
+  let orderClause = [['date', 'DESC'], ['createdAt', 'DESC']]; 
+
+  if (sortBy) {
+    const validDirectSortColumns = ['description', 'date', 'amount', 'createdAt'];
+    // Nueva "columna virtual" para ordenar por nombre de cuenta
+    const validAssociatedSortColumns = {
+        'accountName': [Account, 'name'], // Ordenar por el campo 'name' del modelo 'Account' (asociado como 'account')
+        'categoryName': [Category, 'name'] // Ordenar por el campo 'name' del modelo 'Category' (asociado como 'category')
+    };
+    const validSortOrders = ['ASC', 'DESC'];
+    const direction = (sortOrder && validSortOrders.includes(sortOrder.toUpperCase())) 
+                      ? sortOrder.toUpperCase() 
+                      : 'ASC';
+
+    if (validDirectSortColumns.includes(sortBy)) {
+      orderClause = [[sortBy, direction]];
+      if (sortBy !== 'createdAt') {
+        orderClause.push(['createdAt', 'DESC']); 
+      }
+    } else if (validAssociatedSortColumns[sortBy]) {
+      // Para ordenar por un campo de un modelo asociado, la sintaxis es:
+      // [[ AssociatedModel, 'fieldName', direction ]]
+      // O usando el alias de la asociación:
+      // [[ 'aliasAsociacion', 'fieldName', direction ]]
+      // En nuestro include, Account está como 'account' y Category como 'category'.
+      // Sequelize v6+ soporta la referencia directa al modelo asociado si está en el include.
+      const [AssociatedModel, fieldName] = validAssociatedSortColumns[sortBy];
+      orderClause = [[AssociatedModel, fieldName, direction]];
+      // Si ordenamos por nombre de cuenta/categoría, es bueno tener un desempate por fecha y luego createdAt.
+      orderClause.push(['date', 'DESC']);
+      orderClause.push(['createdAt', 'DESC']);
+    } else {
+        console.warn(`[TransactionsController] Intento de ordenar por columna no válida: ${sortBy}. Usando orden por defecto.`);
+    }
   }
 
   try {
     const { count, rows } = await Transaction.findAndCountAll({
       where: whereClause,
       include: [ 
+        // Asegurarse que los 'as' coincidan con las definiciones en models/index.js
         { model: Account, as: 'account', attributes: ['id', 'name', 'icon'] },
         { model: Category, as: 'category', attributes: ['id', 'name', 'icon'] }
       ],
-      order: [['date', 'DESC'], ['createdAt', 'DESC']],
+      order: orderClause,
       limit: parseInt(limit, 10),
       offset: offset,
+      distinct: true, // Importante si los JOINs pueden causar duplicados de transacciones en el count
+                      // En este caso, no debería ser necesario si el WHERE es solo sobre Transaction.
     });
-    console.log(`[TransactionsController] Found ${count} transactions for page ${page} with limit ${limit}`);
+    console.log(`[TransactionsController] Found ${count} transactions for page ${page} with limit ${limit}, sortBy: ${sortBy}, sortOrder: ${sortOrder}`);
 
     res.status(200).json({
       totalPages: Math.ceil(count / parseInt(limit, 10)),

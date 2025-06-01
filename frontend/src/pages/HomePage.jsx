@@ -1,12 +1,11 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/HomePage.jsx
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import authService from '../services/auth.service';
-import './HomePage.css';
+import { useAuth } from '../contexts/AuthContext'; //
+import authService from '../services/auth.service'; //
+import './HomePage.css'; //
 
-// --- Inicio: Componentes de Iconos SVG ---
-// Estos son SVGs básicos. Para un look más profesional, considera usar los oficiales.
+// --- Iconos SVG (sin cambios) ---
 const GoogleIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -22,10 +21,9 @@ const AppleIcon = () => (
     <path d="M19.33 12.09C19.33 9.63 21 8.23 21 8.23C20.94 8.15 19.27 7.24 18.13 7.24C16.43 7.24 15.63 8.26 14.82 8.26C14.02 8.26 13.41 7.71 12.27 7.68C10.87 7.62 9.91 8.12 9.16 8.12C8.36 8.12 7.51 7.39 6.26 7.41C4.28 7.47 2.92 8.89 2.92 11.47C2.92 15.11 5.56 17.52 7.13 17.52C7.91 17.52 8.31 16.97 9.56 16.97C10.81 16.97 11.13 17.52 11.97 17.52C13.46 17.52 14.13 16.41 14.84 16.41C15.56 16.41 16.09 16.94 16.92 16.94C17.73 16.94 18.17 16.38 18.91 16.38C19.61 16.38 20.33 17.52 21.03 17.52C21.03 17.52 21.04 15.05 19.33 15.03C19.32 15.02 17.52 14.91 17.52 13.2C17.52 11.52 19.11 11.15 19.22 11.14C19.22 11.14 19.33 11.44 19.33 12.09ZM13.6 5.09C14.27 4.31 14.69 3.26 14.58 2.23C13.54 2.34 12.58 2.93 11.93 3.72C11.35 4.41 10.86 5.52 11 6.54C12.14 6.54 13 5.77 13.6 5.09Z"/>
   </svg>
 );
-// --- Fin: Componentes de Iconos SVG ---
 
 const HomePage = () => {
-  const { user, login, loadingAuth } = useAuth();
+  const { user, login, loadingAuth } = useAuth(); //
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -38,8 +36,8 @@ const HomePage = () => {
     setError('');
     setLoading(true);
     try {
-      const userData = await authService.login(email, password);
-      login(userData);
+      const userData = await authService.login(email, password); //
+      login(userData); //
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Error al iniciar sesión');
@@ -61,21 +59,34 @@ const HomePage = () => {
   return (
     <div className="homepage-layout">
       <div className="homepage-left-panel">
-        {/* Envolver el contenido principal del panel izquierdo */}
         <div className="panel-content-wrapper">
           <div className="hero-content">
             <h1>Tus Finanzas en Un Solo Lugar</h1>
             <p className="hero-subtitle">
               Sumérgete en tus datos, crea presupuestos, sincroniza con tus bancos (próximamente) y disfruta de la categorización automática.
             </p>
-            {/* <Link to="/how-it-works" className="learn-more-link">Aprende cómo funciona</Link> */}
             <div className="hero-image-container">
+              {/* Puedes reemplazar esto con una imagen real de tu app */}
               <img 
-                src="https://via.placeholder.com/450x350.png?text=App+Financiera+Visual" 
+                src="https://via.placeholder.com/450x300.png?text=Finanzas+App+Pro+Dashboard" 
                 alt="Finanzas App Pro en acción" 
                 className="hero-image"
               />
+              <p className="hero-image-caption">Finanzas App Pro en acción</p>
             </div>
+            
+            {/* --- BOTÓN DE CAFECITO AÑADIDO AQUÍ --- */}
+            <div className="cafecito-button-container">
+              <a href='https://cafecito.app/finanzasapp' rel='noopener noreferrer' target='_blank'>
+                <img 
+                  srcSet='https://cdn.cafecito.app/imgs/buttons/button_5.png 1x, https://cdn.cafecito.app/imgs/buttons/button_5_2x.png 2x, https://cdn.cafecito.app/imgs/buttons/button_5_3.75x.png 3.75x' 
+                  src='https://cdn.cafecito.app/imgs/buttons/button_5.png' 
+                  alt='Invitame un café en cafecito.app' 
+                />
+              </a>
+            </div>
+             {/* --- FIN BOTÓN DE CAFECITO --- */}
+
           </div>
         </div>
         <div className="app-branding">
@@ -85,7 +96,6 @@ const HomePage = () => {
       </div>
 
       <div className="homepage-right-panel">
-        {/* Envolver el contenido principal del panel derecho */}
         <div className="panel-content-wrapper">
           <div className="login-form-container-home">
             <h2>Iniciar Sesión</h2>
@@ -99,11 +109,6 @@ const HomePage = () => {
                 <label htmlFor="password">Contraseña:</label>
                 <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Tu contraseña" />
               </div>
-              {/* Si quieres añadir el enlace de olvidaste contraseña:
-              <div className="form-group-home" style={{ textAlign: 'right', marginTop: '-10px', marginBottom: '20px' }}>
-                <Link to="/forgot-password" className="forgot-password-link">¿Olvidaste tu contraseña?</Link>
-              </div>
-              */}
               <button type="submit" className="button button-primary button-full-width" disabled={loading}>
                 {loading ? 'Iniciando...' : 'Iniciar Sesión'}
               </button>

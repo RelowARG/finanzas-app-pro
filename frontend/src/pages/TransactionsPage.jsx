@@ -1,10 +1,10 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/TransactionsPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import transactionService from '../services/transactions.service'; // [cite: finanzas-app-pro/frontend/src/services/transactions.service.js]
-import TransactionList from '../components/transactions/TransactionList'; // [cite: finanzas-app-pro/frontend/src/components/transactions/TransactionList.jsx]
-import TransactionFilter from '../components/transactions/TransactionFilter'; // [cite: finanzas-app-pro/frontend/src/components/transactions/TransactionFilter.jsx]
-import './TransactionsPage.css'; // [cite: finanzas-app-pro/frontend/src/pages/TransactionsPage.css]
+import transactionService from '../services/transactions.service';
+import TransactionList from '../components/transactions/TransactionList';
+import TransactionFilter from '../components/transactions/TransactionFilter';
+import './TransactionsPage.css';
 
 const ITEMS_PER_PAGE = 15; 
 
@@ -26,11 +26,20 @@ const TransactionsPage = () => {
     searchTerm: '',
   });
 
-  const fetchTransactions = useCallback(async (filters, page = 1) => {
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'DESC' }); 
+
+  const fetchTransactions = useCallback(async (filters, page = 1, currentSortConfig) => {
     setLoading(true);
     setError('');
     try {
-      const data = await transactionService.getAllTransactions({ ...filters, page, limit: ITEMS_PER_PAGE }); // [cite: finanzas-app-pro/frontend/src/services/transactions.service.js]
+      const paramsToFetch = { 
+        ...filters, 
+        page, 
+        limit: ITEMS_PER_PAGE,
+        sortBy: currentSortConfig.key,      
+        sortOrder: currentSortConfig.direction 
+      };
+      const data = await transactionService.getAllTransactions(paramsToFetch);
       setTransactions(data.transactions || []);
       setTotalPages(data.totalPages || 0);
       setCurrentPage(data.currentPage || 1);
@@ -43,11 +52,11 @@ const TransactionsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, []); 
 
   useEffect(() => {
-    fetchTransactions(activeFilters, currentPage);
-  }, [fetchTransactions, activeFilters, currentPage]);
+    fetchTransactions(activeFilters, currentPage, sortConfig); 
+  }, [fetchTransactions, activeFilters, currentPage, sortConfig]); 
 
   const handleFilterChange = (newFilters) => {
     setActiveFilters(newFilters);
@@ -55,9 +64,14 @@ const TransactionsPage = () => {
   };
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
+    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
       setCurrentPage(newPage);
     }
+  };
+
+  const handleSort = (key, direction) => {
+    setSortConfig({ key, direction });
+    setCurrentPage(1); 
   };
   
   const handleDeleteTransaction = async (transactionId) => {
@@ -65,8 +79,12 @@ const TransactionsPage = () => {
       try {
         setLoading(true); 
         setError('');
-        await transactionService.deleteTransaction(transactionId); // [cite: finanzas-app-pro/frontend/src/services/transactions.service.js]
-        fetchTransactions(activeFilters, currentPage); 
+        await transactionService.deleteTransaction(transactionId);
+        if (transactions.length === 1 && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        } else {
+          fetchTransactions(activeFilters, currentPage, sortConfig); 
+        }
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Error al eliminar el movimiento.');
         setLoading(false); 
@@ -82,6 +100,43 @@ const TransactionsPage = () => {
       return acc;
     }, { ingresos: 0, egresos: 0 });
   }, [transactions]);
+
+  const getPaginationNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5; 
+    const halfPagesToShow = Math.floor(maxPagesToShow / 2);
+
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      if (currentPage <= halfPagesToShow + 1) {
+        for (let i = 1; i <= maxPagesToShow - 1; i++) {
+          pageNumbers.push(i);
+        }
+        pageNumbers.push('...');
+        pageNumbers.push(totalPages);
+      } 
+      else if (currentPage >= totalPages - halfPagesToShow) {
+        pageNumbers.push(1);
+        pageNumbers.push('...');
+        for (let i = totalPages - (maxPagesToShow - 2); i <= totalPages; i++) {
+          pageNumbers.push(i);
+        }
+      } 
+      else {
+        pageNumbers.push(1);
+        pageNumbers.push('...');
+        for (let i = currentPage - (halfPagesToShow - 1) ; i <= currentPage + (halfPagesToShow - 1); i++) {
+          pageNumbers.push(i);
+        }
+        pageNumbers.push('...');
+        pageNumbers.push(totalPages);
+      }
+    }
+    return pageNumbers;
+  };
 
   return (
     <div className="page-container transactions-page">
@@ -115,29 +170,53 @@ const TransactionsPage = () => {
       ) : (
         <TransactionList 
             transactions={transactions} 
-            onDeleteTransaction={handleDeleteTransaction} 
+            onDeleteTransaction={handleDeleteTransaction}
+            onSort={handleSort}         
+            sortConfig={sortConfig}     
         />
       )}
 
-      {!loading && totalPages > 1 && (
+      {!loading && totalPages > 0 && (
         <div className="pagination-controls">
           <button 
             onClick={() => handlePageChange(currentPage - 1)} 
             disabled={currentPage === 1}
-            className="button button-secondary"
+            className="pagination-arrow"
+            aria-label="Página anterior"
           >
-            Anterior
+            &lt; 
           </button>
-          <span>Página {currentPage} de {totalPages} (Total: {totalTransactions} mov.)</span>
+
+          {getPaginationNumbers().map((page, index) => 
+            page === '...' ? (
+              <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
+            ) : (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                disabled={currentPage === page}
+                className={`pagination-number ${currentPage === page ? 'active' : ''}`}
+              >
+                {page}
+              </button>
+            )
+          )}
+
           <button 
             onClick={() => handlePageChange(currentPage + 1)} 
             disabled={currentPage === totalPages}
-            className="button button-secondary"
+            className="pagination-arrow"
+            aria-label="Página siguiente"
           >
-            Siguiente
+            &gt; 
           </button>
         </div>
       )}
+       {!loading && totalPages > 0 && (
+         <p className="pagination-info">
+            Página {currentPage} de {totalPages} (Total: {totalTransactions} mov.)
+        </p>
+       )}
     </div>
   );
 };

@@ -1,8 +1,6 @@
 /* Ruta: finanzas-app-pro/frontend/src/components/transactions/TransactionList.css */
-/* ARCHIVO NUEVO */
-
 .transaction-list-container {
-  overflow-x: auto; /* Para que la tabla sea scrollable en pantallas pequeñas si es necesario */
+  overflow-x: auto; 
   background-color: #fff;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
@@ -10,18 +8,38 @@
 
 .transaction-table {
   width: 100%;
-  border-collapse: collapse; /* Para unir los bordes de las celdas */
+  border-collapse: collapse;
 }
 
 .transaction-table th {
-  background-color: #f8f9fa; /* Un fondo claro para las cabeceras */
-  color: #495057; /* Texto oscuro para cabeceras */
+  background-color: #f8f9fa;
+  color: #495057;
   padding: 12px 10px;
   text-align: left;
   font-weight: 600;
   font-size: 0.9rem;
-  border-bottom: 2px solid #dee2e6; /* Borde inferior más grueso para cabeceras */
+  border-bottom: 2px solid #dee2e6;
 }
+
+/* Estilos para cabeceras ordenables */
+.transaction-table th.sortable-header {
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  user-select: none; 
+}
+
+.transaction-table th.sortable-header:hover {
+  background-color: #e9ecef; 
+}
+
+.transaction-table th .sort-indicator { 
+  margin-left: 5px;
+  font-size: 0.8em;
+  display: inline-block; /* Para que el espacio se respete */
+  width: 1em; /* Darle un ancho fijo para que no mueva el texto al aparecer/desaparecer */
+  text-align: center;
+}
+
 
 .transaction-table .th-icon { width: 50px; text-align: center; }
 .transaction-table .th-description { min-width: 200px; }

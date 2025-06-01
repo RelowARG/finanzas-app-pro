@@ -608,4 +608,86 @@
   .social-login-buttons {
     flex-direction: column; /* Botones sociales uno debajo del otro */
   }
+}/* Estilos para el texto "Finanzas App Pro en acción" debajo de la imagen */
+.hero-image-caption {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8); /* Color claro pero no totalmente blanco */
+  margin-top: 10px; /* Espacio entre la imagen y este texto */
+  font-style: italic;
+}
+
+/* Contenedor para el botón de Cafecito */
+.cafecito-button-container {
+  margin-top: 25px; /* Espacio sobre el botón de Cafecito */
+  margin-bottom: 20px; /* Espacio debajo del botón, antes del branding de la app si está al final */
+  text-align: center; /* Asegura que el botón (que es una imagen dentro de un 'a') se centre */
+}
+
+.cafecito-button-container img {
+  /* La imagen de Cafecito ya tiene un tamaño definido, 
+     pero podrías querer controlar su ancho máximo si es necesario */
+  max-width: 200px; /* o el ancho que consideres apropiado */
+  height: auto;
+  border-radius: 8px; /* Un pequeño redondeo para suavizar */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Sombra sutil */
+  transition: transform 0.2s ease-out;
+}
+
+.cafecito-button-container img:hover {
+  transform: scale(1.03); /* Ligero zoom al pasar el mouse */
+}
+
+/* Ajuste para el panel izquierdo si el contenido se vuelve muy largo */
+.homepage-left-panel .panel-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Intenta centrar el contenido principal */
+  align-items: center;
+  flex-grow: 1; /* Permite que este wrapper crezca */
+  width: 100%;
+}
+
+/* Asegurar que el branding quede abajo */
+.homepage-left-panel {
+  /* ... (tus estilos existentes para .homepage-left-panel) ... */
+  display: flex; /* Asegurar que el panel izquierdo sea flex */
+  flex-direction: column; /* Para apilar .panel-content-wrapper y .app-branding */
+}
+
+.app-branding {
+  /* ... (tus estilos existentes para .app-branding) ... */
+  margin-top: auto; /* Empuja el branding hacia abajo */
+  padding-top: 20px; /* Un poco de espacio sobre el branding */
+  width: 100%; /* Para que el text-align:center funcione si lo usaras */
+  text-align: center; /* Centrar el branding si el panel es más ancho */
+}
+/* Si el branding debe estar a la izquierda inferior, descomenta y ajusta esto:
+.app-branding {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+}
+*/
+
+
+/* Ajuste para la imagen del héroe y su caption */
+.hero-image-container {
+  margin-top: 20px; 
+  margin-bottom: 15px; /* Reducir el margen inferior si el botón de cafecito va después */
+  max-width: 450px;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Modificaciones para la responsividad si es necesario */
+@media (max-width: 900px) {
+  .app-branding {
+    position: static; /* Quitar posicionamiento absoluto en pantallas pequeñas */
+    margin-top: 30px;
+    text-align: center; /* Centrarlo */
+  }
+  .cafecito-button-container {
+    margin-top: 20px;
+  }
 }

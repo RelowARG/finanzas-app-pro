@@ -1,17 +1,17 @@
 // Ruta: src/components/Layout/Navbar.jsx
-import React, { useState } from 'react'; // Añadir useState
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import './Navbar.css'; // Asegúrate de crear este archivo CSS o de que los estilos estén en App.css
+import { useAuth } from '../../contexts/AuthContext'; //
+import './Navbar.css'; //
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth(); //
   const navigate = useNavigate();
-  const [showAddMenu, setShowAddMenu] = useState(false); // Estado para el menú desplegable
+  const [showAddMenu, setShowAddMenu] = useState(false);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/'); // <<<--- CAMBIO AQUÍ: Redirigir a la HomePage ("/") en lugar de "/login"
   };
 
   const homeLinkPath = user ? "/dashboard" : "/";
@@ -27,10 +27,7 @@ const Navbar = () => {
         <ul className="nav-menu">
           {user ? (
             <>
-              {/* <li className="nav-item">
-                <Link to="/dashboard" className="nav-links">Dashboard</Link> // Redundante si el logo ya va al dashboard
-              </li> */}
-              <li className="nav-item nav-item-add-record"> {/* Contenedor para el botón y el menú */}
+              <li className="nav-item nav-item-add-record">
                 <button onClick={toggleAddMenu} className="nav-links nav-button nav-button-add">
                   + Registros
                 </button>
@@ -48,11 +45,9 @@ const Navbar = () => {
                     <Link to="/investments/add" className="add-menu-item" onClick={() => setShowAddMenu(false)}>
                       Nueva Inversión
                     </Link>
-                    {/* Puedes añadir más acciones rápidas aquí */}
                   </div>
                 )}
               </li>
-              {/* Mantén otros enlaces si los necesitas, como el de "Cuentas" del target */}
               <li className="nav-item">
                 <Link to="/accounts" className="nav-links">Cuentas</Link>
               </li>

@@ -67,4 +67,210 @@
   font-size: 1.1rem;
   color: #666;
   padding: 20px;
+}.transactions-summary {
+  background-color: #fff;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.transactions-summary span {
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.transactions-summary .amount-positive {
+  background-color: rgba(46, 204, 113, 0.1);
+}
+.transactions-summary .amount-negative {
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+.loading-text {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #666;
+  padding: 20px;
+}
+
+/* --- ESTILOS PARA LA NUEVA PAGINACIÓN --- */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 25px; /* Aumentar espacio superior */
+  margin-bottom: 10px; /* Espacio antes de la info de página */
+  gap: 5px; /* Espacio entre botones de paginación */
+  flex-wrap: wrap; /* Para que se ajuste en pantallas pequeñas */
+}
+
+.pagination-arrow,
+.pagination-number {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  color: var(--primary-color);
+  padding: 8px 12px; /* Ajustar padding */
+  min-width: 40px; /* Ancho mínimo para los botones */
+  text-align: center;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  font-weight: 500;
+  font-size: 0.9rem; /* Tamaño de fuente para números */
+}
+
+.pagination-arrow:disabled,
+.pagination-number:disabled {
+  background-color: #f8f9fa;
+  color: #adb5bd;
+  cursor: not-allowed;
+  border-color: #e9ecef;
+}
+
+.pagination-arrow:not(:disabled):hover,
+.pagination-number:not(:disabled):not(.active):hover {
+  background-color: #e9ecef; /* Un hover sutil */
+  border-color: #ced4da;
+}
+
+.pagination-number.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  font-weight: bold;
+  cursor: default;
+}
+
+.pagination-ellipsis {
+  padding: 8px 6px;
+  color: #6c757d;
+  align-self: center; /* Alinear verticalmente con los botones */
+}
+
+.pagination-info {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 5px; /* Espacio después de los botones */
+    margin-bottom: 20px;
+}.transactions-summary {
+  background-color: #fff;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.transactions-summary span {
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.transactions-summary .amount-positive {
+  background-color: rgba(46, 204, 113, 0.1);
+}
+.transactions-summary .amount-negative {
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+.loading-text {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #666;
+  padding: 20px;
+}
+
+/* --- ESTILOS PARA LA PAGINACIÓN AJUSTADOS --- */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 25px;
+  margin-bottom: 10px;
+  gap: 6px; /* Espacio entre cada elemento de paginación */
+  flex-wrap: wrap; 
+}
+
+.pagination-arrow,
+.pagination-number {
+  display: inline-flex; /* Para que se comporten como elementos en línea pero con propiedades de bloque */
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  color: var(--primary-color);
+  /* Ajusta el padding para que sean más cuadrados o del tamaño deseado */
+  padding: 0; /* Quitar padding para controlar con width/height */
+  width: 36px; /* Ancho fijo */
+  height: 36px; /* Alto fijo para hacerlo cuadrado */
+  min-width: auto; /* Resetear min-width si lo hereda de .button */
+  text-align: center;
+  border-radius: var(--border-radius, 4px); /* O 50% para hacerlos redondos */
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  font-weight: 500;
+  font-size: 0.9rem;
+  line-height: 1; /* Para centrar el texto verticalmente */
+  box-sizing: border-box; /* Incluir padding y borde en el width/height */
+}
+
+.pagination-arrow:disabled,
+.pagination-number:disabled {
+  background-color: #f8f9fa;
+  color: #adb5bd;
+  cursor: not-allowed;
+  border-color: #e9ecef;
+}
+
+.pagination-arrow:not(:disabled):hover,
+.pagination-number:not(:disabled):not(.active):hover {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+}
+
+.pagination-number.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  font-weight: bold;
+  cursor: default;
+}
+
+.pagination-ellipsis {
+  padding: 8px 6px; /* Mantener padding original o ajustar */
+  color: #6c757d;
+  display: inline-flex; /* Alinear con los botones */
+  align-items: center;
+  justify-content: center;
+  height: 36px; /* Misma altura que los botones */
+  box-sizing: border-box;
+}
+
+.pagination-info {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 10px; /* Aumentar un poco el margen si se ve muy pegado */
+    margin-bottom: 20px;
+}
+
+/* Si los estilos globales de .button están afectando: */
+.pagination-controls .button { /* Ser más específico si es necesario */
+    width: auto !important; /* Forzar ancho automático */
+    min-width: auto !important; /* Forzar min-width automático */
 }
