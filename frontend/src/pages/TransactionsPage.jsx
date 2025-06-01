@@ -1,10 +1,10 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/TransactionsPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import transactionService from '../services/transactions.service';
-import TransactionList from '../components/transactions/TransactionList';
-import TransactionFilter from '../components/transactions/TransactionFilter';
-import './TransactionsPage.css';
+import transactionService from '../services/transactions.service'; //
+import TransactionList from '../components/transactions/TransactionList'; //
+import TransactionFilter from '../components/transactions/TransactionFilter'; //
+import './TransactionsPage.css'; //
 
 const ITEMS_PER_PAGE = 15; 
 
@@ -26,7 +26,7 @@ const TransactionsPage = () => {
     searchTerm: '',
   });
 
-  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'DESC' }); 
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'DESC' });
 
   const fetchTransactions = useCallback(async (filters, page = 1, currentSortConfig) => {
     setLoading(true);
@@ -39,15 +39,19 @@ const TransactionsPage = () => {
         sortBy: currentSortConfig.key,      
         sortOrder: currentSortConfig.direction 
       };
-      const data = await transactionService.getAllTransactions(paramsToFetch);
+      const data = await transactionService.getAllTransactions(paramsToFetch); //
+      
+      // Asegurarse de que los valores sean numéricos y tengan defaults
       setTransactions(data.transactions || []);
-      setTotalPages(data.totalPages || 0);
-      setCurrentPage(data.currentPage || 1);
-      setTotalTransactions(data.totalTransactions || 0);
+      setTotalPages(Number(data.totalPages) || 0); // Convertir a número y default a 0
+      setCurrentPage(Number(data.currentPage) || 1); // Convertir a número y default a 1
+      setTotalTransactions(Number(data.totalTransactions) || 0); // Convertir a número y default a 0
+
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Error al cargar los movimientos.');
       setTransactions([]);
       setTotalPages(0);
+      setCurrentPage(1); // Resetear a 1 en caso de error
       setTotalTransactions(0);
     } finally {
       setLoading(false);
@@ -79,10 +83,12 @@ const TransactionsPage = () => {
       try {
         setLoading(true); 
         setError('');
-        await transactionService.deleteTransaction(transactionId);
+        await transactionService.deleteTransaction(transactionId); //
         if (transactions.length === 1 && currentPage > 1) {
-          setCurrentPage(currentPage - 1);
+          setCurrentPage(currentPage - 1); 
         } else {
+          // Volver a llamar a fetchTransactions explícitamente en lugar de depender solo del cambio de estado
+          // para asegurar que se recargue con los parámetros correctos.
           fetchTransactions(activeFilters, currentPage, sortConfig); 
         }
       } catch (err) {
@@ -105,6 +111,8 @@ const TransactionsPage = () => {
     const pageNumbers = [];
     const maxPagesToShow = 5; 
     const halfPagesToShow = Math.floor(maxPagesToShow / 2);
+
+    if (totalPages <= 0) return []; // Si no hay páginas, no mostrar nada
 
     if (totalPages <= maxPagesToShow) {
       for (let i = 1; i <= totalPages; i++) {
@@ -137,6 +145,9 @@ const TransactionsPage = () => {
     }
     return pageNumbers;
   };
+  
+  // Generar los números de página una sola vez por render
+  const paginationItems = getPaginationNumbers();
 
   return (
     <div className="page-container transactions-page">
@@ -175,48 +186,49 @@ const TransactionsPage = () => {
             sortConfig={sortConfig}     
         />
       )}
-
+      
+      {/* Renderizado de Paginación */}
       {!loading && totalPages > 0 && (
-        <div className="pagination-controls">
-          <button 
-            onClick={() => handlePageChange(currentPage - 1)} 
-            disabled={currentPage === 1}
-            className="pagination-arrow"
-            aria-label="Página anterior"
-          >
-            &lt; 
-          </button>
+        <>
+          <div className="pagination-controls">
+            <button 
+              onClick={() => handlePageChange(currentPage - 1)} 
+              disabled={currentPage === 1}
+              className="pagination-arrow"
+              aria-label="Página anterior"
+            >
+              &lt;
+            </button>
 
-          {getPaginationNumbers().map((page, index) => 
-            page === '...' ? (
-              <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
-            ) : (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                disabled={currentPage === page}
-                className={`pagination-number ${currentPage === page ? 'active' : ''}`}
-              >
-                {page}
-              </button>
-            )
-          )}
+            {paginationItems.map((page, index) => 
+              page === '...' ? (
+                <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  disabled={currentPage === page}
+                  className={`pagination-number ${currentPage === page ? 'active' : ''}`}
+                >
+                  {page}
+                </button>
+              )
+            )}
 
-          <button 
-            onClick={() => handlePageChange(currentPage + 1)} 
-            disabled={currentPage === totalPages}
-            className="pagination-arrow"
-            aria-label="Página siguiente"
-          >
-            &gt; 
-          </button>
-        </div>
+            <button 
+              onClick={() => handlePageChange(currentPage + 1)} 
+              disabled={currentPage === totalPages}
+              className="pagination-arrow"
+              aria-label="Página siguiente"
+            >
+              &gt;
+            </button>
+          </div>
+          <p className="pagination-info">
+              Página {currentPage} de {totalPages} (Total: {totalTransactions} mov.)
+          </p>
+        </>
       )}
-       {!loading && totalPages > 0 && (
-         <p className="pagination-info">
-            Página {currentPage} de {totalPages} (Total: {totalTransactions} mov.)
-        </p>
-       )}
     </div>
   );
 };
