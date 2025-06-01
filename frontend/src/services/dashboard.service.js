@@ -1,25 +1,19 @@
 // Ruta: finanzas-app-pro/frontend/src/services/dashboard.service.js
-import apiClient from './api'; // Tu instancia de Axios configurada
+import apiClient from './api'; // [cite: finanzas-app-pro/frontend/src/services/api.js]
 
-// Esta función es para el gráfico de gastos DENTRO DEL DASHBOARD y debe llamar al endpoint del dashboard
 const getMonthlySpendingByCategory = async (filters = {}) => {
   console.log('[F-DashboardService] Fetching Dashboard SpendingChart data from backend endpoint: /dashboard/spending-chart. Filters:', filters);
   const params = new URLSearchParams();
-  // Para el dashboard, el backend usualmente determinará el mes actual, 
-  // pero permitimos filtros si son necesarios para otras implementaciones.
   if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
   if (filters.dateTo) params.append('dateTo', filters.dateTo);
-  // La moneda para el gráfico del dashboard usualmente es ARS (manejado por el backend si no se envía)
   if (filters.currency) params.append('currency', filters.currency); 
 
   try {
-    // Usamos el nuevo endpoint del dashboard para el gráfico de gastos
     const response = await apiClient.get(`/dashboard/spending-chart?${params.toString()}`);
     console.log('[F-DashboardService] Dashboard SpendingChart data received:', response.data);
     return response.data; 
   } catch (error) {
     console.error("[F-DashboardService] Error fetching dashboard spending chart data:", error.response?.data || error.message);
-    // Devolver estructura por defecto para que el gráfico no rompa
     return { labels: [], datasets: [{ data: [], backgroundColor: [], borderColor: [] }], summary: { totalExpenses: 0, numberOfCategories: 0, currencyReported: 'ARS' } };
   }
 };
@@ -71,11 +65,37 @@ const getCurrentMonthFinancialStatus = async () => {
   }
 };
 
+const getGlobalBudgetStatus = async () => {
+  console.log('[F-DashboardService] Getting global budget status from backend endpoint: /dashboard/global-budget-status');
+  try {
+    const response = await apiClient.get('/dashboard/global-budget-status');
+    console.log('[F-DashboardService] Global budget status received:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error("[F-DashboardService] Error fetching global budget status:", error.response?.data || error.message);
+    return { totalBudgeted: 0, totalSpent: 0, currency: 'ARS', progressPercent: 0 };
+  }
+};
+
+const getBalanceTrendData = async ({ months = 6 } = {}) => {
+  console.log(`[F-DashboardService] Getting balance trend data from backend (months: ${months})`);
+  try {
+    const response = await apiClient.get(`/dashboard/balance-trend?months=${months}`);
+    console.log('[F-DashboardService] Balance trend data received:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error("[F-DashboardService] Error fetching balance trend data:", error.response?.data || error.message);
+    return { labels: [], datasets: [], summary: { currentBalance: 0, currency: 'ARS', changeVsPreviousPeriodPercent: 0 } };
+  }
+};
+
 const dashboardService = {
   getDashboardSummary,
-  getMonthlySpendingByCategory, // Esta es la clave para el gráfico del dashboard
+  getMonthlySpendingByCategory,
   getInvestmentHighlights,
   getCurrentMonthFinancialStatus,
+  getGlobalBudgetStatus,
+  getBalanceTrendData,
 };
 
 export default dashboardService;

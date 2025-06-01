@@ -1,4 +1,4 @@
-// Ruta: finanzas-app-pro/frontend/src/components/dashboard/SpendingChart.jsx
+// Ruta: src/components/dashboard/SpendingChart.jsx
 import React, { useState, useEffect } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import {
@@ -8,7 +8,7 @@ import {
   Legend,
   Title,
 } from 'chart.js';
-import dashboardService from '../../services/dashboard.service'; // Usamos el dashboardService
+import dashboardService from '../../services/dashboard.service';
 import './DashboardComponents.css'; 
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
@@ -17,21 +17,20 @@ const SpendingChart = () => {
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [currencyReported, setCurrencyReported] = useState('ARS'); // Moneda del reporte
+  const [currencyReported, setCurrencyReported] = useState('ARS');
 
   useEffect(() => {
     const fetchChartData = async () => {
       try {
         setLoading(true);
         setError('');
-        // dashboardService.getMonthlySpendingByCategory ya pide el reporte en ARS por defecto
         const data = await dashboardService.getMonthlySpendingByCategory(); 
         if (data && data.labels && data.datasets && data.summary) {
           setChartData(data);
           setCurrencyReported(data.summary.currencyReported || 'ARS');
         } else {
           setError('No hay datos suficientes para mostrar el gráfico de gastos.');
-          setChartData(null); // Asegurar que no haya datos viejos
+          setChartData(null);
         }
       } catch (err) {
         console.error("Error fetching spending chart data:", err);
@@ -41,43 +40,33 @@ const SpendingChart = () => {
         setLoading(false);
       }
     };
-
     fetchChartData();
   }, []);
 
   const options = {
     responsive: true,
-    maintainAspectRatio: false,
+    maintainAspectRatio: false, // Muy importante para que el gráfico se adapte al contenedor
     plugins: {
       legend: {
-        position: 'top', 
-        labels: {
-          boxWidth: 20,
-          padding: 15,
-          font: {
-            size: 10 
-          }
+        position: 'bottom', // Posición de la leyenda como en la imagen objetivo
+        labels: { 
+          boxWidth: 15, // Ancho de la caja de color de la leyenda
+          padding: 10, // Espaciado de la leyenda
+          font: { size: 9 } // Tamaño de fuente más pequeño para la leyenda
         }
       },
-      title: {
-        display: false, 
-        // text: `Gastos del Mes por Categoría (${currencyReported})`, // El título del widget ya lo dice
-        // font: { size: 16 }
+      title: { 
+        display: false, // El título "Gastos del Mes" ya está en el h3 del widget
       },
       tooltip: {
         callbacks: {
           label: function(context) {
             let label = context.label || '';
-            if (label) {
-              label += ': ';
-            }
+            if (label) { label += ': '; }
             if (context.parsed !== null) {
-              // Formatear como moneda usando la moneda reportada
               label += new Intl.NumberFormat('es-AR', { 
-                style: 'currency', 
-                currency: currencyReported, // Usar la moneda del reporte
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2 
+                style: 'currency', currency: currencyReported, 
+                minimumFractionDigits: 2, maximumFractionDigits: 2 
               }).format(context.parsed);
             }
             return label;
@@ -88,45 +77,29 @@ const SpendingChart = () => {
     cutout: '60%', 
   };
 
-  if (loading) {
+  const renderContent = () => {
+    if (loading) {
+      return <p className="loading-text-widget">Cargando gráfico...</p>;
+    }
+    if (error) {
+      return <p className="error-message" style={{textAlign: 'center'}}>{error}</p>;
+    }
+    const noDataAvailable = !chartData || !chartData.datasets || chartData.datasets.length === 0 || chartData.datasets[0].data.length === 0 || chartData.datasets[0].data.every(item => item === 0);
+    if (noDataAvailable) {
+       return <p className="no-data-widget">No hay datos de gastos para mostrar este mes en {currencyReported}.</p>;
+    }
     return (
-      <div className="dashboard-widget spending-chart-widget">
-        <h3>Gastos del Mes ({currencyReported})</h3>
-        <div className="chart-container" style={{ minHeight: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <p className="loading-text-widget">Cargando gráfico...</p>
-        </div>
+      <div className="chart-container">
+        <Doughnut data={chartData} options={options} />
       </div>
     );
-  }
-
-  if (error) {
-    return (
-      <div className="dashboard-widget spending-chart-widget">
-        <h3>Gastos del Mes ({currencyReported})</h3>
-        <p className="error-message" style={{textAlign: 'center'}}>{error}</p>
-      </div>
-    );
-  }
-  
-  // Verifica si hay datos para mostrar en el gráfico
-  const noDataAvailable = !chartData || !chartData.datasets || chartData.datasets.length === 0 || chartData.datasets[0].data.length === 0 || chartData.datasets[0].data.every(item => item === 0);
-
-  if (noDataAvailable) {
-     return (
-      <div className="dashboard-widget spending-chart-widget">
-        <h3>Gastos del Mes ({currencyReported})</h3>
-        <div className="chart-container" style={{ minHeight: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-           <p className="no-data-widget">No hay datos de gastos para mostrar este mes en {currencyReported}.</p>
-        </div>
-      </div>
-    );
-  }
+  };
   
   return (
-    <div className="dashboard-widget spending-chart-widget">
+    <div className="dashboard-widget spending-chart-widget"> {/* Clase específica opcional */}
       <h3>Gastos del Mes ({currencyReported})</h3>
-      <div className="chart-container" style={{ height: '280px', position: 'relative' }}>
-        <Doughnut data={chartData} options={options} />
+      <div className="dashboard-widget-content">
+        {renderContent()}
       </div>
     </div>
   );

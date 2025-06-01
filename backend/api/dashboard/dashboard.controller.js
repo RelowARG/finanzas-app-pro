@@ -1,5 +1,5 @@
 // finanzas-app-pro/backend/api/dashboard/dashboard.controller.js
-const dashboardService = require('../../services/dashboard.service'); // El servicio del backend que tiene los logs
+const dashboardService = require('../../services/dashboard.service'); // [cite: finanzas-app-pro/backend/services/dashboard.service.js]
 
 // @desc    Obtener el resumen principal del dashboard (balances)
 // @route   GET /api/dashboard/summary
@@ -8,7 +8,7 @@ const getDashboardSummaryController = async (req, res, next) => {
   try {
     const userId = req.user.id;
     console.log(`[DashboardController] getDashboardSummaryController called for userId: ${userId}`);
-    const summary = await dashboardService.getDashboardSummary(userId);
+    const summary = await dashboardService.getDashboardSummary(userId); // [cite: finanzas-app-pro/backend/services/dashboard.service.js]
     res.json(summary);
   } catch (error) {
     console.error('[DashboardController] Error in getDashboardSummaryController:', error);
@@ -22,9 +22,9 @@ const getDashboardSummaryController = async (req, res, next) => {
 const getInvestmentHighlightsController = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const topN = req.query.topN ? parseInt(req.query.topN, 10) : 3; // Tomar topN de query o default
+    const topN = req.query.topN ? parseInt(req.query.topN, 10) : 3;
     console.log(`[DashboardController] getInvestmentHighlightsController called for userId: ${userId}, topN: ${topN}`);
-    const highlights = await dashboardService.getInvestmentHighlights(userId, topN);
+    const highlights = await dashboardService.getInvestmentHighlights(userId, topN); // [cite: finanzas-app-pro/backend/services/dashboard.service.js]
     res.json(highlights);
   } catch (error) {
     console.error('[DashboardController] Error in getInvestmentHighlightsController:', error);
@@ -39,7 +39,7 @@ const getMonthlyFinancialStatusController = async (req, res, next) => {
   try {
     const userId = req.user.id;
     console.log(`[DashboardController] getMonthlyFinancialStatusController called for userId: ${userId}`);
-    const status = await dashboardService.getCurrentMonthFinancialStatus(userId);
+    const status = await dashboardService.getCurrentMonthFinancialStatus(userId); // [cite: finanzas-app-pro/backend/services/dashboard.service.js]
     res.json(status);
   } catch (error) {
     console.error('[DashboardController] Error in getMonthlyFinancialStatusController:', error);
@@ -53,11 +53,8 @@ const getMonthlyFinancialStatusController = async (req, res, next) => {
 const getSpendingChartController = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        // dashboardService.getMonthlySpendingByCategory ya fue modificado para ser llamado conceptualmente
-        // por el reportsService, que a su vez es un endpoint.
-        // Aquí, getMonthlySpendingByCategory es una función interna del dashboardService del backend.
         console.log(`[DashboardController] getSpendingChartController called for userId: ${userId}`);
-        const chartData = await dashboardService.getMonthlySpendingByCategory(userId, req.query); // req.query por si se añaden filtros
+        const chartData = await dashboardService.getMonthlySpendingByCategory(userId, req.query); // [cite: finanzas-app-pro/backend/services/dashboard.service.js]
         res.json(chartData);
     } catch (error) {
         console.error('[DashboardController] Error in getSpendingChartController:', error);
@@ -65,10 +62,42 @@ const getSpendingChartController = async (req, res, next) => {
     }
 };
 
+// @desc    Obtener estado global de presupuestos (total presupuestado vs gastado)
+// @route   GET /api/dashboard/global-budget-status
+// @access  Private
+const getGlobalBudgetStatusController = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    console.log(`[DashboardController] getGlobalBudgetStatusController called for userId: ${userId}`);
+    const status = await dashboardService.getGlobalBudgetStatus(userId); // [cite: finanzas-app-pro/backend/services/dashboard.service.js]
+    res.json(status);
+  } catch (error) {
+    console.error('[DashboardController] Error in getGlobalBudgetStatusController:', error);
+    next(error);
+  }
+};
+
+// @desc    Obtener tendencia del saldo de los últimos N meses
+// @route   GET /api/dashboard/balance-trend
+// @access  Private
+const getBalanceTrendController = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const months = req.query.months ? parseInt(req.query.months, 10) : 6;
+    console.log(`[DashboardController] getBalanceTrendController called for userId: ${userId}, months: ${months}`);
+    const trendData = await dashboardService.getBalanceTrend(userId, months); // [cite: finanzas-app-pro/backend/services/dashboard.service.js]
+    res.json(trendData);
+  } catch (error) {
+    console.error('[DashboardController] Error in getBalanceTrendController:', error);
+    next(error);
+  }
+};
 
 module.exports = {
   getDashboardSummaryController,
   getInvestmentHighlightsController,
   getMonthlyFinancialStatusController,
   getSpendingChartController,
+  getGlobalBudgetStatusController,
+  getBalanceTrendController,
 };

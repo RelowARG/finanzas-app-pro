@@ -1,12 +1,12 @@
-/* Ruta: finanzas-app-pro/frontend/src/pages/DashboardPage.css */
-/* ARCHIVO NUEVO */
+/* Ruta: src/pages/DashboardPage.css */
+/* ARCHIVO MODIFICADO para permitir que los widgets formen más columnas dentro de sus contenedores principales */
 
 .dashboard-page {
-  /* Estilos generales para la página del dashboard */
+  /* Estilos generales */
 }
 
 .dashboard-header {
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   padding-bottom: 15px;
   border-bottom: 2px solid var(--primary-color, #3498db);
 }
@@ -14,76 +14,74 @@
 .dashboard-header h1 {
   margin: 0 0 5px 0;
   color: var(--dark-color, #333);
-  font-size: 2rem;
+  font-size: 1.8rem;
 }
 
 .welcome-message {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #555;
   margin: 0;
 }
 
-.dashboard-grid {
+.dashboard-widgets-grid-target {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* Columna principal más ancha que la barra lateral */
-  gap: 25px; /* Espacio entre columnas y widgets */
+  /* Se mantiene la división principal en dos áreas (principal y lateral) */
+  /* En pantallas >1024px, estas dos áreas estarán una al lado de la otra */
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); /* Proporción 60/40 aprox. para las dos áreas principales */
+  gap: 20px;
+  margin-top: 25px;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: start;
 }
 
-.dashboard-main-column {
-  display: flex;
-  flex-direction: column;
-  gap: 20px; /* Espacio entre widgets en la columna principal */
+.dashboard-main-column-target,
+.dashboard-sidebar-column-target {
+  /* display: flex; */ /* MODIFICADO: Quitado flex */
+  /* flex-direction: column; */ /* MODIFICADO: Quitado flex-direction */
+  display: grid; /* MODIFICADO: Convertido a grid */
+  /* Los widgets dentro de esta columna formarán su propia cuadrícula responsiva */
+  /* Cada widget tiene un max-width de 420px. Usamos un minmax un poco menor para el auto-fit. */
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px; /* Gap entre widgets dentro de esta columna */
+  min-width: 0; /* Para asegurar que la columna pueda encogerse si es necesario */
+  align-content: start; /* Alinea las filas de la cuadrícula al inicio */
 }
 
-.dashboard-sidebar-column {
-  display: flex;
-  flex-direction: column;
-  gap: 20px; /* Espacio entre widgets en la barra lateral */
-}
+/* Opcional: Si quieres que la columna principal pueda tener más "sub-columnas" de widgets
+   que la columna lateral, podrías ajustar el minmax de forma diferente,
+   pero auto-fit ya tratará de acomodar tantos como quepan.
+   Por ahora, ambas usan la misma lógica interna de auto-fit.
+*/
 
-.loading-text { /* Ya definido en AccountsPage.css, pero puede estar aquí por si acaso */
-  text-align: center;
-  font-size: 1.1rem;
-  color: #666;
-  padding: 20px;
-}
-
-/* Adaptación para pantallas más pequeñas */
-@media (max-width: 992px) { /* Bootstrap lg breakpoint */
-  .dashboard-grid {
-    grid-template-columns: 1fr; /* Una sola columna */
+/* Media query para cuando la pantalla es más pequeña y las dos áreas principales se apilan */
+@media (max-width: 1024px) {
+  .dashboard-widgets-grid-target {
+    grid-template-columns: 1fr; /* Las dos áreas principales (main y sidebar) se apilan verticalmente */
   }
-  .dashboard-sidebar-column {
-     /* En una sola columna, los widgets de la barra lateral siguen a los de la principal */
-  }
+  /* Cuando se apilan, es probable que solo quepa una columna de widgets dentro de cada área */
+  /* .dashboard-main-column-target,
+  .dashboard-sidebar-column-target {
+    grid-template-columns: 1fr; /* Opcional: Forzar una sola columna de widgets en este breakpoint también *
+  } */
 }
 
-@media (max-width: 768px) { /* Bootstrap md breakpoint */
+@media (max-width: 768px) {
   .dashboard-header h1 {
-    font-size: 1.75rem;
+    font-size: 1.6rem;
   }
   .welcome-message {
-    font-size: 1rem;
+    font-size: 0.9rem;
+  }
+  .dashboard-widgets-grid-target,
+  .dashboard-main-column-target,
+  .dashboard-sidebar-column-target {
+    gap: 15px; /* Reducir gaps en pantallas más pequeñas */
+  }
+  
+  /* En pantallas muy pequeñas, forzar una sola columna de widgets dentro de las áreas principales */
+  .dashboard-main-column-target,
+  .dashboard-sidebar-column-target {
+    grid-template-columns: 1fr;
   }
 }
-/* Spending Chart Widget (y su contenedor interno) */
-.spending-chart-widget .chart-container {
-  height: 280px; /* Altura predeterminada del contenedor del gráfico */
-  position: relative; /* Necesario para que Chart.js maneje bien el tamaño */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.spending-chart-widget .chart-container canvas {
-  max-height: 100%; /* Asegura que el canvas no exceda el contenedor */
-  max-width: 100%;
-}
-
-.spending-chart-widget .error-message,
-.spending-chart-widget p { /* Estilo para mensajes dentro del chart widget */
-    padding: 10px;
-    text-align: center;
-    color: #555;
-}
-

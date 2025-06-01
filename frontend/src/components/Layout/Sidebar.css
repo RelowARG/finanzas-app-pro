@@ -1,17 +1,23 @@
 /* Ruta: finanzas-app-pro/frontend/src/components/Layout/Sidebar.css */
-/* ARCHIVO NUEVO */
+/* ARCHIVO MODIFICADO PARA SIDEBAR COLAPSABLE CON ICONOS CENTRADOS Y VISIBLES */
 .sidebar {
-  width: 240px; /* Ancho del sidebar */
-  background-color: var(--dark-color, #343a40); /* Mismo color que el navbar para consistencia */
-  color: #f8f9fa; /* Texto claro */
-  height: calc(100vh - 60px); /* Altura total menos la altura del navbar (ajustar si es diferente) */
-  position: fixed; /* Fijo en la pantalla */
-  top: 60px; /* Debajo del navbar (ajustar si la altura del navbar es diferente) */
+  width: 70px; /* Collapsed width */
+  background-color: var(--dark-color, #343a40);
+  color: #f8f9fa;
+  height: calc(100vh - 60px);
+  position: fixed;
+  top: 60px;
   left: 0;
-  padding: 20px 0;
+  padding: 20px 0; /* Vertical padding for the sidebar itself */
   box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-  overflow-y: auto; /* Scroll si el contenido es muy largo */
-  transition: width 0.3s ease; /* Para futuras animaciones de colapsar */
+  overflow-x: hidden;
+  overflow-y: auto;
+  transition: width 0.3s ease-in-out;
+  z-index: 1020;
+}
+
+.sidebar:hover {
+  width: 240px; /* Expanded width */
 }
 
 .sidebar-nav ul {
@@ -27,52 +33,96 @@
 .sidebar-link {
   display: flex;
   align-items: center;
-  padding: 12px 20px;
-  color: #adb5bd; /* Color de texto más sutil */
+  height: 48px; /* Consistent height for links */
+  /* Default: Styles for COLLAPSED state */
+  padding: 12px 0; /* Vertical padding only, NO horizontal padding on the link itself */
+  justify-content: center; /* Center the icon span horizontally */
+  color: #adb5bd;
   text-decoration: none;
   font-size: 0.95rem;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-  border-left: 3px solid transparent; /* Para el indicador activo */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, justify-content 0.3s ease-in-out, padding 0.3s ease-in-out;
+  border-left: 3px solid transparent;
+  white-space: nowrap;
+  position: relative; /* Needed if text span were to be absolutely positioned, but we'll use width:0 */
+  overflow: visible; /* Ensure icons are not clipped by the link itself */
+}
+
+/* Styles for EXPANDED state of the link */
+.sidebar:hover .sidebar-link {
+  justify-content: flex-start;
+  padding: 12px 20px; /* Original padding when expanded */
+}
+
+.sidebar-link span:first-child { /* The Icon container */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4em;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: margin-right 0.3s ease-in-out, width 0.3s ease-in-out;
+  /* For COLLAPSED state: */
+  width: 100%; /* Take full width of parent .sidebar-link (which is 70px wide) */
+  text-align: center; /* Center the emoji within this span */
+  margin-right: 0;
+}
+
+/* Styles for Icon container when sidebar is EXPANDED */
+.sidebar:hover .sidebar-link span:first-child {
+  width: auto; /* Revert to natural width */
+  margin-right: 12px;
+  /* text-align: left; /* Optional, if you want icons left-aligned when expanded */
+}
+
+.sidebar-link span:last-child { /* The Text label */
+  opacity: 0;
+  visibility: hidden;
+  width: 0; /* Crucial: force zero width when hidden */
+  overflow: hidden; /* Prevent any accidental spill */
+  /* margin-left: 0; /* Start with no margin */
+  transition: opacity 0.1s ease-out, visibility 0s linear 0.15s, width 0s linear 0.15s;
+  /* Delay visibility/width change to after opacity starts */
+}
+
+/* Styles for Text label when sidebar is EXPANDED */
+.sidebar:hover .sidebar-link span:last-child {
+  opacity: 1;
+  visibility: visible;
+  width: auto; /* Restore auto width */
+  overflow: visible;
+  /* margin-left: 0; /* Icon margin-right will create space */
+  transition: opacity 0.2s ease-in 0.15s, visibility 0s linear 0.15s, width 0s linear 0.15s;
+  /* Text appears after sidebar starts expanding */
 }
 
 .sidebar-link:hover {
   background-color: rgba(255, 255, 255, 0.05);
-  color: #f8f9fa; /* Texto más brillante al hacer hover */
+  color: #f8f9fa;
 }
 
 .sidebar-link.active {
-  background-color: rgba(var(--primary-rgb, 52, 152, 219), 0.15); /* Usa el color primario con opacidad */
-  color: var(--primary-color-light, #7cceff); /* Un tono más claro del primario o blanco */
+  background-color: rgba(var(--primary-rgb, 52, 152, 219), 0.15);
+  color: var(--primary-color-light, #7cceff);
   border-left-color: var(--primary-color, #3498db);
   font-weight: 500;
-}
-
-.sidebar-link span:first-child { /* El icono */
-  margin-right: 12px;
-  font-size: 1.2em;
-  width: 24px; /* Ancho fijo para alinear iconos */
-  text-align: center;
-  line-height: 1;
 }
 
 .sidebar-separator {
   height: 1px;
   background-color: rgba(255, 255, 255, 0.1);
-  margin: 15px 20px;
+  margin: 15px 0; /* Adjusted margin for collapsed state (centered) */
+  transition: margin 0.3s ease-in-out;
 }
 
-/* Para un futuro sidebar colapsable (ejemplo) */
-/*
-.sidebar.collapsed {
-  width: 70px;
+.sidebar:hover .sidebar-separator {
+  margin: 15px 20px; /* Original margin when expanded */
 }
-.sidebar.collapsed .sidebar-link span:last-child {
-  display: none;
-}
-.sidebar.collapsed .sidebar-link {
-  justify-content: center;
-}
-*/
 
-/* Ajustes para que el contenido principal no se solape con el sidebar */
-/* Esto se manejará mejor en el CSS del Layout general o App.css */
+@media (max-width: 768px) {
+  .sidebar {
+     width: 70px; /* Default collapsed width on tablet */
+  }
+  .sidebar:hover {
+      width: 200px; /* Expanded width on tablet */
+  }
+}

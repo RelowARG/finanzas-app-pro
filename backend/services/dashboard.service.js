@@ -1,36 +1,60 @@
 // Ruta: finanzas-app-pro/backend/services/dashboard.service.js
-const db = require('../models'); // Para acceder a los modelos directamente
-const { Op } = require('sequelize'); // Si necesitas operadores de Sequelize
-// No necesitas importar otros servicios aquí si las funciones hacen consultas directas a la BD
-// o si los controladores ya llaman a esos otros servicios por separado.
-// Si necesitas lógica de otros servicios, los requerirías así:
-// const accountService = require('./accounts.service');
-// const transactionService = require('./transactions.service');
-// const reportsService = require('./reports.service');
-// const investmentsService = require('./investments.service');
+const db = require('../models'); // [cite: finanzas-app-pro/backend/models/index.js]
+const { Op, Sequelize } = require('sequelize');
 
-
+// Helper para obtener el rango de fechas de un mes
 const getMonthDateRange = (date = new Date()) => {
   const year = date.getFullYear();
-  const month = date.getMonth(); 
+  const month = date.getMonth();
   const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0); 
-  
+  const lastDay = new Date(year, month + 1, 0);
   const formatDateString = (d) => d.toISOString().split('T')[0];
-  
   return {
     dateFrom: formatDateString(firstDay),
     dateTo: formatDateString(lastDay),
     monthName: firstDay.toLocaleString('es-AR', { month: 'long' }),
     year: year,
-    monthNumber: month + 1 // Para buscar la tasa de cambio
+    monthNumber: month + 1 
   };
 };
+
+// Helper para obtener tasas de cambio para un conjunto de transacciones
+const getRatesForTransactions = async (userId, transactions) => {
+    if (!transactions || transactions.length === 0) return {};
+    const dateRateMap = {};
+    const uniqueMonthYears = new Set();
+    transactions.forEach(tx => {
+        if (tx.currency === 'USD') {
+            const date = new Date(tx.date);
+            uniqueMonthYears.add(`${date.getFullYear()}-${date.getMonth() + 1}`);
+        }
+    });
+
+    if (uniqueMonthYears.size === 0) return {};
+
+    const ratePromises = Array.from(uniqueMonthYears).map(async (yearMonth) => {
+        const [year, month] = yearMonth.split('-').map(Number);
+        if (dateRateMap[yearMonth]) return;
+
+        const rateEntry = await db.ExchangeRate.findOne({ // [cite: finanzas-app-pro/backend/models/exchangeRate.model.js]
+            where: { userId, year, month, fromCurrency: 'USD', toCurrency: 'ARS' }
+        });
+        if (rateEntry) {
+            dateRateMap[yearMonth] = parseFloat(rateEntry.rate);
+        } else {
+            dateRateMap[yearMonth] = null;
+            console.warn(`[DashboardService Helpers] No exchange rate for USD to ARS for ${month}/${year} for user ${userId}`);
+        }
+    });
+    await Promise.all(ratePromises);
+    return dateRateMap;
+};
+
 
 const getDashboardSummary = async (userId) => {
   console.log('[DEBUG] Backend Service: Entering getDashboardSummary for userId:', userId);
   try {
-    const accounts = await db.Account.findAll({ 
+    const accounts = await db.Account.findAll({  // [cite: finanzas-app-pro/backend/models/account.model.js]
         where: { userId: userId } 
     }); 
     console.log('[DEBUG] Backend Service: Fetched accounts for summary:', accounts.length);
@@ -55,44 +79,23 @@ const getDashboardSummary = async (userId) => {
       });
     }
 
-    console.log('[DEBUG] Backend Service: Initial totalBalanceARS (from included accounts):', totalBalanceARS);
-    console.log('[DEBUG] Backend Service: Initial totalBalanceUSD (from included accounts):', totalBalanceUSD);
-    console.log('[DEBUG] Backend Service: hasARS:', hasARS, '| hasUSD:', hasUSD);
-
     const { year, monthNumber } = getMonthDateRange();
-    console.log('[DEBUG] Backend Service: Current server month/year for rate lookup:', monthNumber, '/', year);
-
-    const exchangeRateEntry = await db.ExchangeRate.findOne({
+    const exchangeRateEntry = await db.ExchangeRate.findOne({ // [cite: finanzas-app-pro/backend/models/exchangeRate.model.js]
       where: { userId, year, month: monthNumber, fromCurrency: 'USD', toCurrency: 'ARS' }
     });
-    console.log('[DEBUG] Backend Service: exchangeRateEntry found:', exchangeRateEntry ? exchangeRateEntry.toJSON() : null);
-
-    let totalBalanceARSConverted = hasARS ? totalBalanceARS : 0;
-    console.log('[DEBUG] Backend Service: totalBalanceARSConverted after ARS init:', totalBalanceARSConverted);
     
+    let totalBalanceARSConverted = hasARS ? totalBalanceARS : 0;
     let conversionRateUsed = null;
 
     if (hasUSD && exchangeRateEntry && exchangeRateEntry.rate) {
       conversionRateUsed = parseFloat(exchangeRateEntry.rate);
-      console.log('[DEBUG] Backend Service: USD to ARS Rate found and used:', conversionRateUsed);
       totalBalanceARSConverted += totalBalanceUSD * conversionRateUsed;
-      console.log('[DEBUG] Backend Service: totalBalanceARSConverted after USD conversion (if any):', totalBalanceARSConverted);
     } else if (hasUSD && !exchangeRateEntry) {
       console.warn(`[DashboardService Backend] No exchange rate found for USD to ARS for ${monthNumber}/${year} for user ${userId}. USD balance not converted for summary.`);
-      console.log('[DEBUG] Backend Service: No rate found, totalBalanceARSConverted (variable) remains:', totalBalanceARSConverted);
-    } else if (!hasUSD) {
-      console.log('[DEBUG] Backend Service: No USD balance to convert.');
     }
-
+    
     const finalConsolidatedValue = (hasARS || (hasUSD && conversionRateUsed)) ? totalBalanceARSConverted : (hasARS ? totalBalanceARS : null);
-    // Corrección: Si no hay USD o no hay tasa, pero sí hay ARS, el consolidado debe ser el total ARS.
-    // Si solo hay USD y no hay tasa, el consolidado será null.
-    // Si no hay ni ARS ni USD, será null.
-    
-    console.log('[DEBUG] Backend Service: Condition for returning consolidated (hasARS || (hasUSD && conversionRateUsed)):', (hasARS || (hasUSD && conversionRateUsed)));
-    console.log('[DEBUG] Backend Service: totalBalanceARSConverted (variable) before return:', totalBalanceARSConverted);
-    console.log('[DEBUG] Backend Service: Final summary.totalBalanceARSConverted property being returned:', finalConsolidatedValue);
-    
+        
     return {
       balances: { 
         ARS: hasARS ? totalBalanceARS : null, 
@@ -115,14 +118,11 @@ const getDashboardSummary = async (userId) => {
 
 const getMonthlySpendingByCategory = async (userId, filters = {}) => {
   console.log('[DashboardService Backend] Fetching MonthlySpendingByCategory for userId:', userId, 'Filters:', filters);
-  // Esta función ahora llama directamente a la lógica de reportes, adaptada para ser un servicio interno.
-  // El controlador de reportes (/api/reports/expenses-by-category) es para la página de reportes.
-  // Aquí necesitamos la lógica subyacente.
   try {
     const currentMonthRange = getMonthDateRange(); 
     const dateFrom = filters.dateFrom || currentMonthRange.dateFrom;
     const dateTo = filters.dateTo || currentMonthRange.dateTo;
-    const targetCurrency = filters.currency || 'ARS'; // Para el dashboard, usualmente ARS
+    const targetCurrency = filters.currency || 'ARS';
 
     const transactionWhereClause = {
       userId,
@@ -130,9 +130,9 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
       date: { [Op.between]: [dateFrom, dateTo] },
     };
 
-    const transactions = await db.Transaction.findAll({
+    const transactions = await db.Transaction.findAll({ // [cite: finanzas-app-pro/backend/models/transaction.model.js]
       where: transactionWhereClause,
-      include: [{ model: db.Category, as: 'category', attributes: ['id', 'name', 'icon'] }],
+      include: [{ model: db.Category, as: 'category', attributes: ['id', 'name', 'icon'] }], // [cite: finanzas-app-pro/backend/models/category.model.js]
       raw: true,
       nest: true,
     });
@@ -148,26 +148,7 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
     let rates = {};
     let conversionNotes = [];
     if (targetCurrency === 'ARS' && transactions.some(tx => tx.currency === 'USD')) {
-        // Reutilizar la lógica de getRatesForTransactions (podría extraerse a un helper)
-        const dateRateMap = {};
-        const uniqueMonthYears = new Set();
-        transactions.forEach(tx => {
-            if (tx.currency === 'USD') {
-                const date = new Date(tx.date);
-                uniqueMonthYears.add(`${date.getFullYear()}-${date.getMonth() + 1}`);
-            }
-        });
-        if (uniqueMonthYears.size > 0) {
-            const ratePromises = Array.from(uniqueMonthYears).map(async (yearMonth) => {
-                const [year, month] = yearMonth.split('-').map(Number);
-                const rateEntry = await db.ExchangeRate.findOne({
-                    where: { userId, year, month, fromCurrency: 'USD', toCurrency: 'ARS' }
-                });
-                dateRateMap[yearMonth] = rateEntry ? parseFloat(rateEntry.rate) : null;
-            });
-            await Promise.all(ratePromises);
-            rates = dateRateMap;
-        }
+        rates = await getRatesForTransactions(userId, transactions);
     }
 
     const expensesMap = new Map();
@@ -220,11 +201,10 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
   }
 };
 
-
 const getInvestmentHighlights = async (userId, topN = 3) => {
   console.log('[DashboardService Backend] getInvestmentHighlights for userId:', userId);
   try {
-    const allInvestments = await db.Investment.findAll({ where: { userId }});
+    const allInvestments = await db.Investment.findAll({ where: { userId }}); // [cite: finanzas-app-pro/backend/models/investment.model.js]
     if (!allInvestments || allInvestments.length === 0) {
         return { totalValueByCurrency: {}, topInvestments: [], totalNumberOfInvestments: 0 };
     }
@@ -256,7 +236,7 @@ const getCurrentMonthFinancialStatus = async (userId) => {
   const { dateFrom, dateTo, monthName, year, monthNumber } = currentMonthRange;
   
   try {
-    const exchangeRateEntry = await db.ExchangeRate.findOne({
+    const exchangeRateEntry = await db.ExchangeRate.findOne({ // [cite: finanzas-app-pro/backend/models/exchangeRate.model.js]
       where: { userId, year, month: monthNumber, fromCurrency: 'USD', toCurrency: 'ARS' }
     });
     const usdToArsRate = exchangeRateEntry ? parseFloat(exchangeRateEntry.rate) : null;
@@ -264,7 +244,7 @@ const getCurrentMonthFinancialStatus = async (userId) => {
         console.warn(`[DashboardService Backend] No USD to ARS exchange rate for ${monthNumber}/${year} for user ${userId}. USD transactions will not be converted.`);
     }
 
-    const currentMonthTransactions = await db.Transaction.findAll({
+    const currentMonthTransactions = await db.Transaction.findAll({ // [cite: finanzas-app-pro/backend/models/transaction.model.js]
         where: {
             userId,
             date: { [Op.between]: [dateFrom, dateTo] }
@@ -276,7 +256,7 @@ const getCurrentMonthFinancialStatus = async (userId) => {
     let originalIncomeUSD = 0;
     let originalExpensesUSD = 0;
 
-    const allAccounts = await db.Account.findAll({ where: { userId }});
+    const allAccounts = await db.Account.findAll({ where: { userId }}); // [cite: finanzas-app-pro/backend/models/account.model.js]
     const accountsIncludedInSummaryIds = allAccounts
                                           .filter(acc => acc.includeInDashboardSummary)
                                           .map(acc => acc.id.toString());
@@ -340,11 +320,194 @@ const getCurrentMonthFinancialStatus = async (userId) => {
   }
 };
 
+const getGlobalBudgetStatus = async (userId) => {
+  console.log('[DashboardService Backend] Calculating Global Budget Status for user:', userId);
+  const { dateFrom, dateTo } = getMonthDateRange();
+
+  try {
+    const activeBudgets = await db.Budget.findAll({ // [cite: finanzas-app-pro/backend/models/budget.model.js]
+      where: {
+        userId,
+        startDate: { [Op.lte]: dateTo },
+        endDate: { [Op.gte]: dateFrom },
+      },
+      raw: true,
+    });
+
+    let totalBudgetedARS = 0;
+    const budgetCategoryIds = [];
+    activeBudgets.forEach(budget => {
+      totalBudgetedARS += parseFloat(budget.amount);
+      if (budget.categoryId) {
+        budgetCategoryIds.push(budget.categoryId);
+      }
+    });
+
+    let totalSpentInBudgetedCategoriesARS = 0;
+    if (budgetCategoryIds.length > 0) {
+      const transactionsInBudgetedCategories = await db.Transaction.findAll({ // [cite: finanzas-app-pro/backend/models/transaction.model.js]
+        where: {
+          userId,
+          type: 'egreso',
+          date: { [Op.between]: [dateFrom, dateTo] },
+          categoryId: { [Op.in]: budgetCategoryIds },
+        },
+        raw: true,
+      });
+      
+      const rates = await getRatesForTransactions(userId, transactionsInBudgetedCategories.filter(tx => tx.currency === 'USD'));
+
+      transactionsInBudgetedCategories.forEach(tx => {
+        let amount = parseFloat(tx.amount);
+        if (tx.currency === 'USD') {
+          const txDate = new Date(tx.date);
+          const yearMonthKey = `${txDate.getFullYear()}-${txDate.getMonth() + 1}`;
+          const rate = rates[yearMonthKey];
+          if (rate) {
+            amount = amount * rate;
+          } else {
+            console.warn(`[GlobalBudgetStatus] No rate for USD tx ${tx.id}, not included in spent.`);
+            return;
+          }
+        }
+        totalSpentInBudgetedCategoriesARS += Math.abs(amount);
+      });
+    }
+    
+    const progressPercent = totalBudgetedARS > 0 ? (totalSpentInBudgetedCategoriesARS / totalBudgetedARS) * 100 : 0;
+
+    return {
+      totalBudgeted: totalBudgetedARS,
+      totalSpent: totalSpentInBudgetedCategoriesARS,
+      currency: 'ARS',
+      progressPercent: parseFloat(progressPercent.toFixed(2)),
+      month: new Date().toLocaleString('es-AR', { month: 'long' }),
+      year: new Date().getFullYear(),
+    };
+
+  } catch (error) {
+    console.error("[DashboardService Backend] Error calculating global budget status:", error);
+    return { totalBudgeted: 0, totalSpent: 0, currency: 'ARS', progressPercent: 0 };
+  }
+};
+
+const getBalanceTrend = async (userId, numberOfMonths = 6) => {
+  console.log(`[DashboardService Backend] Calculating Balance Trend for ${numberOfMonths} months for user:`, userId);
+  try {
+    const accounts = await db.Account.findAll({ where: { userId } }); // [cite: finanzas-app-pro/backend/models/account.model.js]
+    const exchangeRatesCache = {}; 
+
+    let currentTotalBalanceARS = 0;
+    for (const account of accounts) {
+      if (account.includeInDashboardSummary) {
+        let balanceInARS = parseFloat(account.balance);
+        if (account.currency === 'USD') {
+          const { monthNumber, year } = getMonthDateRange();
+          const rateKey = `${year}-${monthNumber}`;
+          if (exchangeRatesCache[rateKey] === undefined) {
+            const rateEntry = await db.ExchangeRate.findOne({ // [cite: finanzas-app-pro/backend/models/exchangeRate.model.js]
+              where: { userId, year, month: monthNumber, fromCurrency: 'USD', toCurrency: 'ARS' }
+            });
+            exchangeRatesCache[rateKey] = rateEntry ? parseFloat(rateEntry.rate) : null;
+          }
+          if (exchangeRatesCache[rateKey]) {
+            balanceInARS *= exchangeRatesCache[rateKey];
+          } else {
+            console.warn(`[BalanceTrend] No current rate for USD account ${account.id}, balance not included accurately.`);
+            balanceInARS = 0;
+          }
+        }
+        currentTotalBalanceARS += balanceInARS;
+      }
+    }
+
+    const trendData = [];
+    const labels = [];
+    let rollingBalanceARS = currentTotalBalanceARS;
+
+    for (let i = 0; i < numberOfMonths; i++) {
+      const dateForMonth = new Date();
+      dateForMonth.setMonth(dateForMonth.getMonth() - i);
+      const { dateFrom, dateTo, monthName, year, monthNumber } = getMonthDateRange(dateForMonth);
+      
+      labels.unshift(monthName.substring(0,3) + '.' + year.toString().slice(-2) ); 
+
+      if (i === 0) {
+        trendData.unshift(rollingBalanceARS);
+      } else {
+        const transactionsThisMonth = await db.Transaction.findAll({ // [cite: finanzas-app-pro/backend/models/transaction.model.js]
+          where: { userId, date: { [Op.between]: [dateFrom, dateTo] } },
+          raw: true,
+        });
+        
+        let netFlowThisMonthARS = 0;
+        for (const tx of transactionsThisMonth) {
+          const txAccount = accounts.find(acc => acc.id === tx.accountId && acc.includeInDashboardSummary);
+          if (!txAccount) continue;
+
+          let amountInARS = parseFloat(tx.amount);
+          if (tx.currency === 'USD') {
+            const rateKey = `${year}-${monthNumber}`;
+            if (exchangeRatesCache[rateKey] === undefined) { 
+              const rateEntry = await db.ExchangeRate.findOne({ // [cite: finanzas-app-pro/backend/models/exchangeRate.model.js]
+                where: { userId, year, month: monthNumber, fromCurrency: 'USD', toCurrency: 'ARS' }
+              });
+              exchangeRatesCache[rateKey] = rateEntry ? parseFloat(rateEntry.rate) : null;
+            }
+            if (exchangeRatesCache[rateKey]) {
+              amountInARS *= exchangeRatesCache[rateKey];
+            } else {
+              console.warn(`[BalanceTrend] No rate for USD tx ${tx.id} in ${monthName} ${year}, not included in net flow.`);
+              amountInARS = 0;
+            }
+          }
+          netFlowThisMonthARS += amountInARS;
+        }
+        rollingBalanceARS -= netFlowThisMonthARS;
+        trendData.unshift(rollingBalanceARS);
+      }
+    }
+
+    let changeVsPreviousPeriodPercent = 0;
+    if (trendData.length >= 2) {
+      const latestBalance = trendData[trendData.length - 1];
+      const previousBalance = trendData[trendData.length - 2];
+      if (previousBalance !== 0) {
+        changeVsPreviousPeriodPercent = ((latestBalance - previousBalance) / Math.abs(previousBalance)) * 100;
+      } else if (latestBalance > 0) {
+        changeVsPreviousPeriodPercent = 100;
+      }
+    }
+    
+    return {
+      labels,
+      datasets: [{
+        label: 'Saldo Total (ARS Aprox.)',
+        data: trendData.map(val => parseFloat(val.toFixed(2))),
+        backgroundColor: 'rgba(52, 152, 219, 0.6)',
+        borderColor: 'rgba(52, 152, 219, 1)',
+        borderWidth: 1,
+      }],
+      summary: {
+        currentBalance: parseFloat(currentTotalBalanceARS.toFixed(2)),
+        currency: 'ARS',
+        changeVsPreviousPeriodPercent: parseFloat(changeVsPreviousPeriodPercent.toFixed(2)),
+      }
+    };
+
+  } catch (error) {
+    console.error("[DashboardService Backend] Error calculating balance trend:", error);
+    return { labels: [], datasets: [], summary: { currentBalance: 0, currency: 'ARS', changeVsPreviousPeriodPercent: 0 } };
+  }
+};
+
 const dashboardService = {
   getDashboardSummary,
   getMonthlySpendingByCategory,
   getInvestmentHighlights,
   getCurrentMonthFinancialStatus,
+  getGlobalBudgetStatus,
+  getBalanceTrend,
 };
 
 module.exports = dashboardService;

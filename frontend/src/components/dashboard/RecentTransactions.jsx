@@ -1,36 +1,21 @@
-// Ruta: finanzas-app-pro/frontend/src/components/dashboard/RecentTransactions.jsx
-// ACTUALIZA ESTE ARCHIVO
-import React, { useState, useEffect } from 'react'; // Importar useState y useEffect
-import transactionService from '../../services/transactions.service'; // Importar el servicio real
-import './DashboardComponents.css'; // Asumiendo que este CSS ya existe y es relevante
+// Ruta: src/components/dashboard/RecentTransactions.jsx
+import React, { useState, useEffect } from 'react';
+import transactionService from '../../services/transactions.service';
+import DashboardTransactionItem from './DashboardTransactionItem'; // Importar el nuevo item
+import './DashboardComponents.css'; 
 
-const formatCurrency = (amount, currency) => {
-  const symbol = currency === 'USD' ? 'U$S' : '$';
-  const value = Number(amount) || 0;
-  return `${value < 0 ? '-' : ''}${symbol} ${Math.abs(value).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    // year: 'numeric', // Podríamos omitir el año para ahorrar espacio en el dashboard
-  });
-};
-
-const RecentTransactions = ({ loading: propLoading }) => { // Recibir prop de carga si DashboardPage la maneja
+const RecentTransactions = ({ loading: propLoading }) => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchRecent = async () => {
-      if (propLoading) return; // Si la página principal ya está cargando, esperar
+      if (propLoading) return; 
       setLoading(true);
       setError('');
       try {
-        // Usar getAllTransactions con límite y ordenado por fecha (el backend ya lo hace por defecto)
-        const data = await transactionService.getAllTransactions({ page: 1, limit: 5 });
+        const data = await transactionService.getAllTransactions({ page: 1, limit: 5 }); // Obtener 5 recientes
         setTransactions(data.transactions || []);
       } catch (err) {
         console.error("Error fetching recent transactions for dashboard:", err);
@@ -41,20 +26,19 @@ const RecentTransactions = ({ loading: propLoading }) => { // Recibir prop de ca
       }
     };
 
-    // Solo llamar si propLoading es false, o si no se pasa propLoading
     if (propLoading === undefined || !propLoading) {
         fetchRecent();
-    } else if (propLoading === false) { // Si DashboardPage terminó su carga principal
+    } else if (propLoading === false) { 
         fetchRecent();
     }
     
-  }, [propLoading]); // Depender de propLoading si se pasa
+  }, [propLoading]); 
 
   if (loading) {
     return (
       <div className="dashboard-widget recent-transactions-widget">
-        <h3>Últimos Movimientos</h3>
-        <p>Cargando...</p>
+        <h3>Últimos Registros</h3> {/* Cambiado el título a "Últimos Registros" */}
+        <p className="loading-text-widget">Cargando...</p>
       </div>
     );
   }
@@ -62,7 +46,7 @@ const RecentTransactions = ({ loading: propLoading }) => { // Recibir prop de ca
   if (error) {
     return (
       <div className="dashboard-widget recent-transactions-widget">
-        <h3>Últimos Movimientos</h3>
+        <h3>Últimos Registros</h3>
         <p className="error-message" style={{textAlign: 'center'}}>{error}</p>
       </div>
     );
@@ -71,30 +55,18 @@ const RecentTransactions = ({ loading: propLoading }) => { // Recibir prop de ca
   if (!transactions || transactions.length === 0) {
     return (
       <div className="dashboard-widget recent-transactions-widget">
-        <h3>Últimos Movimientos</h3>
-        <p>No hay transacciones recientes.</p>
+        <h3>Últimos Registros</h3>
+        <p className="no-data-widget">No hay transacciones recientes.</p>
       </div>
     );
   }
 
   return (
     <div className="dashboard-widget recent-transactions-widget">
-      <h3>Últimos Movimientos</h3>
-      <ul className="transactions-list">
+      <h3>Últimos Registros</h3>
+      <ul className="transactions-list"> {/* Esta clase ahora tiene estilos en DashboardComponents.css */}
         {transactions.map(tx => (
-          <li key={tx.id} className={`transaction-item ${tx.type}`}>
-            <span className="transaction-icon">{tx.icon || tx.category?.icon || (tx.type === 'ingreso' ? '🟢' : '🔴')}</span>
-            <div className="transaction-info">
-              <span className="transaction-description">{tx.description}</span>
-              <span className="transaction-category">{tx.category?.name || 'Sin Categoría'}</span>
-            </div>
-            <div className="transaction-details">
-              <span className={`transaction-amount ${tx.type === 'ingreso' ? 'text-positive' : 'text-negative'}`}>
-                {formatCurrency(tx.amount, tx.currency)}
-              </span>
-              <span className="transaction-date">{formatDate(tx.date)}</span>
-            </div>
-          </li>
+          <DashboardTransactionItem key={tx.id} transaction={tx} /> // Usar el nuevo componente
         ))}
       </ul>
     </div>

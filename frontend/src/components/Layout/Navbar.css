@@ -1,0 +1,129 @@
+/* Ruta: src/components/Layout/Navbar.css (o añadir a App.css) */
+
+.navbar {
+  background-color: var(--dark-color, #343a40); /* Usando --dark-color de App.css */
+  color: white;
+  padding: 0 20px; /* Padding horizontal */
+  height: 60px; 
+  display: flex; 
+  align-items: center; 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky; 
+  top: 0;
+  z-index: 1030; 
+}
+
+.nav-container {
+  max-width: 1200px; /* Un poco más de ancho para el contenedor */
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.nav-logo {
+  color: white;
+  text-decoration: none;
+  font-size: 1.6rem; /* Ligeramente más pequeño */
+  font-weight: bold;
+}
+
+.nav-menu {
+  list-style: none;
+  display: flex;
+  gap: 5px; /* Espacio reducido entre items principales */
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.nav-links {
+  color: rgba(255,255,255,0.8); /* Un poco más opaco para mejor contraste */
+  text-decoration: none;
+  padding: 8px 12px; /* Padding para los enlaces */
+  border-radius: var(--border-radius, 4px);
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+  font-size: 0.9rem; /* Tamaño de fuente para enlaces */
+}
+
+.nav-links:hover, .nav-links.active { /* Suponiendo que uses NavLink y tenga clase active */
+  color: white;
+  background-color: rgba(255,255,255,0.15);
+}
+
+.nav-button {
+  background: none;
+  border: none; /* Quitar borde por defecto */
+  cursor: pointer;
+  font-family: inherit; /* Heredar fuente */
+}
+
+.nav-button-add {
+  background-color: var(--primary-color, #007bff) !important; /* Color para "+ Registros" */
+  color: white !important;
+  font-weight: 500;
+}
+.nav-button-add:hover {
+  background-color: #0056b3 !important; /* Oscurecer al hover */
+}
+
+.nav-button-logout {
+  /* Estilos específicos si quieres que el botón de logout sea diferente */
+  /* background-color: var(--danger-color) !important; */
+}
+.nav-button-logout:hover {
+  background-color: var(--danger-color) !important;
+  color: white !important;
+}
+
+.nav-item-add-record {
+  position: relative; /* Para el posicionamiento del menú desplegable */
+}
+
+.add-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 5px); /* Debajo del botón "+ Registros" */
+  left: 0;
+  background-color: var(--dark-color, #343a40);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--border-radius, 4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1100; /* Por encima de otros elementos del navbar */
+  min-width: 200px; /* Ancho mínimo del desplegable */
+  padding: 5px 0;
+}
+
+.add-menu-item {
+  display: block;
+  padding: 8px 15px;
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.add-menu-item:hover {
+  background-color: rgba(255,255,255,0.15);
+  color: white;
+}
+
+/* Responsividad básica para el Navbar */
+@media (max-width: 768px) {
+  .nav-menu {
+    /* Aquí podrías implementar un menú hamburguesa si lo deseas */
+    /* Por ahora, simplemente se reducirá el gap o se ocultarán items */
+    gap: 2px;
+  }
+  .nav-links, .nav-button-add, .nav-button-logout {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+  .nav-logo {
+    font-size: 1.4rem;
+  }
+  .add-menu-dropdown {
+    left: auto; /* Permitir que se ajuste mejor */
+    right: 0; /* Alinear a la derecha en móviles si el botón está a la derecha */
+  }
+}

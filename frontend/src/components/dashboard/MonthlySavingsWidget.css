@@ -1,20 +1,52 @@
-/* Ruta: finanzas-app-pro/frontend/src/components/dashboard/MonthlySavingsWidget.css */
+/* Ruta: src/components/dashboard/MonthlySavingsWidget.css */
 
 .monthly-savings-widget {
-  border-left: 5px solid var(--primary-color); 
+  /* Hereda estilos de .dashboard-widget, como la altura fija de 300px */
+  /* border-left: 5px solid var(--primary-color);  Ya no es necesario si usamos el h3 estándar */
 }
 
 .monthly-savings-widget h3 {
-  color: var(--primary-color);
+  /* Ya estilizado por .dashboard-widget h3 en DashboardComponents.css */
+  /* Puedes añadir un color específico si lo deseas: */
+  /* color: var(--primary-color); */
   text-transform: capitalize; 
+}
+
+/* Contenedor del contenido que permite scroll si es necesario */
+/* Este div ya lo añadiste en el JSX, nos aseguramos que los estilos aquí no lo impidan */
+.monthly-savings-widget .dashboard-widget-content {
+  padding-top: 5px; /* Un pequeño padding superior si es necesario */
+}
+
+
+.currency-summary-block {
+  margin-bottom: 10px; /* Reducir margen inferior */
+  padding-bottom: 10px; /* Reducir padding inferior */
+  border-bottom: 1px solid #f0f0f0;
+}
+.currency-summary-block:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.currency-summary-block h4 {
+  font-size: 0.85rem; /* Título de bloque de moneda más pequeño */
+  color: var(--primary-color);
+  margin-bottom: 8px; /* Reducir margen */
+  text-align: center;
+  font-weight: 600;
+  background-color: #e9f5ff;
+  padding: 4px 8px; /* Padding más pequeño */
+  border-radius: 4px;
 }
 
 .financial-summary-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-bottom: 15px;
-  padding-bottom: 15px;
+  gap: 10px; /* Reducir gap */
+  margin-bottom: 10px; /* Reducir margen */
+  padding-bottom: 10px; /* Reducir padding */
   border-bottom: 1px dashed #e0e0e0;
 }
 
@@ -22,40 +54,40 @@
   display: flex;
   flex-direction: column;
   align-items: center; 
-  padding: 10px;
+  padding: 8px; /* Reducir padding */
   border-radius: var(--border-radius);
   background-color: #f8f9fa;
 }
 
 .summary-label {
-  font-size: 0.8rem;
+  font-size: 0.7rem; /* Etiqueta más pequeña */
   color: #6c757d;
-  margin-bottom: 4px;
+  margin-bottom: 2px; /* Menos margen */
   text-transform: uppercase;
 }
 
 .summary-value {
-  font-size: 1.2rem;
+  font-size: 1rem; /* Valor un poco más pequeño */
   font-weight: 600;
 }
 
 .savings-total {
   text-align: center;
-  padding: 15px 10px;
+  padding: 10px 8px; /* Padding reducido */
   border-radius: var(--border-radius);
-  margin-top: 10px;
+  margin-top: 8px; /* Reducir margen */
 }
 
 .savings-label {
   display: block;
-  font-size: 0.95rem;
+  font-size: 0.85rem; /* Etiqueta de ahorro más pequeña */
   color: #495057;
-  margin-bottom: 5px;
+  margin-bottom: 3px; /* Menos margen */
   font-weight: 500;
 }
 
 .savings-amount {
-  font-size: 1.7rem;
+  font-size: 1.4rem; /* Monto de ahorro más pequeño */
   font-weight: bold;
 }
 
@@ -72,35 +104,13 @@
 .savings-negative .savings-amount {
   color: var(--danger-color, #e74c3c);
 }
-.currency-summary-block {
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #f0f0f0;
-}
-.currency-summary-block:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
 
-.currency-summary-block h4 {
-  font-size: 0.9rem;
-  color: var(--primary-color);
-  margin-bottom: 10px;
-  text-align: center;
-  font-weight: 600;
-  background-color: #e9f5ff;
-  padding: 5px;
-  border-radius: 4px;
-}
-
-/* Nuevos estilos para notas de conversión */
 .conversion-note-widget {
-  font-size: 0.75rem;
+  font-size: 0.7rem; /* Nota de conversión más pequeña */
   color: #6c757d;
   text-align: center;
-  margin-top: 8px;
-  padding: 5px;
+  margin-top: 6px; /* Menos margen */
+  padding: 4px 6px; /* Padding más pequeño */
   background-color: #f8f9fa;
   border-radius: 3px;
 }
@@ -112,18 +122,17 @@
 }
 
 .unconverted-block {
-  border-top: 1px dashed #fdc4a7; /* Separador para el bloque no convertido */
-  margin-top: 15px;
-  padding-top: 15px;
+  border-top: 1px dashed #fdc4a7;
+  margin-top: 10px; /* Reducir margen */
+  padding-top: 10px; /* Reducir padding */
 }
 
 .unconverted-block h4 {
-    color: #e67e22; /* Naranja para destacar */
+    color: #e67e22; 
     background-color: #fff3e0;
 }
 
-.loading-text-widget, .no-data-widget { /* Para los mensajes dentro del widget */
-    font-size: 0.9rem;
-    color: #666;
-    padding: 15px;
+/* Ajustes para que el contenido no se corte dentro del widget de altura fija */
+.monthly-savings-widget .dashboard-widget-content {
+    /* Asegurar que no haya paddings extra aquí que impidan ver el contenido */
 }
