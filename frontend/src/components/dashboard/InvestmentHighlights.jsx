@@ -22,7 +22,7 @@ const getInvestmentTypeLabel = (type) => {
     return labels[type] || type;
   };
 
-const InvestmentHighlights = ({ highlights, loading, error }) => { // error prop añadido
+const InvestmentHighlights = ({ highlights, loading, error }) => {
   if (loading) {
     return (
       <div className="dashboard-widget investment-highlights-widget"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
@@ -32,7 +32,7 @@ const InvestmentHighlights = ({ highlights, loading, error }) => { // error prop
     );
   }
 
-  if (error) { // Manejo del error
+  if (error) {
     return (
       <div className="dashboard-widget investment-highlights-widget"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
         <h3>Resumen de Inversiones</h3>

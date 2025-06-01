@@ -12,7 +12,7 @@ const formatCurrency = (amount, currency = 'ARS') => {
   return `${sign}${symbol} ${absAmount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-const MonthlySavingsWidget = ({ status, loading, error }) => { // error prop añadido
+const MonthlySavingsWidget = ({ status, loading, error }) => {
   if (loading) {
     return (
       <div className="dashboard-widget monthly-savings-widget"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
@@ -22,7 +22,7 @@ const MonthlySavingsWidget = ({ status, loading, error }) => { // error prop añ
     );
   }
 
-  if (error) { // Manejo del error
+  if (error) {
      return (
       <div className="dashboard-widget monthly-savings-widget"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
         <h3>Finanzas del Mes</h3>

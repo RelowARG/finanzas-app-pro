@@ -100,7 +100,7 @@ const DashboardPage = () => {
                 loadedConfig[columnKey].push({
                   id: widgetId,
                   ...ALL_AVAILABLE_WIDGETS[widgetId],
-                  props: defaultWidgetForProps ? { ...defaultWidgetForProps.props } : { loading: true }, // Copiar props
+                  props: defaultWidgetForProps ? { ...defaultWidgetForProps.props } : { loading: true },
                 });
                 foundIds.add(widgetId);
               }
@@ -117,7 +117,7 @@ const DashboardPage = () => {
                             id: defaultWidget.id,
                             Component: defaultWidget.Component,
                             name: defaultWidget.name,
-                            props: { ...defaultWidget.props } // Copiar props
+                            props: { ...defaultWidget.props } 
                         });
                         foundIds.add(defaultWidget.id);
                     }
@@ -256,6 +256,17 @@ const DashboardPage = () => {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
   
+  // Definición de findWidgetAndContainerKey DENTRO del componente DashboardPage
+  const findWidgetAndContainerKey = (id, configToSearch) => {
+    for (const containerKey of ['left', 'right']) {
+      const widgetIndex = configToSearch[containerKey].findIndex(w => w.id === id);
+      if (widgetIndex > -1) {
+        return { containerKey, index: widgetIndex };
+      }
+    }
+    return { containerKey: null, index: -1 };
+  };
+
   const handleDragStart = (event) => {
     setActiveDragId(event.active.id);
   };
