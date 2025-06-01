@@ -4,20 +4,20 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext'; //
 import './Sidebar.css'; //
 
+// Iconos (asumiendo que ya están definidos como antes)
 const DashboardIcon = () => <span role="img" aria-label="Dashboard">📊</span>;
 const AccountsIcon = () => <span role="img" aria-label="Cuentas">🏦</span>;
-// ... (otros iconos que ya tenías)
-const CategoriesIcon = () => <span role="img" aria-label="Categorías">🏷️</span>;
-const RecurringIcon = () => <span role="img" aria-label="Recurrentes">🔁</span>;
-const ExchangeRateIcon = () => <span role="img" aria-label="Tasas de Cambio">💲</span>;
-const SettingsIcon = () => <span role="img" aria-label="Configuración">⚙️</span>;
-const AdminIcon = () => <span role="img" aria-label="Administración">👑</span>;
-const PermissionsIcon = () => <span role="img" aria-label="Permisos">🔑</span>; // *** NUEVO ICONO ***
 const TransactionsIcon = () => <span role="img" aria-label="Movimientos">🔄</span>;
 const BudgetsIcon = () => <span role="img" aria-label="Presupuestos">🎯</span>;
 const ReportsIcon = () => <span role="img" aria-label="Informes">📈</span>;
 const InvestmentsIcon = () => <span role="img" aria-label="Inversiones">💹</span>;
 const DebtAndLoanIcon = () => <span role="img" aria-label="Deudas y Préstamos">🤝</span>;
+const CategoriesIcon = () => <span role="img" aria-label="Categorías">🏷️</span>;
+const RecurringIcon = () => <span role="img" aria-label="Recurrentes">🔁</span>;
+const ExchangeRateIcon = () => <span role="img" aria-label="Tasas de Cambio">💲</span>;
+// const SettingsIcon = () => <span role="img" aria-label="Configuración">⚙️</span>; // Combinado
+const AdminIcon = () => <span role="img" aria-label="Administración">👑</span>;
+const PermissionsIcon = () => <span role="img" aria-label="Permisos">🔑</span>;
 
 
 const Sidebar = () => {
@@ -28,10 +28,10 @@ const Sidebar = () => {
   }
 
   return (
-    <aside className="sidebar">
+    // Añadimos una clase 'new-look' para los nuevos estilos
+    <aside className="sidebar new-look"> 
       <nav className="sidebar-nav">
         <ul>
-          {/* ... (enlaces existentes) ... */}
           <li>
             <NavLink to="/dashboard" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
               <DashboardIcon />
@@ -76,6 +76,7 @@ const Sidebar = () => {
           </li>
           
           <li className="sidebar-separator"></li>
+          <li className="sidebar-nav-header"><span>CONFIGURACIÓN</span></li> {/* Pequeño header */}
           
           <li>
             <NavLink to="/settings/categories" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
@@ -95,22 +96,20 @@ const Sidebar = () => {
               <span>Tasas de Cambio</span>
             </NavLink>
           </li>
-           {/* El enlace general a /settings podría ir a la primera subpágina o a una página de resumen de config */}
-          <li>
+          {/* El enlace general a /settings podría ir a una página de resumen de config o al primero */}
+          {/* <li>
             <NavLink to="/settings/categories" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
               <SettingsIcon />
-              <span>Configuración</span>
+              <span>General</span>
             </NavLink>
-          </li>
+          </li> */}
 
 
-          {/* Sección de Administración */}
-          {user && user.role === 'admin' && (
+          {user && user.role === 'admin' && (hasPermission('admin_view_all_users') || hasPermission('admin_manage_permissions_config')) && (
             <>
-              {(hasPermission('admin_view_all_users') || hasPermission('admin_manage_permissions_config')) && (
-                <li className="sidebar-separator"></li>
-              )}
-
+              <li className="sidebar-separator"></li>
+              <li className="sidebar-nav-header"><span>ADMINISTRACIÓN</span></li>
+              
               {hasPermission('admin_view_all_users') && (
                 <li>
                   <NavLink 
@@ -122,8 +121,6 @@ const Sidebar = () => {
                   </NavLink>
                 </li>
               )}
-
-              {/* *** NUEVO ENLACE PARA GESTIÓN DE PERMISOS *** */}
               {hasPermission('admin_manage_permissions_config') && (
                  <li>
                   <NavLink 
