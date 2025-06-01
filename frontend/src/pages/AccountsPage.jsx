@@ -1,41 +1,72 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/AccountsPage.jsx
-// REEMPLAZA EL CONTENIDO DE ESTE ARCHIVO
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Importar useNavigate
-import accountService from '../services/accounts.service';
-import AccountItem from '../components/accounts/AccountItem'; // Importar el nuevo componente
-import './AccountsPage.css'; // Crearemos este archivo CSS
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom'; 
+import accountService from '../services/accounts.service'; // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
+import AccountItem from '../components/accounts/AccountItem'; // [cite: finanzas-app-pro/frontend/src/components/accounts/AccountItem.jsx]
+import PayCreditCardModal from '../components/accounts/PayCreditCardModal'; // Importar el nuevo modal
+import './AccountsPage.css'; // [cite: finanzas-app-pro/frontend/src/pages/AccountsPage.css]
 
 const AccountsPage = () => {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // Hook para la navegación
+  
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [selectedCardToPay, setSelectedCardToPay] = useState(null);
+  const [payingAccountsList, setPayingAccountsList] = useState([]); // Cuentas para pagar
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async () => {
     try {
       setLoading(true);
-      setError(''); // Limpiar errores previos
-      const data = await accountService.getAllAccounts();
-      // Ordenar cuentas, por ejemplo, por fecha de creación o nombre
+      setError(''); 
+      const data = await accountService.getAllAccounts(); // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
       data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setAccounts(data);
+
+      // Preparar lista de cuentas que pueden pagar (no tarjetas de crédito)
+      setPayingAccountsList(data.filter(acc => acc.type !== 'tarjeta_credito'));
+
     } catch (err) {
-      setError(err.message || 'Error al cargar las cuentas. Intenta de nuevo.');
+      setError(err.response?.data?.message || err.message || 'Error al cargar las cuentas. Intenta de nuevo.');
       setAccounts([]);
+      setPayingAccountsList([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAccounts();
-  }, []);
+  }, [fetchAccounts]);
 
-  // La lógica para crear cuenta se moverá a AddAccountPage o un modal
-  // Por ahora, el botón solo navegará
+  const handleDeleteAccount = async (accountId) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta cuenta? Esta acción no se puede deshacer y podría afectar movimientos asociados.')) {
+      try {
+        setLoading(true);
+        await accountService.deleteAccount(accountId); // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
+        fetchAccounts(); // Recargar
+      } catch (err) {
+        setError(err.response?.data?.message || 'Error al eliminar la cuenta.');
+        console.error("Error deleting account:", err);
+        setLoading(false);
+      }
+    }
+  };
 
-  if (loading) {
+  const handleOpenPayModal = (cardAccount) => {
+    setSelectedCardToPay(cardAccount);
+    setShowPayModal(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowPayModal(false);
+    setSelectedCardToPay(null);
+    fetchAccounts(); // Recargar cuentas para ver saldos actualizados
+    // Podrías mostrar un mensaje de éxito aquí
+  };
+
+
+  if (loading && accounts.length === 0) {
     return (
       <div className="page-container accounts-page">
         <div className="accounts-page-header">
@@ -58,13 +89,28 @@ const AccountsPage = () => {
       {error && <p className="error-message">{error}</p>}
 
       {accounts.length > 0 ? (
-        <ul className="accounts-grid"> {/* Cambiado a grid para mejor layout */}
+        <ul className="accounts-grid"> 
           {accounts.map(account => (
-            <AccountItem key={account.id} account={account} />
+            <AccountItem 
+              key={account.id} 
+              account={account} 
+              onDeleteAccount={handleDeleteAccount}
+              onPayStatement={account.type === 'tarjeta_credito' ? handleOpenPayModal : null} // Pasar solo si es tarjeta
+            />
           ))}
         </ul>
       ) : (
-        !error && <p className="no-accounts-message">No tienes cuentas registradas. ¡Comienza agregando una!</p>
+        !loading && !error && <p className="no-accounts-message">No tienes cuentas registradas. ¡Comienza agregando una!</p>
+      )}
+
+      {showPayModal && selectedCardToPay && (
+        <PayCreditCardModal
+          isOpen={showPayModal}
+          onClose={() => { setShowPayModal(false); setSelectedCardToPay(null); }}
+          creditCardAccount={selectedCardToPay}
+          payingAccounts={payingAccountsList}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
       )}
     </div>
   );

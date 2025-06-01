@@ -1,0 +1,104 @@
+/* Ruta: src/components/accounts/PayCreditCardModal.css */
+/* NUEVO ARCHIVO */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.65); /* Más oscuro */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 15px;
+}
+
+.modal-content.payment-modal-content { /* Clase específica para este modal */
+  background-color: #fff;
+  padding: 25px 30px;
+  border-radius: var(--border-radius, 8px);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+  width: 100%;
+  max-width: 480px; /* Ancho del modal */
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--text-color);
+}
+
+.payment-modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+.payment-modal-content .current-statement-balance,
+.payment-modal-content .current-card-balance {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 5px;
+  text-align: center;
+}
+.payment-modal-content .current-statement-balance strong {
+  color: var(--danger-color);
+  font-weight: 600;
+}
+.payment-modal-content .current-card-balance {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #eee;
+}
+
+
+.payment-modal-content .form-group {
+  margin-bottom: 15px;
+}
+
+.payment-modal-content .form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.payment-modal-content .form-group input,
+.payment-modal-content .form-group select,
+.payment-modal-content .form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+.payment-modal-content .form-group input:focus,
+.payment-modal-content .form-group select:focus,
+.payment-modal-content .form-group textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.2);
+  outline: none;
+}
+
+.payment-modal-content .error-message.small-error {
+    font-size: 0.85rem;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+.payment-modal-content .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.payment-modal-content .modal-actions .button {
+  width: auto !important;
+  padding: 10px 20px !important;
+}

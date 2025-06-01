@@ -28,9 +28,8 @@ import InvestmentHighlights from '../components/dashboard/InvestmentHighlights';
 import MonthlySavingsWidget from '../components/dashboard/MonthlySavingsWidget'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/MonthlySavingsWidget.jsx]
 import ControlPanelWidget from '../components/dashboard/ControlPanelWidget'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/ControlPanelWidget.jsx]
 import BalanceTrendWidget from '../components/dashboard/BalanceTrendWidget'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/BalanceTrendWidget.jsx]
-// AddCardPlaceholder ya no se usa directamente aquí
-import SortableWidget from '../components/dashboard/SortableWidget'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/SortableWidget.jsx]
 import AccountDashboardSelectionModal from '../components/dashboard/AccountDashboardSelectionModal'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/AccountDashboardSelectionModal.jsx]
+import SortableWidget from '../components/dashboard/SortableWidget'; // *** IMPORTACIÓN AÑADIDA/VERIFICADA *** [cite: finanzas-app-pro/frontend/src/components/dashboard/SortableWidget.jsx]
 
 import accountService from '../services/accounts.service'; // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
 import dashboardService from '../services/dashboard.service'; // [cite: finanzas-app-pro/frontend/src/services/dashboard.service.js]
@@ -85,7 +84,12 @@ const DashboardPage = () => {
   });
   const [displayedAccountIds, setDisplayedAccountIds] = useState(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY_DISPLAYED_ACCOUNTS);
-    return saved ? JSON.parse(saved) : [];
+    try {
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Error parsing displayed accounts from localStorage", e);
+      return [];
+    }
   });
   const [summaryAccountsToDisplay, setSummaryAccountsToDisplay] = useState([]);
 
@@ -275,9 +279,8 @@ const DashboardPage = () => {
           .slice(0, MAX_SUMMARY_CARDS_DISPLAY);
       } else {
         accountsForDisplay = apiData.allUserAccounts
-          .filter(acc => acc.includeInDashboardSummary) // Fallback a las marcadas en backend
+          .filter(acc => acc.includeInDashboardSummary) 
           .slice(0, MAX_SUMMARY_CARDS_DISPLAY);
-        // Si después de este fallback no hay ninguna, y hay cuentas, mostrar las primeras N
         if (accountsForDisplay.length === 0 && apiData.allUserAccounts.length > 0) {
             accountsForDisplay = apiData.allUserAccounts.slice(0, MAX_SUMMARY_CARDS_DISPLAY);
         }
@@ -452,7 +455,7 @@ const DashboardPage = () => {
         <div className="accounts-summary-row">
           {apiData.loadingAccounts ? ( <p className="loading-text-widget" style={{flexGrow: 1, textAlign:'center'}}>Cargando cuentas...</p> ) : (
             <>
-              {summaryAccountsToDisplay.map(acc => (
+              {summaryAccountsToDisplay.map(acc => ( 
                 <AccountSummaryCard 
                   key={acc.id} 
                   account={acc} 
@@ -485,7 +488,7 @@ const DashboardPage = () => {
                   <widgetItem.Component {...widgetItem.props} />
                 </SortableWidget>
               ))}
-              {/* Ya no se necesita AddCardPlaceholder aquí si AccountSummaryCard lo maneja */}
+              {/* Ya no se necesita AddCardPlaceholder aquí */}
             </div>
           </SortableContext>
         </div>

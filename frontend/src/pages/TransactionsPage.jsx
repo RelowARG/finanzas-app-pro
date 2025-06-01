@@ -63,14 +63,13 @@ const TransactionsPage = () => {
   const handleDeleteTransaction = async (transactionId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este movimiento? Esta acción no se puede deshacer y afectará el saldo de la cuenta asociada.')) {
       try {
-        setLoading(true); // Podrías tener un estado de loading específico para la eliminación
+        setLoading(true); 
         setError('');
         await transactionService.deleteTransaction(transactionId); // [cite: finanzas-app-pro/frontend/src/services/transactions.service.js]
-        // alert('Movimiento eliminado exitosamente.'); // O usar una notificación/toast
-        fetchTransactions(activeFilters, currentPage); // Recargar transacciones
+        fetchTransactions(activeFilters, currentPage); 
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Error al eliminar el movimiento.');
-        setLoading(false); // Asegurarse de quitar el loading si hay error
+        setLoading(false); 
       }
     }
   };
@@ -79,7 +78,7 @@ const TransactionsPage = () => {
     return transactions.reduce((acc, tx) => {
       const amount = parseFloat(tx.amount) || 0;
       if (tx.type === 'ingreso') acc.ingresos += amount;
-      if (tx.type === 'egreso') acc.egresos += amount; // El monto ya es negativo
+      if (tx.type === 'egreso') acc.egresos += amount; 
       return acc;
     }, { ingresos: 0, egresos: 0 });
   }, [transactions]);
@@ -116,7 +115,7 @@ const TransactionsPage = () => {
       ) : (
         <TransactionList 
             transactions={transactions} 
-            onDeleteTransaction={handleDeleteTransaction} // Pasar la función aquí
+            onDeleteTransaction={handleDeleteTransaction} 
         />
       )}
 

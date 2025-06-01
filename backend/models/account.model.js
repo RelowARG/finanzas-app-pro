@@ -40,17 +40,28 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
         type: Sequelize.DECIMAL(15, 2),
         allowNull: true
     },
-    // NUEVO CAMPO
     includeInDashboardSummary: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true // Por defecto, todas las cuentas se incluyen
+      defaultValue: true
+    },
+    // Campos para tarjetas de crédito
+    statementBalance: { // Saldo del resumen actual a pagar
+        type: Sequelize.DECIMAL(15, 2),
+        allowNull: true
+    },
+    statementCloseDate: { // Fecha de cierre del resumen actual
+        type: DataTypes.DATEONLY,
+        allowNull: true
+    },
+    statementDueDate: { // Fecha de vencimiento del resumen actual
+        type: DataTypes.DATEONLY,
+        allowNull: true
     }
     // userId se añade por la asociación
   }, {
     tableName: 'accounts',
-    timestamps: true, // Sequelize añade createdAt y updatedAt automáticamente
-    // Opciones adicionales del modelo si son necesarias
+    timestamps: true,
   });
 
   return Account;

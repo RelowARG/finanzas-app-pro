@@ -1,8 +1,8 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/EditAccountPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import accountService from '../services/accounts.service';
-import './AddAccountPage.css'; // Reutilizamos los estilos
+import accountService from '../services/accounts.service'; // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
+import './AddAccountPage.css'; // Reutilizamos los estilos [cite: finanzas-app-pro/frontend/src/pages/AddAccountPage.css]
 
 const EditAccountPage = () => {
   const navigate = useNavigate();
@@ -17,7 +17,12 @@ const EditAccountPage = () => {
   const [bankName, setBankName] = useState('');
   const [accountNumberLast4, setAccountNumberLast4] = useState('');
   const [creditLimit, setCreditLimit] = useState('');
-  const [includeInDashboardSummary, setIncludeInDashboardSummary] = useState(true); // NUEVO ESTADO
+  const [includeInDashboardSummary, setIncludeInDashboardSummary] = useState(true);
+  
+  // Nuevos estados para tarjetas de crédito
+  const [statementBalance, setStatementBalance] = useState('');
+  const [statementCloseDate, setStatementCloseDate] = useState('');
+  const [statementDueDate, setStatementDueDate] = useState('');
   
   const [originalAccountData, setOriginalAccountData] = useState(null); 
   const [error, setError] = useState('');
@@ -41,14 +46,20 @@ const EditAccountPage = () => {
   const populateForm = useCallback((accData) => {
     setOriginalAccountData(accData); 
     setAccountName(accData.name || '');
-    setAccountType(accData.type || 'efectivo');
+    setAccountType(accData.type || 'efectivo'); // El tipo no se edita, solo se muestra
     setBalance(accData.balance !== null && accData.balance !== undefined ? accData.balance.toString() : '');
     setCurrency(accData.currency || 'ARS');
     setIcon(accData.icon || '💰');
     setBankName(accData.bankName || '');
     setAccountNumberLast4(accData.accountNumberLast4 || '');
     setCreditLimit(accData.creditLimit !== null && accData.creditLimit !== undefined ? accData.creditLimit.toString() : '');
-    setIncludeInDashboardSummary(accData.includeInDashboardSummary !== undefined ? accData.includeInDashboardSummary : true); // Cargar valor existente
+    setIncludeInDashboardSummary(accData.includeInDashboardSummary !== undefined ? accData.includeInDashboardSummary : true);
+    
+    if (accData.type === 'tarjeta_credito') {
+      setStatementBalance(accData.statementBalance !== null && accData.statementBalance !== undefined ? accData.statementBalance.toString() : '');
+      setStatementCloseDate(accData.statementCloseDate ? accData.statementCloseDate.split('T')[0] : '');
+      setStatementDueDate(accData.statementDueDate ? accData.statementDueDate.split('T')[0] : '');
+    }
   }, []);
 
   useEffect(() => {
@@ -56,7 +67,7 @@ const EditAccountPage = () => {
       setLoading(true);
       setError('');
       try {
-        const data = await accountService.getAccountById(accountId);
+        const data = await accountService.getAccountById(accountId); // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
         if (data) {
           populateForm(data);
         } else {
@@ -75,26 +86,12 @@ const EditAccountPage = () => {
     }
   }, [accountId, navigate, populateForm]);
 
-  useEffect(() => {
-    if (!loading) { 
-        const selectedType = accountTypeOptions.find(opt => opt.value === accountType);
-        if (selectedType && originalAccountData) { // Solo si ya hay datos originales
-            // Actualizar icono solo si el tipo cambió Y el icono actual era el del tipo anterior
-            const originalTypeInfo = accountTypeOptions.find(opt => opt.value === originalAccountData.type);
-            if (accountType !== originalAccountData.type && icon === originalTypeInfo?.icon) {
-                 setIcon(selectedType.icon);
-            } else if (!icon && selectedType) { // Si no hay icono seteado, poner el del tipo
-                setIcon(selectedType.icon);
-            }
-        } else if (selectedType && !icon) { // Si no hay datos originales pero no hay icono
-             setIcon(selectedType.icon);
-        }
-    }
-  }, [accountType, loading, icon, originalAccountData]);
+  // No necesitamos el useEffect para cambiar el ícono si el tipo no se edita.
+  // Si el ícono es editable independientemente, se maneja con su propio input.
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!accountName.trim()) { // El tipo no se edita, así que no se valida aquí
+    if (!accountName.trim()) {
       setError('El nombre de la cuenta es requerido.');
       return;
     }
@@ -103,18 +100,24 @@ const EditAccountPage = () => {
 
     const accountDataToUpdate = {
       name: accountName.trim(),
-      // type: accountType, // No permitir editar el tipo
+      // type: accountType, // NO ENVIAR EL TIPO, no se permite editar
       balance: parseFloat(balance) || 0.00,
       currency: currency,
       icon: icon,
       bankName: bankName !== undefined ? bankName.trim() : null,
       accountNumberLast4: accountNumberLast4 !== undefined ? accountNumberLast4.trim() : null,
-      creditLimit: creditLimit !== undefined ? (creditLimit ? parseFloat(creditLimit) : null) : null,
-      includeInDashboardSummary, // NUEVO CAMPO ENVIADO AL BACKEND
+      creditLimit: accountType === 'tarjeta_credito' && creditLimit ? parseFloat(creditLimit) : null,
+      includeInDashboardSummary,
     };
+
+    if (originalAccountData && originalAccountData.type === 'tarjeta_credito') {
+      accountDataToUpdate.statementBalance = statementBalance ? parseFloat(statementBalance) : null;
+      accountDataToUpdate.statementCloseDate = statementCloseDate || null;
+      accountDataToUpdate.statementDueDate = statementDueDate || null;
+    }
     
     try {
-      await accountService.updateAccount(accountId, accountDataToUpdate);
+      await accountService.updateAccount(accountId, accountDataToUpdate); // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
       navigate('/accounts'); 
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Error al actualizar la cuenta.');
@@ -144,7 +147,7 @@ const EditAccountPage = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="accountTypeDisplay">Tipo de Cuenta:</label>
+            <label htmlFor="accountTypeDisplay">Tipo de Cuenta (No editable):</label>
             <input 
                 type="text" 
                 id="accountTypeDisplay" 
@@ -168,24 +171,43 @@ const EditAccountPage = () => {
             </select>
           </div>
 
-          {accountType === 'bancaria' && (
-            <>
-              <div className="form-group">
-                <label htmlFor="bankName">Nombre del Banco (Opcional):</label>
-                <input type="text" id="bankName" value={bankName} onChange={(e) => setBankName(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="accountNumberLast4">Últimos 4 dígitos (Opcional):</label>
-                <input type="text" id="accountNumberLast4" value={accountNumberLast4} onChange={(e) => setAccountNumberLast4(e.target.value)} maxLength="4" />
-              </div>
-            </>
+          {(accountType === 'bancaria' || accountType === 'tarjeta_credito') && (
+            <div className="form-group">
+              <label htmlFor="bankName">Nombre del Banco/Emisor (Opcional):</label>
+              <input type="text" id="bankName" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+            </div>
+          )}
+          {(accountType === 'bancaria' || accountType === 'tarjeta_credito' || accountType === 'digital_wallet') && (
+             <div className="form-group">
+              <label htmlFor="accountNumberLast4">Últimos 4 dígitos (Opcional):</label>
+              <input type="text" id="accountNumberLast4" value={accountNumberLast4} onChange={(e) => setAccountNumberLast4(e.target.value)} maxLength="4" />
+            </div>
           )}
 
           {accountType === 'tarjeta_credito' && (
-            <div className="form-group">
-              <label htmlFor="creditLimit">Límite de Crédito (Opcional):</label>
-              <input type="number" step="0.01" id="creditLimit" value={creditLimit} onChange={(e) => setCreditLimit(e.target.value)} />
-            </div>
+            <>
+              <div className="form-group">
+                <label htmlFor="creditLimit">Límite de Crédito (Opcional):</label>
+                <input type="number" step="0.01" id="creditLimit" value={creditLimit} onChange={(e) => setCreditLimit(e.target.value)} />
+              </div>
+              <hr/>
+              <h4>Información del Resumen (Opcional)</h4>
+              <div className="form-group">
+                <label htmlFor="statementBalance">Saldo del Resumen a Pagar:</label>
+                <input type="number" step="0.01" id="statementBalance" value={statementBalance} onChange={(e) => setStatementBalance(e.target.value)} />
+              </div>
+              <div className="form-grid-halves">
+                <div className="form-group">
+                  <label htmlFor="statementCloseDate">Fecha de Cierre del Resumen:</label>
+                  <input type="date" id="statementCloseDate" value={statementCloseDate} onChange={(e) => setStatementCloseDate(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="statementDueDate">Fecha de Vencimiento del Resumen:</label>
+                  <input type="date" id="statementDueDate" value={statementDueDate} onChange={(e) => setStatementDueDate(e.target.value)} />
+                </div>
+              </div>
+              <hr/>
+            </>
           )}
           
           <div className="form-group">
@@ -193,7 +215,6 @@ const EditAccountPage = () => {
             <input type="text" id="icon" value={icon} onChange={(e) => setIcon(e.target.value)} maxLength="2" style={{width: '80px', textAlign: 'center', fontSize: '1.5rem'}} />
           </div>
 
-          {/* NUEVO CHECKBOX */}
           <div className="form-group">
             <label htmlFor="includeInDashboardSummary" className="checkbox-label">
               <input
@@ -202,7 +223,7 @@ const EditAccountPage = () => {
                 checked={includeInDashboardSummary}
                 onChange={(e) => setIncludeInDashboardSummary(e.target.checked)}
               />
-              Incluir en el resumen del dashboard
+              Incluir en el resumen del dashboard y cálculos generales
             </label>
           </div>
 

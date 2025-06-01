@@ -3,7 +3,6 @@ import React from 'react';
 import TransactionItem from './TransactionItem'; // [cite: finanzas-app-pro/frontend/src/components/transactions/TransactionItem.jsx]
 import './TransactionList.css'; // [cite: finanzas-app-pro/frontend/src/components/transactions/TransactionList.css]
 
-// Añadimos onDeleteTransaction como prop
 const TransactionList = ({ transactions, onDeleteTransaction }) => {
   if (!transactions || transactions.length === 0) {
     return <p className="no-transactions-message">No se encontraron movimientos con los filtros aplicados.</p>;
@@ -27,7 +26,7 @@ const TransactionList = ({ transactions, onDeleteTransaction }) => {
             <TransactionItem 
               key={transaction.id} 
               transaction={transaction} 
-              onDeleteTransaction={onDeleteTransaction} // Pasar la prop
+              onDeleteTransaction={onDeleteTransaction} // Pasar la prop correctamente
             />
           ))}
         </tbody>
