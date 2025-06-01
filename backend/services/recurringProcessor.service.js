@@ -3,7 +3,7 @@ const db = require('../models');
 const RecurringTransaction = db.RecurringTransaction;
 const Transaction = db.Transaction;
 const Account = db.Account;
-const Category = db.Category; // Asegúrate que esté bien si lo usas como db.Category
+const Category = db.Category;
 const { Op } = require('sequelize');
 const { calculateNextRunDate } = require('../utils/dateUtils');
 
@@ -11,7 +11,7 @@ const processSingleRecurringTransaction = async (recurringTx, processingDate) =>
   const t = await db.sequelize.transaction();
   try {
     const processingDateString = processingDate.toISOString().split('T')[0];
-    console.log(`[Processor] Iniciando procesamiento para Recurrente ID: ${recurringTx.id} ("${recurringTx.description}") con fecha: ${processingDateString}`);
+    console.log(`[Processor] Iniciando procesamiento para Recurrente ID: ${recurringTx.id} ("${recurringTx.description}") con fecha de transacción: ${processingDateString}`);
 
     const account = await Account.findOne({ 
         where: { id: recurringTx.accountId, userId: recurringTx.userId },
@@ -24,7 +24,7 @@ const processSingleRecurringTransaction = async (recurringTx, processingDate) =>
         throw new Error(errorMsg);
     }
 
-    const category = await Category.findOne({ // Usar db.Category
+    const category = await Category.findOne({
         where: {
           id: recurringTx.categoryId,
           type: recurringTx.type,
@@ -40,18 +40,12 @@ const processSingleRecurringTransaction = async (recurringTx, processingDate) =>
     }
 
     console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Cuenta: ${account.name}, Categoría: ${category.name}`);
-
-    // El monto en RecurringTransaction ya debe tener el signo correcto (+ para ingreso, - para egreso)
-    // Si no es así, y 'amount' es siempre positivo y 'type' define el signo, ajusta aquí.
-    // Por ahora, asumimos que recurringTx.amount ya es correcto.
-    // Si recurringTx.amount es siempre positivo y type lo define:
-    // const signedAmount = recurringTx.type === 'egreso' ? -Math.abs(recurringTx.amount) : Math.abs(recurringTx.amount);
     
     const newTransaction = await Transaction.create({
       description: recurringTx.description,
-      amount: recurringTx.amount, // Usar el monto directamente
+      amount: recurringTx.amount,
       currency: recurringTx.currency || account.currency,
-      date: processingDateString,
+      date: processingDateString, // Fecha en la que se registra la transacción
       type: recurringTx.type,
       notes: recurringTx.notes,
       icon: recurringTx.icon || category.icon,
@@ -62,34 +56,33 @@ const processSingleRecurringTransaction = async (recurringTx, processingDate) =>
 
     console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Transacción creada ID: ${newTransaction.id}`);
 
-    const transactionAmountForBalance = parseFloat(newTransaction.amount); // amount ya tiene signo
+    const transactionAmountForBalance = parseFloat(newTransaction.amount);
     const newBalance = parseFloat(account.balance) + transactionAmountForBalance;
     await account.update({ balance: newBalance }, { transaction: t });
     console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Saldo de cuenta ${account.id} actualizado a: ${newBalance}`);
 
+    // La nueva nextRunDate se calcula basada en la fecha en que la transacción DEBIÓ ocurrir (processingDateString)
     const baseDateForNextCalculation = new Date(processingDateString + 'T00:00:00Z');
     const newNextRunDate = calculateNextRunDate(
         recurringTx.frequency, 
         baseDateForNextCalculation, 
         recurringTx.dayOfMonth, 
         recurringTx.dayOfWeek,
-        recurringTx.monthOfYear, // Añadir monthOfYear
-        false // ya no es la primera vez, estamos calculando la *siguiente*
+        recurringTx.monthOfYear,
+        false 
     );
     
     console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Nueva nextRunDate calculada: ${newNextRunDate}`);
 
     const updatePayload = {
-      lastRunDate: processingDateString,
+      lastRunDate: processingDateString, // Se procesó en esta fecha
       nextRunDate: newNextRunDate,
     };
     
-    // Lógica para desactivar si se superó endDate
     if (recurringTx.endDate && new Date(newNextRunDate) > new Date(recurringTx.endDate  + 'T00:00:00Z')) {
       updatePayload.isActive = false;
       console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Desactivado por superar fecha de fin.`);
     }
-
 
     await recurringTx.update(updatePayload, { transaction: t });
 
@@ -106,56 +99,62 @@ const processSingleRecurringTransaction = async (recurringTx, processingDate) =>
   }
 };
 
-// ... (resto de processAllDueRecurringTransactions sin cambios en su llamada a processSingleRecurringTransaction, ya que la firma de processSingleRecurringTransaction no cambió para ella)
-const processAllDueRecurringTransactions = async () => {
-  console.log(`[SchedulerService] Verificando movimientos recurrentes para ejecutar...`);
-  const today = new Date();
-  const todayString = today.toISOString().split('T')[0]; 
-  console.log(`[SchedulerService] Verificando para 'todayString' = ${todayString} (fecha del servidor)`);
+const processAllDueRecurringTransactions = async (isStartupCatchUp = false) => {
+  console.log(`[SchedulerService] Verificando movimientos recurrentes (Catch-up: ${isStartupCatchUp})...`);
+  const today = new Date(); // Hora actual del servidor
+  const todayDateString = today.toISOString().split('T')[0]; // Solo la fecha YYYY-MM-DD
+
+  // Para el "catch-up" al inicio, queremos procesar las tareas cuya nextRunDate es AYER o anterior.
+  // Para la ejecución normal del cron, queremos procesar las tareas cuya nextRunDate es HOY o anterior.
+  let dateCondition;
+  if (isStartupCatchUp) {
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const yesterdayDateString = yesterday.toISOString().split('T')[0];
+    dateCondition = { [Op.lte]: yesterdayDateString }; // Solo tareas de días anteriores
+    console.log(`[SchedulerService] Catch-up: Buscando tareas con nextRunDate <= ${yesterdayDateString}`);
+  } else {
+    dateCondition = { [Op.lte]: todayDateString }; // Tareas de hoy o anteriores
+    console.log(`[SchedulerService] Cron normal: Buscando tareas con nextRunDate <= ${todayDateString}`);
+  }
 
   try {
     const dueRecurringTxs = await RecurringTransaction.findAll({
       where: {
         isActive: true,
-        nextRunDate: {
-          [Op.lte]: todayString 
-        },
-        // startDate: { [Op.lte]: todayString }, // Opcional: asegurar que ya haya empezado
-        // [Op.or]: [ // Opcional: asegurar que no haya terminado
-        //   { endDate: null },
-        //   { endDate: { [Op.gte]: todayString } }
-        // ]
+        nextRunDate: dateCondition,
+        // Opcional: startDate y endDate (como estaban antes)
       },
-       include: [
-         { model: db.User, as: 'user', attributes: ['id'] } // Necesario para acceder a userId para la cuenta/categoría
+       include: [ 
+         { model: db.User, as: 'user', attributes: ['id'] }
        ]
     });
 
     if (dueRecurringTxs.length === 0) {
-      console.log(`[SchedulerService] No hay movimientos recurrentes para procesar hoy (${todayString}).`);
+      console.log(`[SchedulerService] No hay movimientos recurrentes ${isStartupCatchUp ? 'atrasados (catch-up)' : 'para procesar hoy'}.`);
       return;
     }
 
-    console.log(`[SchedulerService] Se encontraron ${dueRecurringTxs.length} movimientos recurrentes para procesar.`);
+    console.log(`[SchedulerService] Se encontraron ${dueRecurringTxs.length} movimientos recurrentes para procesar (${isStartupCatchUp ? 'catch-up' : 'cron normal'}).`);
 
     for (const recurringTxInstance of dueRecurringTxs) {
       try {
-        // Usar la nextRunDate del movimiento como la fecha de la transacción
+        // Siempre usar la nextRunDate del movimiento como la fecha de la transacción,
+        // ya que esa es la fecha en la que DEBIÓ ocurrir.
         const processingDateForTx = new Date(recurringTxInstance.nextRunDate + 'T00:00:00Z'); 
         
-        console.log(`[SchedulerService] Intentando procesar Recurrente ID: ${recurringTxInstance.id} con nextRunDate: ${recurringTxInstance.nextRunDate} usando fecha: ${processingDateForTx.toISOString().split('T')[0]}`);
+        console.log(`[SchedulerService] Intentando procesar Recurrente ID: ${recurringTxInstance.id} (nextRunDate: ${recurringTxInstance.nextRunDate}) con fecha de transacción: ${processingDateForTx.toISOString().split('T')[0]}`);
         
         await processSingleRecurringTransaction(recurringTxInstance, processingDateForTx);
       } catch (singleError) {
         console.error(`[SchedulerService] Falló el procesamiento individual del Recurrente ID: ${recurringTxInstance.id}. Mensaje: ${singleError.message}. Continuando con el siguiente.`);
       }
     }
-    console.log('[SchedulerService] Procesamiento de todos los movimientos recurrentes debidos finalizado.');
+    console.log(`[SchedulerService] Procesamiento de todos los movimientos recurrentes (${isStartupCatchUp ? 'catch-up' : 'cron normal'}) finalizado.`);
   } catch (error) {
-      console.error('[SchedulerService] Error general obteniendo o iterando movimientos recurrentes:', error.message, error.stack);
+      console.error(`[SchedulerService] Error general obteniendo/iterando movimientos recurrentes (${isStartupCatchUp ? 'catch-up' : 'cron normal'}):`, error.message, error.stack);
   }
 };
-
 
 module.exports = {
   processAllDueRecurringTransactions,

@@ -7,20 +7,18 @@ const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // user ahora contendrá dashboardConfig y permissions
   const [loadingAuth, setLoadingAuth] = useState(true);
-  const [permissions, setPermissions] = useState([]); // *** NUEVO: Estado para permisos ***
+  // Los permisos ya se manejan aquí si getMe y login devuelven user.permissions
 
   useEffect(() => {
     const validateUserSession = async () => {
       setLoadingAuth(true);
       const fetchedUser = await authService.verifyTokenAndFetchUser();
       if (fetchedUser) {
-        setUser(fetchedUser);
-        setPermissions(fetchedUser.permissions || []); // *** NUEVO: Guardar permisos ***
+        setUser(fetchedUser); // fetchedUser ya incluye permissions y dashboardConfig desde el backend
       } else {
         setUser(null);
-        setPermissions([]); // Limpiar permisos si no hay usuario
       }
       setLoadingAuth(false);
     };
@@ -28,22 +26,28 @@ export const AuthProvider = ({ children }) => {
     validateUserSession();
   }, []);
 
-  const login = (userDataFromBackend) => {
-    setUser(userDataFromBackend.user);
-    setPermissions(userDataFromBackend.user?.permissions || []); // *** NUEVO: Guardar permisos al loguear ***
-    // El token ya se guarda en localStorage dentro de authService.login
+  const login = (userDataFromBackend) => { // userDataFromBackend es { message, user, token }
+    setUser(userDataFromBackend.user); // user aquí ya tiene permissions y dashboardConfig
+    // El token ya se guarda en authService.login
   };
 
   const logout = () => {
     authService.logout();
     setUser(null);
-    setPermissions([]); // *** NUEVO: Limpiar permisos al desloguear ***
   };
 
-  // *** NUEVO: Función para verificar permisos ***
   const hasPermission = (permissionName) => {
-    return permissions.includes(permissionName);
+    return user && user.permissions && user.permissions.includes(permissionName);
   };
+
+  // *** NUEVA FUNCIÓN PARA ACTUALIZAR EL USER EN EL CONTEXTO DESPUÉS DE GUARDAR CONFIG ***
+  const updateUserInContext = (updatedUserData) => {
+    setUser(currentUser => ({
+      ...currentUser,
+      ...updatedUserData // Esto fusionará los campos actualizados, como dashboardConfig
+    }));
+  };
+
 
   const value = {
     user,
@@ -51,8 +55,8 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     isAuthenticated: !!user,
-    permissions,      // *** NUEVO: Exponer permisos (opcional) ***
-    hasPermission,    // *** NUEVO: Exponer función de verificación ***
+    hasPermission,
+    updateUserInContext, // *** EXPORTAR NUEVA FUNCIÓN ***
   };
 
   return (

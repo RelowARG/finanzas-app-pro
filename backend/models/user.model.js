@@ -29,11 +29,17 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       defaultValue: 'user'
     },
-    lastLoginAt: { // NUEVO CAMPO
+    lastLoginAt: {
       type: Sequelize.DATE,
       allowNull: true
+    },
+    // *** NUEVO CAMPO ***
+    dashboardConfig: {
+      type: Sequelize.JSON, // O Sequelize.TEXT si prefieres stringificar manualmente
+      allowNull: true,
+      defaultValue: null // O un JSON string con la configuración por defecto
     }
-    // Timestamps (createdAt, updatedAt) se añaden automáticamente por Sequelize
+    // Timestamps (createdAt, updatedAt) se añaden automáticamente
   }, {
     tableName: 'users',
     hooks: {

@@ -1,20 +1,15 @@
 // Ruta: finanzas-app-pro/backend/server.js
-// (Solo se muestra la parte relevante para la modificación)
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
-const apiRoutes = require('./api'); //
-const errorHandler = require('./middleware/errorHandler'); //
-const db = require('./models'); //
-const { seedDefaultCategories } = require('./api/categories/categories.controller'); //
+const apiRoutes = require('./api');
+const errorHandler = require('./middleware/errorHandler');
+const db = require('./models');
+const { seedDefaultCategories } = require('./api/categories/categories.controller');
 const { processAllDueRecurringTransactions } = require('./services/recurringProcessor.service'); //
 
-// *** INICIO: Definición de la función de sembrado de permisos ***
-// (Puedes colocar la función seedPermissionsAndRoles que te proporcioné anteriormente aquí,
-// o importarla si la pones en un archivo separado)
-const seedPermissionsAndRoles = async (database) => { // database es db
+const seedPermissionsAndRoles = async (database) => {
   try {
     const permissions = [
       { name: 'view_dashboard', description: 'Ver el dashboard principal' },
@@ -30,6 +25,7 @@ const seedPermissionsAndRoles = async (database) => { // database es db
       { name: 'admin_view_all_users', description: 'Ver lista de todos los usuarios' },
       { name: 'admin_manage_user_roles', description: 'Cambiar roles de usuarios' },
       { name: 'admin_delete_users', description: 'Eliminar usuarios del sistema' },
+      { name: 'admin_manage_permissions_config', description: 'Gestionar la configuración de permisos y la asignación de permisos a roles' },
     ];
 
     const createdPermissionsMap = {};
@@ -54,7 +50,7 @@ const seedPermissionsAndRoles = async (database) => { // database es db
         'view_dashboard', 'manage_accounts', 'manage_transactions', 'manage_budgets',
         'view_reports', 'manage_investments', 'manage_categories', 
         'manage_recurring_transactions', 'manage_debts_loans', 'manage_exchange_rates',
-        'admin_view_all_users', 'admin_manage_user_roles', 'admin_delete_users'
+        'admin_view_all_users', 'admin_manage_user_roles', 'admin_delete_users', 'admin_manage_permissions_config'
       ],
     };
 
@@ -81,14 +77,11 @@ const seedPermissionsAndRoles = async (database) => { // database es db
     console.error('Error crítico sembrando permisos y asignaciones de roles:', error);
   }
 };
-// *** FIN: Definición de la función de sembrado de permisos ***
-
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 const HOST = '0.0.0.0';
 
-// ... (resto de la configuración de CORS, express.json, etc.) ...
 const defaultFrontendUrl = 'http://localhost:5173';
 const frontendUrl = process.env.FRONTEND_URL || defaultFrontendUrl;
 const allowedOrigins = [frontendUrl];
@@ -108,7 +101,6 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 const connectAndSyncDb = async () => {
   try {
     await db.sequelize.authenticate();
@@ -117,8 +109,8 @@ const connectAndSyncDb = async () => {
     await db.sequelize.sync({ force: false }); 
     console.log('Modelos sincronizados con la base de datos.');
 
-    await seedDefaultCategories(); //
-    await seedPermissionsAndRoles(db); // *** NUEVO: Llamada a la función de sembrado de permisos ***
+    await seedDefaultCategories();
+    await seedPermissionsAndRoles(db); 
 
   } catch (error) {
     console.error('No se pudo conectar o sincronizar la base de datos:', error);
@@ -126,16 +118,25 @@ const connectAndSyncDb = async () => {
   }
 };
 
-app.use('/api', apiRoutes); //
+app.use('/api', apiRoutes);
 
 app.get('/', (req, res) => {
   res.send('Servidor Backend de Finanzas App Pro funcionando correctamente!');
 });
 
-app.use(errorHandler); //
+app.use(errorHandler);
 
 const startServer = async () => {
   await connectAndSyncDb();
+
+  console.log('[Startup] Verificando movimientos recurrentes pendientes al iniciar el servidor...');
+  try {
+    // Pasar 'true' para indicar que es la ejecución de "catch-up" al inicio
+    await processAllDueRecurringTransactions(true); // *** MODIFICADO AQUÍ ***
+    console.log('[Startup] Verificación y procesamiento de recurrentes pendientes al inicio, finalizada.');
+  } catch (startupError) {
+    console.error('[Startup] Error procesando movimientos recurrentes pendientes al inicio:', startupError);
+  }
 
   app.listen(PORT, HOST, () => {
     console.log(`Servidor backend escuchando en http://${HOST}:${PORT}`);
@@ -149,12 +150,14 @@ const startServer = async () => {
 
     if (cron.validate(cronSchedule)) {
       cron.schedule(cronSchedule, () => {
-        console.log(`[CronJob] Ejecutando tarea programada de movimientos recurrentes a las ${new Date().toLocaleString('es-AR')}...`);
-        processAllDueRecurringTransactions().catch(err => { //
+        console.log(`[CronJob] Ejecutando tarea programada de movimientos recurrentes a las ${new Date().toLocaleString('es-AR')} (hora del servidor)...`);
+        // Pasar 'false' o no pasar argumento para la ejecución normal del cron
+        processAllDueRecurringTransactions(false).catch(err => { // *** MODIFICADO AQUÍ ***
           console.error('[CronJob] Error durante la ejecución de processAllDueRecurringTransactions:', err);
         });
       }, {
         scheduled: true,
+        // timezone: "America/Argentina/Buenos_Aires" 
       });
       console.log(`[CronJob] Tarea de movimientos recurrentes programada con la expresión: "${cronSchedule}"`);
     } else {

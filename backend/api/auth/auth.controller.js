@@ -2,8 +2,8 @@
 const jwt = require('jsonwebtoken');
 const db = require('../../models');
 const User = db.User;
-const RolePermission = db.RolePermission; // *** AÑADIDO ***
-const Permission = db.Permission;       // *** AÑADIDO ***
+const RolePermission = db.RolePermission;
+const Permission = db.Permission;
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -12,7 +12,6 @@ const generateToken = (id) => {
 };
 
 const registerUser = async (req, res, next) => {
-  // ... (sin cambios, el de tu archivo original está bien)
   const { name, email, password, role } = req.body;
 
   if (!name || !email || !password) {
@@ -33,7 +32,8 @@ const registerUser = async (req, res, next) => {
       name,
       email,
       password,
-      role: role || 'user' 
+      role: role || 'user'
+      // dashboardConfig se establecerá a null por defecto según el modelo
     });
 
     if (user) {
@@ -44,7 +44,7 @@ const registerUser = async (req, res, next) => {
           name: user.name,
           email: user.email,
           role: user.role,
-          lastLoginAt: user.lastLoginAt
+          // No incluimos dashboardConfig aquí ya que será null y se cargará/creará en el primer login o getMe
         },
         token: generateToken(user.id),
       });
@@ -57,12 +57,11 @@ const registerUser = async (req, res, next) => {
         const messages = error.errors.map(e => e.message);
         return res.status(400).json({ message: 'Error de validación', errors: messages });
     }
-    next(error); 
+    next(error);
   }
 };
 
 const loginUser = async (req, res, next) => {
-  // ... (sin cambios, el de tu archivo original está bien)
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -70,19 +69,21 @@ const loginUser = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findOne({ where: { email } });
+    // Asegurarse de que se seleccionen todos los campos necesarios, incluyendo dashboardConfig
+    const user = await User.findOne({
+      where: { email }
+      // attributes: por defecto trae todos si no se especifica, lo cual está bien.
+    });
 
     if (user && (await user.comparePassword(password))) {
       user.lastLoginAt = new Date();
-      await user.save(); 
+      await user.save({ fields: ['lastLoginAt', 'updatedAt'] }); // Guardar solo los campos modificados explícitamente
 
-      // *** NUEVO: Obtener permisos del usuario después del login ***
       const rolePermissions = await RolePermission.findAll({
         where: { roleName: user.role },
         include: [{ model: Permission, as: 'permissionDetail', attributes: ['name'] }]
       });
       const permissions = rolePermissions.map(rp => rp.permissionDetail.name);
-      // *** FIN NUEVO ***
 
       res.status(200).json({
         message: 'Login exitoso.',
@@ -94,7 +95,8 @@ const loginUser = async (req, res, next) => {
           lastLoginAt: user.lastLoginAt,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
-          permissions: permissions // *** AÑADIDO: Enviar permisos al frontend ***
+          permissions: permissions,
+          dashboardConfig: user.dashboardConfig // Incluir dashboardConfig
         },
         token: generateToken(user.id),
       });
@@ -108,35 +110,91 @@ const loginUser = async (req, res, next) => {
 };
 
 const getMe = async (req, res, next) => {
-  if (!req.user) {
-      return res.status(401).json({ message: 'No autorizado, usuario no encontrado en la solicitud.'})
+  if (!req.user || !req.user.id) { // req.user es establecido por 'protect'
+      return res.status(401).json({ message: 'No autorizado, usuario no identificado en la solicitud.'})
   }
   try {
     const userFromDb = await User.findByPk(req.user.id, {
-      attributes: ['id', 'name', 'email', 'role', 'createdAt', 'updatedAt', 'lastLoginAt']
+      // Especificar atributos para asegurar que dashboardConfig se incluya
+      attributes: ['id', 'name', 'email', 'role', 'createdAt', 'updatedAt', 'lastLoginAt', 'dashboardConfig']
     });
 
     if (!userFromDb) {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
 
-    // *** NUEVO: Obtener y añadir permisos del usuario ***
     const rolePermissions = await RolePermission.findAll({
       where: { roleName: userFromDb.role },
       include: [{ model: Permission, as: 'permissionDetail', attributes: ['name'] }]
     });
     const permissions = rolePermissions.map(rp => rp.permissionDetail.name);
-    // *** FIN NUEVO ***
 
-    const userWithPermissions = {
+    const userResponse = {
         ...userFromDb.toJSON(),
-        permissions // Añadir el array de nombres de permisos
+        permissions
     };
 
-    res.status(200).json(userWithPermissions);
+    res.status(200).json(userResponse);
 
   } catch (error) {
     console.error('Error en getMe:', error);
+    next(error);
+  }
+};
+
+const updateDashboardConfig = async (req, res, next) => {
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ message: 'No autorizado.' });
+  }
+
+  const { dashboardConfig } = req.body;
+
+  // Validación básica del objeto de configuración (ajusta según tu estructura esperada)
+  if (!dashboardConfig || typeof dashboardConfig !== 'object' ||
+      !dashboardConfig.widgetLayout || // Asumiendo que widgetLayout es una propiedad
+      !Array.isArray(dashboardConfig.widgetLayout.left) ||
+      !Array.isArray(dashboardConfig.widgetLayout.right) ||
+      !dashboardConfig.displayedAccountIds || !Array.isArray(dashboardConfig.displayedAccountIds)
+     ) {
+    console.error('[AUTH_CTRL] Formato de dashboardConfig inválido recibido:', JSON.stringify(dashboardConfig, null, 2));
+    return res.status(400).json({ message: 'Formato de dashboardConfig inválido. Debe ser un objeto con widgetLayout (con propiedades left y right como arrays) y displayedAccountIds (como array).' });
+  }
+
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+
+    console.log('[AUTH_CTRL] Configuración del dashboard recibida para guardar:', JSON.stringify(dashboardConfig, null, 2));
+    console.log('[AUTH_CTRL] Tipo de dato de dashboardConfig recibido:', typeof dashboardConfig);
+
+    user.dashboardConfig = dashboardConfig;
+
+    console.log('[AUTH_CTRL] Objeto usuario ANTES de save:', JSON.stringify(user.toJSON(), null, 2));
+    console.log('[AUTH_CTRL] Intentando user.save()...');
+    await user.save(); // Aquí se guardará el dashboardConfig
+    console.log('[AUTH_CTRL] user.save() exitoso.');
+
+    res.status(200).json({
+        message: 'Configuración del dashboard actualizada exitosamente.',
+        dashboardConfig: user.dashboardConfig // Devolver la configuración guardada
+    });
+  } catch (error) {
+    console.error('Error actualizando dashboardConfig en auth.controller:', error);
+    console.error('Error Name:', error.name);
+    console.error('Error Message:', error.message);
+    if (error.original) {
+      console.error('Original DB Error:', error.original);
+      console.error('Original DB Error Code:', error.original.code);
+      console.error('Original DB Error Errno:', error.original.errno);
+      console.error('Original DB Error SQL State:', error.original.sqlState);
+    }
+    if (error.errors) { // Errores de validación de Sequelize
+      console.error('Sequelize Validation Errors:', JSON.stringify(error.errors, null, 2));
+      return res.status(400).json({ message: 'Error de validación al guardar la configuración.', errors: error.errors.map(e => e.message) });
+    }
+    // Enviar al manejador de errores global que logueará el stack en desarrollo
     next(error);
   }
 };
@@ -145,4 +203,5 @@ module.exports = {
   registerUser,
   loginUser,
   getMe,
+  updateDashboardConfig
 };

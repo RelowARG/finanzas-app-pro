@@ -1,41 +1,26 @@
 // Ruta: src/pages/DashboardPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext'; // [cite: finanzas-app-pro/frontend/src/contexts/AuthContext.jsx]
+import { useAuth } from '../contexts/AuthContext'; //
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragOverlay, MeasuringStrategy } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  MeasuringStrategy,
-  DragOverlay,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import AccountSummaryCard from '../components/dashboard/AccountSummaryCard'; //
+import BalanceOverview from '../components/dashboard/BalanceOverview'; //
+import RecentTransactions from '../components/dashboard/RecentTransactions'; //
+import SpendingChart from '../components/dashboard/SpendingChart'; //
+import InvestmentHighlights from '../components/dashboard/InvestmentHighlights'; //
+import MonthlySavingsWidget from '../components/dashboard/MonthlySavingsWidget'; //
+import ControlPanelWidget from '../components/dashboard/ControlPanelWidget'; //
+import BalanceTrendWidget from '../components/dashboard/BalanceTrendWidget'; //
+import AccountDashboardSelectionModal from '../components/dashboard/AccountDashboardSelectionModal'; //
+import SortableWidget from '../components/dashboard/SortableWidget'; //
 
-import AccountSummaryCard from '../components/dashboard/AccountSummaryCard'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/AccountSummaryCard.jsx]
-import BalanceOverview from '../components/dashboard/BalanceOverview'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/BalanceOverview.jsx]
-import RecentTransactions from '../components/dashboard/RecentTransactions'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/RecentTransactions.jsx]
-import SpendingChart from '../components/dashboard/SpendingChart'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/SpendingChart.jsx]
-import InvestmentHighlights from '../components/dashboard/InvestmentHighlights'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/InvestmentHighlights.jsx]
-import MonthlySavingsWidget from '../components/dashboard/MonthlySavingsWidget'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/MonthlySavingsWidget.jsx]
-import ControlPanelWidget from '../components/dashboard/ControlPanelWidget'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/ControlPanelWidget.jsx]
-import BalanceTrendWidget from '../components/dashboard/BalanceTrendWidget'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/BalanceTrendWidget.jsx]
-import AccountDashboardSelectionModal from '../components/dashboard/AccountDashboardSelectionModal'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/AccountDashboardSelectionModal.jsx]
-import SortableWidget from '../components/dashboard/SortableWidget'; // *** IMPORTACIÓN AÑADIDA/VERIFICADA *** [cite: finanzas-app-pro/frontend/src/components/dashboard/SortableWidget.jsx]
+import accountService from '../services/accounts.service'; //
+import dashboardService from '../services/dashboard.service'; //
+import authService from '../services/auth.service'; //
 
-import accountService from '../services/accounts.service'; // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
-import dashboardService from '../services/dashboard.service'; // [cite: finanzas-app-pro/frontend/src/services/dashboard.service.js]
-
-import './DashboardPage.css'; // [cite: finanzas-app-pro/frontend/src/pages/DashboardPage.css]
-import '../components/dashboard/DashboardComponents.css'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css]
+import './DashboardPage.css'; //
+import '../components/dashboard/DashboardComponents.css'; //
 
 const ALL_AVAILABLE_WIDGETS = {
   controlPanel: { Component: ControlPanelWidget, name: 'Panel de Control', defaultProps: {} },
@@ -47,34 +32,49 @@ const ALL_AVAILABLE_WIDGETS = {
   recentTransactions: { Component: RecentTransactions, name: 'Últimos Registros', defaultProps: {} },
 };
 
-const getDefaultWidgetConfig = () => ({
-  left: [
-    { id: 'controlPanel', ...ALL_AVAILABLE_WIDGETS.controlPanel, props: { saldoData: null, flujoData: null, gastadoData: null, loading: true } },
-    { id: 'spendingChart', ...ALL_AVAILABLE_WIDGETS.spendingChart, props: { loading: true } },
-    { id: 'balanceOverview', ...ALL_AVAILABLE_WIDGETS.balanceOverview, props: { summary: null, loading: true } },
-    { id: 'investmentHighlights', ...ALL_AVAILABLE_WIDGETS.investmentHighlights, props: { highlights: null, loading: true } },
-  ],
-  right: [
-    { id: 'balanceTrend', ...ALL_AVAILABLE_WIDGETS.balanceTrend, props: { chartData: null, loading: true } },
-    { id: 'monthlySavings', ...ALL_AVAILABLE_WIDGETS.monthlySavings, props: { status: null, loading: true } },
-    { id: 'recentTransactions', ...ALL_AVAILABLE_WIDGETS.recentTransactions, props: { loading: true } },
-  ],
+const getDefaultWidgetLayout = () => ({
+  left: ['controlPanel', 'spendingChart', 'balanceOverview', 'investmentHighlights'],
+  right: ['balanceTrend', 'monthlySavings', 'recentTransactions'],
 });
 
-const LOCAL_STORAGE_KEY_WIDGET_ORDER = 'dashboardWidgetOrder';
-const LOCAL_STORAGE_KEY_DISPLAYED_ACCOUNTS = 'dashboardDisplayedAccounts';
+const getDefaultWidgetConfig = (layout) => {
+    const config = { left: [], right: [] };
+    const currentLayout = layout || getDefaultWidgetLayout(); // Usar layout provisto o el default
+
+    currentLayout.left.forEach(id => {
+        if (ALL_AVAILABLE_WIDGETS[id]) {
+            config.left.push({ id, ...ALL_AVAILABLE_WIDGETS[id], props: { loading: true } });
+        }
+    });
+    currentLayout.right.forEach(id => {
+        if (ALL_AVAILABLE_WIDGETS[id]) {
+            config.right.push({ id, ...ALL_AVAILABLE_WIDGETS[id], props: { loading: true } });
+        }
+    });
+    
+    Object.keys(ALL_AVAILABLE_WIDGETS).forEach(widgetId => {
+        if (!config.left.find(w => w.id === widgetId) && !config.right.find(w => w.id === widgetId)) {
+            // Añadir a la columna derecha por defecto si falta
+            config.right.push({ id: widgetId, ...ALL_AVAILABLE_WIDGETS[widgetId], props: { loading: true } });
+        }
+    });
+    return config;
+};
+
 const MAX_SUMMARY_CARDS_DISPLAY = 5; 
 
 const DashboardPage = () => {
-  const { user } = useAuth(); 
+  const { user, updateUserInContext } = useAuth(); //
   
+  // *** CORRECCIÓN EN LA INICIALIZACIÓN DE apiData ***
   const [apiData, setApiData] = useState({
     investmentHighlights: null,
     monthlyFinancialStatus: null,
     balanceSummary: null, 
-    allUserAccounts: [], 
+    allUserAccounts: [], // <--- Inicializar como array vacío
     globalBudgetStatus: null,
     balanceTrendData: null,
+    // Estados de carga iniciales
     loadingAccounts: true,
     loadingInvestments: true,
     loadingMonthlyStatus: true,
@@ -82,79 +82,146 @@ const DashboardPage = () => {
     loadingGlobalBudget: true,
     loadingBalanceTrend: true,
   });
-  const [displayedAccountIds, setDisplayedAccountIds] = useState(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY_DISPLAYED_ACCOUNTS);
-    try {
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      console.error("Error parsing displayed accounts from localStorage", e);
-      return [];
-    }
-  });
+  const [displayedAccountIds, setDisplayedAccountIds] = useState([]);
   const [summaryAccountsToDisplay, setSummaryAccountsToDisplay] = useState([]);
+  
+  // Inicializar widgetConfig usando el user.dashboardConfig si existe, o un default
+  const [widgetConfig, setWidgetConfig] = useState(() => {
+      if (user && user.dashboardConfig && user.dashboardConfig.widgetLayout) {
+          return getDefaultWidgetConfig(user.dashboardConfig.widgetLayout);
+      }
+      return getDefaultWidgetConfig(null); // Usará el layout por defecto interno
+  });
 
 
   const [error, setError] = useState('');
   const [activeDragId, setActiveDragId] = useState(null);
   const [showAccountSelectionModal, setShowAccountSelectionModal] = useState(false);
+  const [isInitialConfigSyncAttempted, setIsInitialConfigSyncAttempted] = useState(false);
 
-  const [widgetConfig, setWidgetConfig] = useState(() => {
-    const savedOrder = localStorage.getItem(LOCAL_STORAGE_KEY_WIDGET_ORDER);
-    let initialConfig = getDefaultWidgetConfig();
-    if (savedOrder) {
-      try {
-        const parsedOrder = JSON.parse(savedOrder);
-        const loadedConfig = { left: [], right: [] };
-        const foundIds = new Set();
 
-        ['left', 'right'].forEach(columnKey => {
-          if (parsedOrder[columnKey] && Array.isArray(parsedOrder[columnKey])) {
-            parsedOrder[columnKey].forEach(widgetId => {
-              if (ALL_AVAILABLE_WIDGETS[widgetId] && !foundIds.has(widgetId)) {
-                const defaultWidgetForProps = initialConfig.left.find(w => w.id === widgetId) || initialConfig.right.find(w => w.id === widgetId);
-                loadedConfig[columnKey].push({
-                  id: widgetId,
-                  ...ALL_AVAILABLE_WIDGETS[widgetId],
-                  props: defaultWidgetForProps ? { ...defaultWidgetForProps.props } : { loading: true },
-                });
-                foundIds.add(widgetId);
-              }
-            });
-          }
-        });
+  // Efecto para cargar/sincronizar configuración del dashboard desde/hacia el backend
+  useEffect(() => {
+    if (user && !isInitialConfigSyncAttempted) {
+      setIsInitialConfigSyncAttempted(true); // Marcar que hemos intentado la sincronización
+      if (user.dashboardConfig) {
+        console.log("DashboardPage: Cargando config del backend:", user.dashboardConfig);
+        setWidgetConfig(getDefaultWidgetConfig(user.dashboardConfig.widgetLayout));
+        setDisplayedAccountIds(user.dashboardConfig.displayedAccountIds || []);
+      } else if (apiData.allUserAccounts.length > 0) { // Solo intentar guardar si ya tenemos cuentas
+        console.log("DashboardPage: No hay config en backend, usando default y guardando.");
+        const defaultConfigLayout = getDefaultWidgetLayout();
+        const defaultDisplayedAccounts = apiData.allUserAccounts
+            .filter(acc => acc.includeInDashboardSummary)
+            .slice(0, MAX_SUMMARY_CARDS_DISPLAY)
+            .map(acc => acc.id.toString());
 
-        ['left', 'right'].forEach(colKey => {
-            initialConfig[colKey].forEach(defaultWidget => {
-                if (!foundIds.has(defaultWidget.id)) {
-                    const targetColumn = (initialConfig.left.find(w => w.id === defaultWidget.id) && loadedConfig.left.length < 4) ? 'left' : 'right';
-                    if (!loadedConfig.left.find(w=>w.id === defaultWidget.id) && !loadedConfig.right.find(w=>w.id === defaultWidget.id)) {
-                         loadedConfig[targetColumn].push({
-                            id: defaultWidget.id,
-                            Component: defaultWidget.Component,
-                            name: defaultWidget.name,
-                            props: { ...defaultWidget.props } 
-                        });
-                        foundIds.add(defaultWidget.id);
-                    }
-                }
-            });
-        });
+        const initialUserDashboardConfig = {
+            widgetLayout: defaultConfigLayout,
+            displayedAccountIds: defaultDisplayedAccounts,
+        };
         
-        if (loadedConfig.left.length === 0 && loadedConfig.right.length === 0 && foundIds.size < Object.keys(ALL_AVAILABLE_WIDGETS).length) {
-            console.warn("Loaded config from localStorage was empty or incomplete, reverting to default.");
-            return initialConfig;
-        }
-        return loadedConfig;
+        setWidgetConfig(getDefaultWidgetConfig(defaultConfigLayout)); // Aplicar al estado local
+        setDisplayedAccountIds(defaultDisplayedAccounts); // Aplicar al estado local
 
-      } catch (e) {
-        console.error("Error parsing saved widget order from localStorage, using default.", e);
-        return initialConfig;
+        authService.updateUserDashboardConfig(initialUserDashboardConfig) //
+            .then(response => {
+                updateUserInContext({ dashboardConfig: response.dashboardConfig }); //
+                console.log("DashboardPage: Config inicial guardada en backend.");
+            })
+            .catch(err => {
+                console.error("DashboardPage: Error guardando config inicial en backend:", err);
+                // No mostrar error al usuario por esto, podría ser un problema menor de sincronización inicial
+            });
       }
     }
-    return initialConfig;
-  });
+  }, [user, apiData.allUserAccounts, isInitialConfigSyncAttempted, updateUserInContext]);
+
+
+  const saveDashboardConfigToBackend = useCallback(async (newWidgetConfigLayout, newDisplayedAccountIds) => {
+    if (!user) return;
+    // Solo guardar si la configuración ha cambiado realmente respecto a lo que tiene el usuario en el contexto
+    const currentBackendConfig = user.dashboardConfig;
+    const newConfigToSave = {
+        widgetLayout: newWidgetConfigLayout,
+        displayedAccountIds: newDisplayedAccountIds
+    };
+
+    // Comparación simple (podría ser más profunda si es necesario)
+    if (JSON.stringify(currentBackendConfig) === JSON.stringify(newConfigToSave)) {
+        // console.log("DashboardPage: No hay cambios en la configuración del dashboard, no se guarda.");
+        return;
+    }
+
+    try {
+      console.log("DashboardPage: Guardando nueva config en backend:", newConfigToSave);
+      const response = await authService.updateUserDashboardConfig(newConfigToSave); //
+      updateUserInContext({ dashboardConfig: response.dashboardConfig }); //
+      console.log("DashboardPage: Configuración guardada en backend.");
+    } catch (err) {
+      console.error("DashboardPage: Error guardando configuración en backend:", err);
+      setError("No se pudo guardar la configuración del dashboard.");
+    }
+  }, [user, updateUserInContext]);
+
+  const fetchDashboardData = useCallback(async (showLoadingIndicators = true) => {
+    if (!user) return;
+    if (showLoadingIndicators) {
+        setApiData(prev => ({ ...prev, 
+            loadingInvestments: true, loadingMonthlyStatus: true, 
+            loadingAccounts: true, loadingBalanceSummary: true,
+            loadingGlobalBudget: true, loadingBalanceTrend: true,
+        }));
+    }
+    setError('');
+    try {
+      const results = await Promise.allSettled([
+        dashboardService.getInvestmentHighlights(3), //
+        dashboardService.getCurrentMonthFinancialStatus(), //
+        accountService.getAllAccounts(), //
+        dashboardService.getDashboardSummary(), //
+        dashboardService.getGlobalBudgetStatus(), //
+        dashboardService.getBalanceTrendData({ months: 6 }), //
+      ]);
+
+      const allAccountsData = results[2].status === 'fulfilled' ? (results[2].value || []) : apiData.allUserAccounts; 
+      
+      setApiData(prev => ({
+        ...prev,
+        investmentHighlights: results[0].status === 'fulfilled' ? results[0].value : prev.investmentHighlights,
+        monthlyFinancialStatus: results[1].status === 'fulfilled' ? results[1].value : prev.monthlyFinancialStatus,
+        allUserAccounts: allAccountsData, // Este se actualiza aquí
+        balanceSummary: results[3].status === 'fulfilled' ? results[3].value : prev.balanceSummary,
+        globalBudgetStatus: results[4].status === 'fulfilled' ? results[4].value : prev.globalBudgetStatus,
+        balanceTrendData: results[5].status === 'fulfilled' ? results[5].value : prev.balanceTrendData,
+      }));
+
+      if (results[0].status !== 'fulfilled') console.error("Error fetching investment highlights:", results[0].reason);
+      if (results[1].status !== 'fulfilled') console.error("Error fetching monthly financial status:", results[1].reason);
+      if (results[2].status !== 'fulfilled') console.error("Error fetching accounts for summary cards:", results[2].reason);
+      if (results[3].status !== 'fulfilled') console.error("Error fetching balance summary:", results[3].reason);
+      if (results[4].status !== 'fulfilled') console.error("Error fetching global budget status:", results[4].reason);
+      if (results[5].status !== 'fulfilled') console.error("Error fetching balance trend data:", results[5].reason);
+
+    } catch (err) { 
+      setError('Error general al cargar datos del dashboard.');
+      console.error("Error general en fetchDashboardData:", err);
+    }
+    finally {
+      setApiData(prev => ({ ...prev, 
+        loadingInvestments: false, loadingMonthlyStatus: false, 
+        loadingAccounts: false, loadingBalanceSummary: false,
+        loadingGlobalBudget: false, loadingBalanceTrend: false,
+      }));
+    }
+  }, [user]); // apiData.allUserAccounts quitado de aquí porque se actualiza dentro
 
   useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]); 
+  
+  useEffect(() => {
+    // Este efecto actualiza las props de los widgets cuando cambian los datos de la API
     setWidgetConfig(prevConfig => {
       const updatePropsForColumn = (columnArray) => columnArray.map(widget => {
         let newProps = { ...widget.props }; 
@@ -181,10 +248,10 @@ const DashboardPage = () => {
             newProps = { ...newProps, chartData: apiData.balanceTrendData, loading: apiData.loadingBalanceTrend };
             break;
           case 'spendingChart': 
-            newProps = { ...newProps, loading: apiData.loadingMonthlyStatus }; 
+            newProps = { ...newProps, loading: apiData.loadingMonthlyStatus }; // Se actualiza cuando monthlyFinancialStatus (y sus datos base) se actualizan
             break;
           case 'recentTransactions': 
-             newProps = { ...newProps, loading: apiData.loadingAccounts }; 
+             newProps = { ...newProps, loading: apiData.loadingAccounts }; // Se actualiza cuando las cuentas/transacciones generales se actualizan
             break;
           default:
             break;
@@ -192,6 +259,11 @@ const DashboardPage = () => {
         return { ...widget, props: newProps };
       });
 
+      // Solo reconstruir si prevConfig existe (evitar error en montaje inicial si widgetConfig es null)
+      if (!prevConfig || !prevConfig.left || !prevConfig.right) {
+          return getDefaultWidgetConfig(user?.dashboardConfig?.widgetLayout);
+      }
+      
       return {
         left: updatePropsForColumn(prevConfig.left),
         right: updatePropsForColumn(prevConfig.right),
@@ -201,75 +273,13 @@ const DashboardPage = () => {
       apiData.balanceSummary, apiData.investmentHighlights, apiData.monthlyFinancialStatus, 
       apiData.globalBudgetStatus, apiData.balanceTrendData,
       apiData.loadingBalanceSummary, apiData.loadingInvestments, apiData.loadingMonthlyStatus,
-      apiData.loadingGlobalBudget, apiData.loadingBalanceTrend, apiData.loadingAccounts
+      apiData.loadingGlobalBudget, apiData.loadingBalanceTrend, apiData.loadingAccounts,
+      user // Añadir user para que se re-evalúe si user.dashboardConfig cambia
     ]);
 
 
-  const fetchDashboardData = useCallback(async (showLoadingIndicators = true) => {
-    if (!user) return;
-    if (showLoadingIndicators) {
-        setApiData(prev => ({ ...prev, 
-            loadingInvestments: true, loadingMonthlyStatus: true, 
-            loadingAccounts: true, loadingBalanceSummary: true,
-            loadingGlobalBudget: true, loadingBalanceTrend: true,
-        }));
-    }
-    setError('');
-    try {
-      const results = await Promise.allSettled([
-        dashboardService.getInvestmentHighlights(3), 
-        dashboardService.getCurrentMonthFinancialStatus(), 
-        accountService.getAllAccounts(), 
-        dashboardService.getDashboardSummary(), 
-        dashboardService.getGlobalBudgetStatus(), 
-        dashboardService.getBalanceTrendData({ months: 6 }), 
-      ]);
-
-      const allAccountsData = results[2].status === 'fulfilled' ? (results[2].value || []) : apiData.allUserAccounts; 
-      
-      setApiData(prev => ({
-        ...prev,
-        investmentHighlights: results[0].status === 'fulfilled' ? results[0].value : prev.investmentHighlights,
-        monthlyFinancialStatus: results[1].status === 'fulfilled' ? results[1].value : prev.monthlyFinancialStatus,
-        allUserAccounts: allAccountsData,
-        balanceSummary: results[3].status === 'fulfilled' ? results[3].value : prev.balanceSummary,
-        globalBudgetStatus: results[4].status === 'fulfilled' ? results[4].value : prev.globalBudgetStatus,
-        balanceTrendData: results[5].status === 'fulfilled' ? results[5].value : prev.balanceTrendData,
-      }));
-
-      if (results[0].status !== 'fulfilled') console.error("Error fetching investment highlights:", results[0].reason);
-      if (results[1].status !== 'fulfilled') console.error("Error fetching monthly financial status:", results[1].reason);
-      if (results[2].status !== 'fulfilled') console.error("Error fetching accounts for summary cards:", results[2].reason);
-      if (results[3].status !== 'fulfilled') console.error("Error fetching balance summary:", results[3].reason);
-      if (results[4].status !== 'fulfilled') console.error("Error fetching global budget status:", results[4].reason);
-      if (results[5].status !== 'fulfilled') console.error("Error fetching balance trend data:", results[5].reason);
-
-    } catch (err) { 
-      setError('Error general al cargar datos del dashboard.');
-      console.error("Error general en fetchDashboardData:", err);
-    }
-    finally {
-      setApiData(prev => ({ ...prev, 
-        loadingInvestments: false, loadingMonthlyStatus: false, 
-        loadingAccounts: false, loadingBalanceSummary: false,
-        loadingGlobalBudget: false, loadingBalanceTrend: false,
-      }));
-    }
-  }, [user]); 
-
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]); 
-  
-  useEffect(() => {
-    const orderToSave = {
-      left: widgetConfig.left.map(w => w.id),
-      right: widgetConfig.right.map(w => w.id),
-    };
-    localStorage.setItem(LOCAL_STORAGE_KEY_WIDGET_ORDER, JSON.stringify(orderToSave));
-  }, [widgetConfig]);
-
-  useEffect(() => {
+    // Este efecto actualiza las cuentas que se muestran en las tarjetas de resumen
     if (apiData.allUserAccounts.length > 0) {
       let accountsForDisplay;
       if (displayedAccountIds.length > 0) {
@@ -277,7 +287,7 @@ const DashboardPage = () => {
           .map(id => apiData.allUserAccounts.find(acc => acc.id.toString() === id.toString()))
           .filter(Boolean) 
           .slice(0, MAX_SUMMARY_CARDS_DISPLAY);
-      } else {
+      } else { 
         accountsForDisplay = apiData.allUserAccounts
           .filter(acc => acc.includeInDashboardSummary) 
           .slice(0, MAX_SUMMARY_CARDS_DISPLAY);
@@ -309,89 +319,73 @@ const DashboardPage = () => {
   };
 
   const handleDragStart = (event) => {
-    setActiveDragId(event.active.id);
+     setActiveDragId(event.active.id);
   };
 
   const handleDragEnd = (event) => {
     setActiveDragId(null);
     const { active, over } = event;
   
-    if (!over) {
-      console.log("DRAG_END_DEBUG: No 'over' target.");
+    if (!over || !active.id || !over.id) { // Chequeo más robusto
+      console.log("DRAG_END_DEBUG: No 'over' o 'active.id' o 'over.id'. Event:", event);
       return;
     }
   
     const activeId = active.id;
     const overId = over.id; 
-  
+    
+    let newWidgetConfigState; // Para almacenar el estado que se pasará a saveDashboardConfigToBackend
+
     setWidgetConfig((prevConfig) => {
       const { containerKey: sourceContainerKey, index: sourceIndex } = findWidgetAndContainerKey(activeId, prevConfig);
-  
       if (sourceContainerKey === null || sourceIndex === -1) {
-        console.warn("DRAG_END_DEBUG: Source widget not found in prevConfig:", activeId, "PrevConfig:", prevConfig);
-        return prevConfig;
+          console.warn("DRAG_END_DEBUG: Source widget not found in prevConfig:", activeId);
+          return prevConfig;
       }
   
       let targetContainerKey;
       let targetInsertionIndex; 
-  
       const { containerKey: overItemContainer, index: overItemIndexIfItem } = findWidgetAndContainerKey(overId, prevConfig);
       
-      if (activeId === overId && !over.data?.current?.sortable?.containerId ) {
-         if(over.data?.current?.sortable?.containerId === sourceContainerKey){
-            console.log("DRAG_END_DEBUG: Dropped on itself within same container. No change.");
-            return prevConfig;
-         }
+      if (activeId === overId && (!over.data?.current?.sortable?.containerId || over.data?.current?.sortable?.containerId === sourceContainerKey) ) {
+         console.log("DRAG_END_DEBUG: Dropped on itself or its original container area without changing item. No change.");
+         return prevConfig;
       }
 
-      if (overItemContainer) {
+      if (overItemContainer) { // Si se suelta sobre otro widget
         targetContainerKey = overItemContainer;
         targetInsertionIndex = overItemIndexIfItem;
-        console.log(`DRAG_END_DEBUG: Target is ITEM ${overId} in ${targetContainerKey} at index ${targetInsertionIndex}`);
-      } else {
+      } else { // Si se suelta sobre un área droppable (columna)
         const overContainerDroppableId = over.data?.current?.sortable?.containerId || overId;
-        const overItemIdWithinSortableContext = over.data?.current?.sortable?.id;
         
-        console.log(`DRAG_END_DEBUG: Target is CONTAINER AREA. overContainerId: ${overContainerDroppableId}, itemInContext: ${overItemIdWithinSortableContext}`);
-
         if (overContainerDroppableId === 'left-column-droppable') {
           targetContainerKey = 'left';
-          targetInsertionIndex = overItemIdWithinSortableContext 
-            ? prevConfig.left.findIndex(w => w.id === overItemIdWithinSortableContext) 
-            : prevConfig.left.length; 
-          if (targetInsertionIndex === -1) targetInsertionIndex = prevConfig.left.length; 
+          targetInsertionIndex = prevConfig.left.length; // Por defecto al final
         } else if (overContainerDroppableId === 'right-column-droppable') {
           targetContainerKey = 'right';
-          targetInsertionIndex = overItemIdWithinSortableContext 
-            ? prevConfig.right.findIndex(w => w.id === overItemIdWithinSortableContext) 
-            : prevConfig.right.length;
-          if (targetInsertionIndex === -1) targetInsertionIndex = prevConfig.right.length;
+          targetInsertionIndex = prevConfig.right.length; // Por defecto al final
         } else {
-          console.warn("DRAG_END_DEBUG: Cannot determine drop target container. Over.id:", overId, "Full 'over' object:", over);
+          console.warn("DRAG_END_DEBUG: Cannot determine drop target container. Over.id:", overId);
           return prevConfig;
         }
-        console.log(`DRAG_END_DEBUG: Target resolved to CONTAINER ${targetContainerKey}, insertionIndex: ${targetInsertionIndex}`);
       }
       
       const itemToMove = prevConfig[sourceContainerKey][sourceIndex];
-      
       if (!itemToMove || itemToMove.id !== activeId) {
-        console.error("DRAG_END_DEBUG: CRITICAL - Failed to correctly identify itemToMove or ID mismatch.", { activeId, itemIdentified: itemToMove });
-        return prevConfig;
+          console.error("DRAG_END_DEBUG: Mismatch itemToMove or ID.", { activeId, itemIdentified: itemToMove });
+          return prevConfig;
       }
       
       let newLeft = [...prevConfig.left];
       let newRight = [...prevConfig.right];
 
       if (sourceContainerKey === targetContainerKey) {
-        console.log(`DRAG_END_DEBUG: Reordering in ${sourceContainerKey}. From ${sourceIndex} to ${targetInsertionIndex}. Item: ${itemToMove.id}`);
         if (targetContainerKey === 'left') {
           newLeft = arrayMove(prevConfig.left, sourceIndex, targetInsertionIndex);
         } else { 
           newRight = arrayMove(prevConfig.right, sourceIndex, targetInsertionIndex);
         }
       } else {
-        console.log(`DRAG_END_DEBUG: Moving ${itemToMove.id} from ${sourceContainerKey} to ${targetContainerKey} at index ${targetInsertionIndex}`);
         if (sourceContainerKey === 'left') {
           newLeft.splice(sourceIndex, 1);
         } else { 
@@ -406,26 +400,33 @@ const DashboardPage = () => {
         }
       }
       
-      const finalLeftIds = newLeft.map(w => w.id);
-      const finalRightIds = newRight.map(w => w.id);
-      const combinedIds = [...finalLeftIds, ...finalRightIds];
-      const uniqueCombinedIds = new Set(combinedIds);
-
-      if (combinedIds.length !== uniqueCombinedIds.size) {
-          console.error("DRAG_END_DEBUG: Duplicate widget IDs DETECTED after proposed move! ABORTING state update.", {
-              finalLeftIds, finalRightIds,
-              activeId, sourceContainerKey, sourceIndex, targetContainerKey, targetInsertionIndex
-          });
-          return prevConfig; 
-      }
-
-      console.log("DRAG_END_DEBUG: Final Left IDs:", finalLeftIds);
-      console.log("DRAG_END_DEBUG: Final Right IDs:", finalRightIds);
-  
-      return { left: newLeft, right: newRight };
+      newWidgetConfigState = { left: newLeft, right: newRight }; // Guardar el estado para usarlo después
+      return newWidgetConfigState;
     });
+    
+    // Llamar a guardar después de que el estado se haya actualizado
+    // Esto requiere que `newWidgetConfigState` se obtenga del callback de setWidgetConfig
+    // o que `saveDashboardConfigToBackend` se llame en un useEffect que dependa de widgetConfig.
+    // La segunda opción es más limpia (ya implementada).
   };
-  
+
+  // useEffect para guardar en backend cuando widgetConfig (orden) o displayedAccountIds cambian
+  useEffect(() => {
+    if (user && isInitialConfigSyncAttempted) { // Solo guardar si ya se intentó la sincronización inicial
+        const currentLayout = {
+            left: widgetConfig.left.map(w => w.id),
+            right: widgetConfig.right.map(w => w.id),
+        };
+        // Evitar guardar si el widgetConfig aún no está completamente cargado con props (para evitar sobrescribir con estado de 'loading')
+        // Esto es una heurística, podría necesitar ajustes.
+        const isLoadingAnyWidget = widgetConfig.left.some(w => w.props.loading) || widgetConfig.right.some(w => w.props.loading);
+        if (user.dashboardConfig || !isLoadingAnyWidget) { // Si ya hay config en backend, o si no estamos en carga inicial de widgets
+            saveDashboardConfigToBackend(currentLayout, displayedAccountIds);
+        }
+    }
+  }, [widgetConfig, displayedAccountIds, saveDashboardConfigToBackend, user, isInitialConfigSyncAttempted]);
+
+
   const getAccountCardStyle = (accountName) => {
     const nameLower = accountName?.toLowerCase() || '';
     if (nameLower.includes('efectivo')) return 'bg-efectivo';
@@ -436,13 +437,16 @@ const DashboardPage = () => {
   const accountTypeIcons = {efectivo: '💵', bancaria: '🏦', tarjeta_credito: '💳', inversion: '📈', digital_wallet: '📱', otro: '📁',};
 
   const handleSaveAccountSelections = (selectedIds) => {
-    console.log("DashboardPage: Saving displayed account IDs", selectedIds);
-    setDisplayedAccountIds(selectedIds);
-    localStorage.setItem(LOCAL_STORAGE_KEY_DISPLAYED_ACCOUNTS, JSON.stringify(selectedIds));
+    setDisplayedAccountIds(selectedIds); // El useEffect anterior se encargará de guardar
+    setShowAccountSelectionModal(false);
   };
 
   const activeDraggedWidgetObject = activeDragId ? (widgetConfig.left.find(w => w.id === activeDragId) || widgetConfig.right.find(w => w.id === activeDragId)) : null;
   
+  if (!user && !error) { 
+      return <div className="page-container loading-auth-home">Cargando datos de usuario...</div>;
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -453,7 +457,9 @@ const DashboardPage = () => {
     >
       <div className="page-container dashboard-page">
         <div className="accounts-summary-row">
-          {apiData.loadingAccounts ? ( <p className="loading-text-widget" style={{flexGrow: 1, textAlign:'center'}}>Cargando cuentas...</p> ) : (
+          {apiData.loadingAccounts && summaryAccountsToDisplay.length === 0 ? ( 
+            <p className="loading-text-widget" style={{flexGrow: 1, textAlign:'center'}}>Cargando resumen de cuentas...</p> 
+          ) : (
             <>
               {summaryAccountsToDisplay.map(acc => ( 
                 <AccountSummaryCard 
@@ -488,7 +494,6 @@ const DashboardPage = () => {
                   <widgetItem.Component {...widgetItem.props} />
                 </SortableWidget>
               ))}
-              {/* Ya no se necesita AddCardPlaceholder aquí */}
             </div>
           </SortableContext>
         </div>

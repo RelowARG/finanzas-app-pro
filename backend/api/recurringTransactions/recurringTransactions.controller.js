@@ -1,15 +1,13 @@
 // Ruta: finanzas-app-pro/backend/api/recurringTransactions/recurringTransactions.controller.js
 const db = require('../../models');
 const RecurringTransaction = db.RecurringTransaction;
+const Account = db.Account; // Asegúrate de tener esta importación si no estaba
+const Category = db.Category; // Asegúrate de tener esta importación si no estaba
 const { Op } = require('sequelize');
 const { calculateNextRunDate } = require('../../utils/dateUtils');
-const { processSingleRecurringTransaction } = require('../../services/recurringProcessor.service'); // *** IMPORTAR ***
+const { processSingleRecurringTransaction } = require('../../services/recurringProcessor.service');
 
-// ... (getRecurringTransactions, getRecurringTransactionById, createRecurringTransaction, etc. existentes)
-
-// @desc    Crear una nueva transacción recurrente
-// @route   POST /api/recurring-transactions
-// @access  Private
+// ... (createRecurringTransaction, getRecurringTransactions, etc. - sin cambios)
 const createRecurringTransaction = async (req, res, next) => {
     const {
         description,
@@ -17,15 +15,16 @@ const createRecurringTransaction = async (req, res, next) => {
         currency,
         type,
         frequency,
-        dayOfMonth, // Para mensual y anual
-        dayOfWeek,  // Para semanal
-        monthOfYear, // Para anual
+        dayOfMonth, 
+        dayOfWeek,  
+        monthOfYear, 
         startDate,
         endDate,
         notes,
         accountId,
         categoryId,
-        icon
+        icon, // Recibir el ícono del frontend
+        isActive // Recibir estado inicial
     } = req.body;
     const userId = req.user.id;
 
@@ -35,55 +34,62 @@ const createRecurringTransaction = async (req, res, next) => {
     if (type !== 'ingreso' && type !== 'egreso') {
         return res.status(400).json({ message: 'El tipo debe ser "ingreso" o "egreso".' });
     }
-    const validFrequencies = ['diaria', 'semanal', 'quincenal', 'mensual', 'anual'];
+    const validFrequencies = ['diaria', 'semanal', 'quincenal', 'mensual', 'bimestral', 'trimestral', 'semestral', 'anual'];
     if (!validFrequencies.includes(frequency)) {
         return res.status(400).json({ message: 'Frecuencia no válida.' });
     }
     if (frequency === 'semanal' && (dayOfWeek === undefined || dayOfWeek === null || dayOfWeek < 0 || dayOfWeek > 6)) {
         return res.status(400).json({ message: 'Día de la semana requerido y válido (0-6) para frecuencia semanal.' });
     }
-    if ((frequency === 'mensual' || frequency === 'quincenal') && (dayOfMonth === undefined || dayOfMonth === null || dayOfMonth < 1 || dayOfMonth > 31)) {
-        return res.status(400).json({ message: 'Día del mes requerido y válido (1-31) para frecuencia mensual o quincenal.' });
+    if ((frequency === 'mensual' || frequency === 'quincenal' || frequency === 'bimestral' || frequency === 'trimestral' || frequency === 'semestral') && 
+        (dayOfMonth === undefined || dayOfMonth === null || parseInt(dayOfMonth) < 1 || parseInt(dayOfMonth) > 31)) {
+        return res.status(400).json({ message: 'Día del mes requerido y válido (1-31) para esta frecuencia.' });
     }
-    if (frequency === 'anual' && ((dayOfMonth === undefined || dayOfMonth === null || dayOfMonth < 1 || dayOfMonth > 31) || (monthOfYear === undefined || monthOfYear === null || monthOfYear < 1 || monthOfYear > 12))) {
+    if (frequency === 'anual' && 
+        ((dayOfMonth === undefined || dayOfMonth === null || parseInt(dayOfMonth) < 1 || parseInt(dayOfMonth) > 31) || 
+         (monthOfYear === undefined || monthOfYear === null || parseInt(monthOfYear) < 1 || parseInt(monthOfYear) > 12))) {
         return res.status(400).json({ message: 'Día del mes y mes del año requeridos y válidos para frecuencia anual.' });
     }
 
-
     try {
-        // Validar que la cuenta y categoría pertenezcan al usuario o sean globales
-        const account = await db.Account.findOne({ where: { id: accountId, userId } });
+        const account = await Account.findOne({ where: { id: accountId, userId } });
         if (!account) {
             return res.status(404).json({ message: 'Cuenta no encontrada o no pertenece al usuario.' });
         }
-        const category = await db.Category.findOne({
+        const category = await Category.findOne({
             where: { id: categoryId, type, [Op.or]: [{ userId: null }, { userId }] }
         });
         if (!category) {
             return res.status(404).json({ message: 'Categoría no encontrada, no válida para este tipo de movimiento, o no pertenece al usuario.' });
         }
         
-        // Calcular la primera nextRunDate
-        // El startDate es el día que el usuario quiere que comience a aplicar la recurrencia.
-        // nextRunDate será igual a startDate o la primera fecha futura que cumpla la condición.
-        const firstNextRunDate = calculateNextRunDate(frequency, new Date(startDate + 'T00:00:00Z'), dayOfMonth, dayOfWeek, monthOfYear, true);
+        const firstNextRunDate = calculateNextRunDate(
+            frequency, 
+            new Date(startDate + 'T00:00:00Z'), // Fecha de inicio de la recurrencia
+            dayOfMonth ? parseInt(dayOfMonth) : null, 
+            dayOfWeek ? parseInt(dayOfWeek) : null, 
+            monthOfYear ? parseInt(monthOfYear) : null,
+            true // Es el primer cálculo
+        );
+
+        const finalAmount = type === 'egreso' ? -Math.abs(parseFloat(amount)) : Math.abs(parseFloat(amount));
 
         const newRecurringTransaction = await RecurringTransaction.create({
             description,
-            amount: parseFloat(amount), // El monto se guarda con signo aquí
+            amount: finalAmount,
             currency: currency || account.currency,
             type,
             frequency,
-            dayOfMonth: (frequency === 'mensual' || frequency === 'anual' || frequency === 'quincenal') ? parseInt(dayOfMonth) : null,
+            dayOfMonth: (frequency !== 'diaria' && frequency !== 'semanal') ? parseInt(dayOfMonth) : null,
             dayOfWeek: frequency === 'semanal' ? parseInt(dayOfWeek) : null,
             monthOfYear: frequency === 'anual' ? parseInt(monthOfYear) : null,
             startDate,
             endDate: endDate || null,
             nextRunDate: firstNextRunDate,
             lastRunDate: null,
-            isActive: true,
+            isActive: isActive !== undefined ? isActive : true,
             notes,
-            icon: icon || category.icon,
+            icon: icon || category.icon, // Usar el ícono provisto o el de la categoría
             userId,
             accountId,
             categoryId,
@@ -98,9 +104,6 @@ const createRecurringTransaction = async (req, res, next) => {
     }
 };
 
-// @desc    Obtener todas las transacciones recurrentes del usuario
-// @route   GET /api/recurring-transactions
-// @access  Private
 const getRecurringTransactions = async (req, res, next) => {
     const userId = req.user.id;
     const { isActive, type, accountId, categoryId, frequency, page = 1, limit = 100 } = req.query;
@@ -118,19 +121,25 @@ const getRecurringTransactions = async (req, res, next) => {
         const { count, rows } = await RecurringTransaction.findAndCountAll({
             where: whereClause,
             include: [
-                { model: db.Account, as: 'account', attributes: ['id', 'name', 'icon'] },
+                { model: db.Account, as: 'account', attributes: ['id', 'name', 'icon', 'currency'] }, // Añadir currency
                 { model: db.Category, as: 'category', attributes: ['id', 'name', 'icon'] }
             ],
             order: [['nextRunDate', 'ASC'], ['description', 'ASC']],
             limit: parseInt(limit, 10),
             offset: offset,
         });
+        // Asegurar que el monto se devuelva como absoluto para el frontend
+        const itemsWithAbsoluteAmount = rows.map(item => {
+            const plainItem = item.toJSON();
+            plainItem.amount = Math.abs(parseFloat(plainItem.amount));
+            return plainItem;
+        });
 
         res.status(200).json({
             totalPages: Math.ceil(count / parseInt(limit, 10)),
             currentPage: parseInt(page, 10),
             totalItems: count,
-            items: rows
+            items: itemsWithAbsoluteAmount
         });
     } catch (error) {
         console.error("Error obteniendo transacciones recurrentes:", error);
@@ -138,9 +147,6 @@ const getRecurringTransactions = async (req, res, next) => {
     }
 };
 
-// @desc    Obtener una transacción recurrente por ID
-// @route   GET /api/recurring-transactions/:id
-// @access  Private
 const getRecurringTransactionById = async (req, res, next) => {
     const userId = req.user.id;
     const { id } = req.params;
@@ -155,7 +161,6 @@ const getRecurringTransactionById = async (req, res, next) => {
         if (!recurringTransaction) {
             return res.status(404).json({ message: 'Transacción recurrente no encontrada.' });
         }
-        // Devolver el monto como absoluto para el formulario
         const responseTx = recurringTransaction.toJSON();
         responseTx.amount = Math.abs(parseFloat(responseTx.amount));
 
@@ -166,17 +171,14 @@ const getRecurringTransactionById = async (req, res, next) => {
     }
 };
 
-// @desc    Actualizar una transacción recurrente
-// @route   PUT /api/recurring-transactions/:id
-// @access  Private
 const updateRecurringTransaction = async (req, res, next) => {
     const userId = req.user.id;
     const { id } = req.params;
     const {
         description, amount, currency, type, frequency,
         dayOfMonth, dayOfWeek, monthOfYear, startDate, endDate,
-        nextRunDate, // Permitir actualizar nextRunDate manualmente
-        lastRunDate, // Permitir actualizar lastRunDate manualmente (con precaución)
+        // nextRunDate, // No permitir actualizar nextRunDate directamente, se recalcula
+        // lastRunDate, // No permitir actualizar lastRunDate directamente
         isActive, notes, accountId, categoryId, icon
     } = req.body;
 
@@ -186,29 +188,31 @@ const updateRecurringTransaction = async (req, res, next) => {
             return res.status(404).json({ message: 'Transacción recurrente no encontrada.' });
         }
 
-        // Validaciones si se cambian campos críticos
-        if (accountId) {
-            const account = await db.Account.findOne({ where: { id: accountId, userId } });
+        let account = recurringTx.account;
+        if (accountId && accountId !== recurringTx.accountId) {
+            account = await db.Account.findOne({ where: { id: accountId, userId } });
             if (!account) return res.status(404).json({ message: 'Cuenta no encontrada.' });
-            recurringTx.currency = currency || account.currency; // Actualizar moneda si cambia la cuenta
-        } else if (currency) {
-             recurringTx.currency = currency;
+        } else if (!accountId && !recurringTx.accountId) { // Caso raro pero posible
+             return res.status(400).json({ message: 'Se requiere una cuenta.' });
         }
 
-        if (categoryId) {
-            const currentType = type || recurringTx.type;
-            const category = await db.Category.findOne({
-                where: { id: categoryId, type: currentType, [Op.or]: [{ userId: null }, { userId }] }
+        let category = recurringTx.category;
+        if (categoryId && categoryId !== recurringTx.categoryId) {
+            const typeToSearch = type || recurringTx.type;
+            category = await db.Category.findOne({
+                where: { id: categoryId, type: typeToSearch, [Op.or]: [{ userId: null }, { userId }] }
             });
             if (!category) return res.status(404).json({ message: 'Categoría no válida.' });
-            recurringTx.icon = icon || category.icon; // Actualizar ícono si cambia la categoría
-        } else if (icon) {
-            recurringTx.icon = icon;
+        } else if (!categoryId && !recurringTx.categoryId) {
+            return res.status(400).json({ message: 'Se requiere una categoría.' });
         }
         
-        // Actualizar campos
         recurringTx.description = description !== undefined ? description : recurringTx.description;
-        if (amount !== undefined) recurringTx.amount = parseFloat(amount);
+        if (amount !== undefined) {
+            const newType = type !== undefined ? type : recurringTx.type;
+            recurringTx.amount = newType === 'egreso' ? -Math.abs(parseFloat(amount)) : Math.abs(parseFloat(amount));
+        }
+        recurringTx.currency = currency || account.currency; // Usa la moneda de la cuenta si no se especifica
         recurringTx.type = type !== undefined ? type : recurringTx.type;
         recurringTx.frequency = frequency !== undefined ? frequency : recurringTx.frequency;
         recurringTx.startDate = startDate !== undefined ? startDate : recurringTx.startDate;
@@ -217,48 +221,44 @@ const updateRecurringTransaction = async (req, res, next) => {
         recurringTx.notes = notes !== undefined ? notes : recurringTx.notes;
         recurringTx.accountId = accountId !== undefined ? accountId : recurringTx.accountId;
         recurringTx.categoryId = categoryId !== undefined ? categoryId : recurringTx.categoryId;
+        recurringTx.icon = icon || category?.icon || (recurringTx.type === 'ingreso' ? '💰' : '💸');
 
-        // Actualización de días específicos según frecuencia (si se proveen)
-        if (recurringTx.frequency === 'semanal' && dayOfWeek !== undefined) {
-            recurringTx.dayOfWeek = parseInt(dayOfWeek);
-            recurringTx.dayOfMonth = null;
-            recurringTx.monthOfYear = null;
-        } else if ((recurringTx.frequency === 'mensual' || recurringTx.frequency === 'quincenal') && dayOfMonth !== undefined) {
-            recurringTx.dayOfMonth = parseInt(dayOfMonth);
-            recurringTx.dayOfWeek = null;
-            recurringTx.monthOfYear = null;
-        } else if (recurringTx.frequency === 'anual' && (dayOfMonth !== undefined || monthOfYear !== undefined)) {
-            recurringTx.dayOfMonth = dayOfMonth !== undefined ? parseInt(dayOfMonth) : recurringTx.dayOfMonth;
-            recurringTx.monthOfYear = monthOfYear !== undefined ? parseInt(monthOfYear) : recurringTx.monthOfYear;
-            recurringTx.dayOfWeek = null;
-        } else if (recurringTx.frequency === 'diaria') {
-            recurringTx.dayOfMonth = null;
-            recurringTx.dayOfWeek = null;
-            recurringTx.monthOfYear = null;
-        }
 
-        // Recalcular nextRunDate solo si cambian los parámetros de frecuencia o startDate,
-        // o si no se provee explícitamente nextRunDate
-        if (nextRunDate === undefined && (frequency || startDate || dayOfMonth || dayOfWeek || monthOfYear)) {
-            const baseDateForCalc = recurringTx.lastRunDate ? new Date(recurringTx.lastRunDate  + 'T00:00:00Z') : new Date(recurringTx.startDate  + 'T00:00:00Z');
+        if (frequency || startDate || dayOfMonth || dayOfWeek || monthOfYear) {
+            const baseDateForCalc = recurringTx.lastRunDate 
+                                  ? new Date(recurringTx.lastRunDate  + 'T00:00:00Z') 
+                                  : new Date(recurringTx.startDate  + 'T00:00:00Z');
+            
+            const dom = dayOfMonth !== undefined ? (dayOfMonth ? parseInt(dayOfMonth) : null) : recurringTx.dayOfMonth;
+            const dow = dayOfWeek !== undefined ? (dayOfWeek ? parseInt(dayOfWeek) : null) : recurringTx.dayOfWeek;
+            const moy = monthOfYear !== undefined ? (monthOfYear ? parseInt(monthOfYear) : null) : recurringTx.monthOfYear;
+
+            recurringTx.dayOfMonth = (recurringTx.frequency !== 'diaria' && recurringTx.frequency !== 'semanal') ? dom : null;
+            recurringTx.dayOfWeek = recurringTx.frequency === 'semanal' ? dow : null;
+            recurringTx.monthOfYear = recurringTx.frequency === 'anual' ? moy : null;
+
+
             recurringTx.nextRunDate = calculateNextRunDate(
                 recurringTx.frequency,
                 baseDateForCalc,
                 recurringTx.dayOfMonth,
                 recurringTx.dayOfWeek,
                 recurringTx.monthOfYear,
-                !recurringTx.lastRunDate // isFirstCalculation = true si no hay lastRunDate
+                !recurringTx.lastRunDate 
             );
-        } else if (nextRunDate !== undefined) {
-            recurringTx.nextRunDate = nextRunDate; // Permite anulación manual
-        }
-
-        if (lastRunDate !== undefined) {
-            recurringTx.lastRunDate = lastRunDate; // Permite anulación manual
         }
 
         await recurringTx.save();
-        res.status(200).json(recurringTx);
+        const updatedTx = await RecurringTransaction.findByPk(id, { // Re-fetch para obtener con includes
+             include: [
+                { model: db.Account, as: 'account', attributes: ['id', 'name', 'currency', 'icon'] },
+                { model: db.Category, as: 'category', attributes: ['id', 'name', 'icon'] }
+            ]
+        });
+        const responseTx = updatedTx.toJSON();
+        responseTx.amount = Math.abs(parseFloat(responseTx.amount));
+        res.status(200).json(responseTx);
+
     } catch (error) {
         console.error("Error actualizando transacción recurrente:", error);
         if (error.name === 'SequelizeValidationError') {
@@ -268,10 +268,6 @@ const updateRecurringTransaction = async (req, res, next) => {
     }
 };
 
-
-// @desc    Eliminar una transacción recurrente
-// @route   DELETE /api/recurring-transactions/:id
-// @access  Private
 const deleteRecurringTransaction = async (req, res, next) => {
     const userId = req.user.id;
     const { id } = req.params;
@@ -288,78 +284,49 @@ const deleteRecurringTransaction = async (req, res, next) => {
     }
 };
 
-
-// *** NUEVA FUNCIÓN DEL CONTROLADOR ***
-// @desc    Procesar manualmente una transacción recurrente específica
-// @route   POST /api/recurring-transactions/:id/process
-// @access  Private
 const processRecurringTransactionManually = async (req, res, next) => {
     const userId = req.user.id;
     const { id } = req.params;
 
     try {
         const recurringTx = await RecurringTransaction.findOne({
-            where: { id, userId, isActive: true } // Solo procesar si está activa
+            where: { id, userId } // No es necesario chequear isActive aquí, se puede procesar una inactiva si el usuario lo fuerza
         });
 
         if (!recurringTx) {
-            return res.status(404).json({ message: 'Transacción recurrente no encontrada, no pertenece al usuario o no está activa.' });
+            return res.status(404).json({ message: 'Transacción recurrente no encontrada o no pertenece al usuario.' });
         }
 
-        // Usar la nextRunDate actual del movimiento como la fecha de procesamiento
-        // O podrías pasar una fecha específica en el body si quieres más control
-        // const processingDate = req.body.date ? new Date(req.body.date) : new Date(recurringTx.nextRunDate + 'T00:00:00Z');
-        
-        let processingDate;
-        if (req.body.date) {
-            processingDate = new Date(req.body.date + 'T00:00:00Z');
-             // Validar que la fecha provista no sea muy lejana a la nextRunDate? Opcional.
-        } else {
-            // Si no se provee fecha, usar la nextRunDate actual.
-            // Pero si la nextRunDate es futura, no debería procesarse hoy a menos que el usuario lo fuerce explícitamente.
-            // Para "Registrar Ahora", queremos usar la fecha de HOY si nextRunDate es hoy o pasada.
-            // Si nextRunDate es futura, usar nextRunDate para adelantar.
-            const today = new Date();
-            const nextRun = new Date(recurringTx.nextRunDate + 'T00:00:00Z');
-            
-            if (nextRun <= today) {
-                processingDate = today; // Si está vencida o es hoy, procesar con fecha de hoy
-                                        // O mejor usar nextRun para mantener la fecha original debida:
-                // processingDate = nextRun;
-            } else {
-                // Si la nextRunDate es futura y no se especificó una fecha, usar esa fecha futura.
-                // Esto permite "adelantar" un registro.
-                // Si quisieras forzar a "hoy" siempre, cambia esto.
-                processingDate = nextRun; 
-            }
-             // Por simplicidad para un botón "Registrar Ahora" que suele implicar "ahora mismo
-             // usando la fecha que correspondía o la de hoy si ya pasó":
-             // Si nextRunDate es futura, no es un "ahora" sino un "adelantar".
-             // Si queremos que "Registrar Ahora" siempre use la fecha de *hoy* si nextRunDate ya pasó:
-             const todayForComparison = new Date();
-             todayForComparison.setHours(0,0,0,0); // Comienzo del día
-             const nextRunDateForComparison = new Date(recurringTx.nextRunDate + 'T00:00:00Z');
-             
-             if (nextRunDateForComparison <= todayForComparison) {
-                 processingDate = new Date(); // Usar fecha y hora actual para "Registrar Ahora"
-             } else {
-                 // Si nextRunDate es futura, y el usuario quiere "Registrar Ahora",
-                 // esto es más bien "Adelantar Registro". Usaremos la nextRunDate.
-                 processingDate = nextRunDateForComparison;
-             }
+        // Determinar la fecha de procesamiento para la transacción
+        // Si nextRunDate es hoy o pasada, usar la nextRunDate original para la transacción.
+        // Si nextRunDate es futura, usar esa nextRunDate futura (adelantando el registro).
+        // Esto asegura que la transacción se registre con la fecha que correspondía o la fecha adelantada.
+        const processingDate = new Date(recurringTx.nextRunDate + 'T00:00:00Z'); // Usar siempre la nextRunDate del recurrente
 
+        console.log(`[ControllerManualProcess] Solicitud para procesar manualmente Recurrente ID: ${recurringTx.id} con fecha de transacción: ${processingDate.toISOString().split('T')[0]}`);
 
+        if (!recurringTx.isActive) {
+            console.warn(`[ControllerManualProcess] Advirtiendo: Recurrente ID: ${recurringTx.id} está INACTIVO pero se procesará manualmente.`);
+            // No es un error, pero es bueno loguearlo. La interfaz podría advertir al usuario.
         }
-
-
-        console.log(`[ControllerManualProcess] Procesando manualmente Recurrente ID: ${recurringTx.id} con fecha: ${processingDate.toISOString().split('T')[0]}`);
 
         const result = await processSingleRecurringTransaction(recurringTx, processingDate);
         
+        // Re-fetch para devolver el objeto con las asociaciones actualizadas y monto absoluto
+        const updatedFullRecurringTx = await RecurringTransaction.findByPk(recurringTx.id, {
+             include: [
+                { model: db.Account, as: 'account', attributes: ['id', 'name', 'currency', 'icon'] },
+                { model: db.Category, as: 'category', attributes: ['id', 'name', 'icon'] }
+            ]
+        });
+        const responseRecurringTx = updatedFullRecurringTx.toJSON();
+        responseRecurringTx.amount = Math.abs(parseFloat(responseRecurringTx.amount));
+
+
         res.status(200).json({ 
             message: 'Movimiento recurrente procesado manualmente.', 
-            createdTransaction: result.transaction,
-            updatedRecurringTransaction: result.recurringTransaction // recurringTx ya está actualizado
+            createdTransaction: result.transaction, // La transacción creada
+            updatedRecurringTransaction: responseRecurringTx // El recurrente actualizado
         });
 
     } catch (error) {
@@ -378,5 +345,5 @@ module.exports = {
   getRecurringTransactionById,
   updateRecurringTransaction,
   deleteRecurringTransaction,
-  processRecurringTransactionManually // *** EXPORTAR NUEVA FUNCIÓN ***
+  processRecurringTransactionManually
 };

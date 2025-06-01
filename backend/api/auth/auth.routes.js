@@ -1,9 +1,8 @@
 // Ruta: finanzas-app-pro/backend/api/auth/auth.routes.js
-// ACTUALIZA ESTE ARCHIVO (descomenta y usa 'protect' para /me)
 const express = require('express');
 const router = express.Router();
 const authController = require('./auth.controller');
-const { protect } = require('../../middleware/authMiddleware'); // Importar el middleware
+const { protect } = require('../../middleware/authMiddleware');
 
 // @desc    Registrar un nuevo usuario
 // @route   POST /api/auth/register
@@ -19,5 +18,11 @@ router.post('/login', authController.loginUser);
 // @route   GET /api/auth/me
 // @access  Private (ahora protegido)
 router.get('/me', protect, authController.getMe); 
+
+// *** NUEVA RUTA ***
+// @desc    Actualizar configuración del dashboard del usuario logueado
+// @route   PUT /api/auth/dashboard-config
+// @access  Private
+router.put('/dashboard-config', protect, authController.updateDashboardConfig);
 
 module.exports = router;
