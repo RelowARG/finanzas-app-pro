@@ -1,26 +1,48 @@
 // Ruta: finanzas-app-pro/frontend/src/components/Layout/Layout.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
-import { useAuth } from '../../contexts/AuthContext';
+import Footer from './Footer';   
+import { useAuth } from '../../contexts/AuthContext'; //
 import './Layout.css';
 
-// Añadimos una prop 'showChrome' que por defecto será true
 const Layout = ({ children, showChrome = true }) => {
-  const { user } = useAuth();
+  const { user } = useAuth(); //
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false); // Estado para el hover del Sidebar
+
+  // Clases para el div principal de la aplicación
+  let appLayoutClasses = "app-layout";
+  if (user && showChrome) {
+    appLayoutClasses += " sidebar-active"; // Indica que el sidebar está presente (aunque colapsado)
+    if (isSidebarHovered) {
+      appLayoutClasses += " sidebar-expanded"; // Indica que el sidebar está expandido por hover
+    }
+  }
+  // En el futuro, si tienes un toggle para el sidebar en móvil, podrías añadir otra clase como:
+  // if (isMobileSidebarOpen) appLayoutClasses += " sidebar-mobile-open";
 
   return (
-    <div className="app-layout">
-      {showChrome && <Navbar />} {/* Renderizar Navbar solo si showChrome es true */}
-      <div className={`content-wrapper ${user && showChrome ? 'with-sidebar' : ''} ${!showChrome ? 'full-page-content' : ''}`}>
-        {user && showChrome && <Sidebar />} {/* Renderizar Sidebar solo si hay usuario y showChrome es true */}
+    <div className={appLayoutClasses}>
+      {user && showChrome && (
+        // Este div envuelve al Sidebar y es el que detecta el hover
+        // para aplicar la clase .sidebar-expanded al .app-layout
+        <div 
+          className="sidebar-container-area" 
+          onMouseEnter={() => setIsSidebarHovered(true)}
+          onMouseLeave={() => setIsSidebarHovered(false)}
+        >
+          <Sidebar />
+        </div>
+      )}
+
+      {/* Este wrapper contiene todo lo que se debe desplazar cuando el sidebar cambia de tamaño */}
+      <div className="main-page-wrapper">
+        {showChrome && <Navbar />}
         <main className={`main-content ${!showChrome ? 'no-padding-main' : ''}`}>
           {children}
         </main>
+        {showChrome && <Footer />} 
       </div>
-      {showChrome && <footer className="footer"> {/* Renderizar Footer solo si showChrome es true */}
-        <p>&copy; {new Date().getFullYear()} Finanzas App Pro. Todos los derechos reservados.</p>
-      </footer>}
     </div>
   );
 };

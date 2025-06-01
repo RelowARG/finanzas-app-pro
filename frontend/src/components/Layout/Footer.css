@@ -1,0 +1,51 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/Layout/Footer.css */
+.app-footer.new-look-footer {
+  background-color: #ffffff; /* Fondo blanco */
+  color: #6c757d; /* Texto gris oscuro, sutil */
+  padding: 20px 25px;
+  text-align: center;
+  font-size: 0.85rem;
+  border-top: 1px solid #e9ecef; /* Borde superior muy sutil */
+  /* La transición para margin-left se manejará en Layout.css si es necesaria allí */
+  box-sizing: border-box; 
+}
+
+.new-look-footer .footer-content {
+  max-width: 1200px; 
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  justify-content: space-between; 
+  gap: 10px;
+}
+
+.new-look-footer .footer-nav {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.new-look-footer .footer-nav a {
+  color: #495057; 
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+.new-look-footer .footer-nav a:hover {
+  color: var(--primary-color); 
+  text-decoration: underline;
+}
+
+.new-look-footer .footer-nav span { /* Para el separador "|" */
+  color: #adb5bd;
+}
+
+@media (min-width: 768px) {
+  .new-look-footer .footer-content {
+    flex-direction: row;
+  }
+  .new-look-footer p { /* El párrafo del copyright */
+    margin: 0; 
+  }
+}

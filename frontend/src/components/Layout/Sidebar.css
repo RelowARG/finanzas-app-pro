@@ -31,15 +31,7 @@
 .sidebar.new-look .sidebar-nav li {
   margin: 0;
   position: relative; 
-  /* Si quieres una línea MUY sutil entre CADA icono cuando está colapsado,
-     puedes descomentar esto y ajustar el color. Si no, lo quitamos. */
-  /* border-bottom: 1px solid rgba(0,0,0,0.03);  */
 }
-
-/* .sidebar.new-look .sidebar-nav li:last-child {
-  border-bottom: none; 
-} */
-
 
 .sidebar.new-look .sidebar-link {
   display: flex;
@@ -137,14 +129,12 @@
   letter-spacing: 0.5px;
   white-space: nowrap;
 }
-.sidebar.new-look .sidebar-nav-header span { /* Estilo para el span interno */
-    display: block; /* O inline-block si prefieres */
+.sidebar.new-look .sidebar-nav-header span {
+    display: block;
     white-space: nowrap;
-    /* No es necesario heredar todos los estilos del padre aquí, ya que el padre controla la visibilidad */
 }
 
-
-/* Los SEPARADORES tienen un estilo visible cuando están colapsados */
+/* Los SEPARADORES ahora tendrán un estilo visible cuando están colapsados */
 .sidebar.new-look .sidebar-separator {
   /* Estado COLAPSADO: se muestra como una línea más corta */
   height: 1px;
@@ -162,7 +152,6 @@
   margin: 12px 15px; /* Margen completo para que se vea más larga */
 }
 
-
 /* Media queries para ajustar si es necesario */
 @media (max-width: 768px) {
   .sidebar.new-look {
@@ -179,16 +168,15 @@
   .sidebar.new-look .sidebar-link span:first-child {
     font-size: 1.2em;
   }
-   .sidebar.new-look .sidebar-separator { /* Asegurar que el separador colapsado también se vea bien en móvil */
-    margin: 8px 18px; /* Ajustar para el ancho de 65px */
+   .sidebar.new-look .sidebar-separator { 
+    margin: 8px 18px; 
   }
   .sidebar.new-look:hover .sidebar-separator {
-    margin: 10px 15px; /* Ajustar para el ancho expandido de 220px */
+    margin: 10px 15px; 
   }
 }
 
 /* --- ESTILOS DEL SIDEBAR ORIGINAL (si se usara sin .new-look) --- */
-/* Para asegurar que no haya conflictos si decides volver al anterior o usarlo en otro contexto */
 .sidebar:not(.new-look) {
   width: 70px; 
   background-color: var(--dark-color, #343a40);

@@ -1,131 +1,115 @@
 /* Ruta: finanzas-app-pro/frontend/src/components/Layout/Layout.css */
-/* ARCHIVO MODIFICADO PARA AJUSTAR MAIN CONTENT AL SIDEBAR COLAPSABLE */
 
 .app-layout {
-  display: flex;
-  flex-direction: column;
+  display: flex; /* Permite que sidebar-container-area y main-page-wrapper estén lado a lado */
+  flex-direction: row; /* Por defecto, pero explícito */
   min-height: 100vh;
+  background-color: var(--background-color, #eef0f2); /* Fondo general por si acaso */
 }
 
-.navbar {
-  height: 60px;
-  position: sticky;
-  top: 0;
-  z-index: 1030;
+/* Contenedor del Sidebar (el div que tiene los eventos de hover) */
+.sidebar-container-area {
+  flex-shrink: 0; /* Evita que este contenedor se encoja */
+  position: relative; /* O 'sticky' si el sidebar interno no es 'fixed' */
+  z-index: 1025; /* Un z-index alto para el área del sidebar */
+  /* El componente Sidebar interno (<aside>) tendrá position:fixed y manejará su propio ancho y transición */
 }
 
-.content-wrapper {
+
+/* Wrapper para Navbar, Main Content y Footer */
+.main-page-wrapper {
   display: flex;
-  flex-grow: 1;
+  flex-direction: column; /* Navbar, main, footer apilados verticalmente */
+  flex-grow: 1; /* Ocupa todo el espacio restante */
+  width: 100%; 
+  overflow-x: hidden; /* Evitar scroll horizontal si algo se desborda */
+  /* El padding-left para el sidebar se aplicará a este wrapper,
+     afectando a todos sus hijos (Navbar, Main, Footer) de la misma manera. */
+  padding-left: 0; /* Por defecto, si no hay sidebar activo */
+  transition: padding-left 0.25s ease-in-out; /* Transición para el padding */
+  box-sizing: border-box;
 }
 
-/* Cuando hay sidebar, el contenido principal necesita un margen a la izquierda */
-.content-wrapper.with-sidebar .main-content {
-  /* Default margin for collapsed sidebar */
-  margin-left: 70px; /* Collapsed sidebar width */
-  padding: 20px;
-  width: calc(100% - 70px); /* Ocupa el resto del ancho */
-  transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
-}
-
-/* Cuando sidebar está hover (expandido), ajustar el margen de main-content */
-/* Este selector funciona porque .sidebar y .main-content son hermanos bajo .content-wrapper */
-.content-wrapper.with-sidebar .sidebar:hover ~ .main-content {
-  margin-left: 240px; /* Expanded sidebar width (desktop) */
-  width: calc(100% - 240px);
-}
-
-/* Cuando NO hay sidebar (ej. login/register page), el contenido ocupa todo */
-.content-wrapper:not(.with-sidebar) .main-content {
-  margin-left: 0;
-  padding: 20px;
-  width: 100%;
+.navbar.new-style {
+  /* Navbar ahora se posiciona dentro del main-page-wrapper, 
+     por lo que no necesita 'left' ni 'width' que dependan del sidebar aquí.
+     Sus estilos internos (height, background, etc.) están en Navbar.css */
+  position: sticky; /* O fixed si quieres que siempre esté visible al hacer scroll el main-page-wrapper */
+  top: 0;
+  /* width: 100%; Ya lo es por ser un elemento de bloque dentro de un flex-column */
+  z-index: 1030; /* Navbar encima del contenido */
+  height: 65px; /* Asegurar que tenga altura para el padding-top del main-content */
+  flex-shrink: 0; /* Para que no se encoja si el contenido es muy alto */
 }
 
 .main-content {
-  flex-grow: 1;
+  flex-grow: 1; /* Ocupa el espacio vertical restante */
+  padding: 20px; 
+  background-color: var(--background-color, #eef0f2); 
+  box-sizing: border-box;
+  /* El padding-top para la navbar se maneja en el .main-page-wrapper si la navbar es fixed,
+     o el main-content lo necesitaría si la navbar no es fixed y está en el flujo.
+     Si la navbar es sticky dentro de main-page-wrapper, no se necesita padding-top aquí. */
 }
 
-.footer {
-  text-align: center;
-  padding: 15px;
-  background-color: var(--dark-color);
-  color: rgba(255,255,255,0.7);
-  font-size: 0.85rem;
-  transition: margin-left 0.3s ease-in-out;
-  /* Si el footer debe respetar el ancho del sidebar, se necesitaría un manejo más complejo
-     o que el footer esté dentro del mismo flujo que el main-content afectado por el sidebar.
-     Con la estructura actual (footer como hermano de content-wrapper),
-     este ajuste de margin-left con ~ no funcionará directamente desde .sidebar:hover.
-     Para este ejemplo, se asume que el footer es de ancho completo o
-     que su ajuste de margen se manejará de otra manera si es necesario.
-     Si el sidebar está fijo y llega hasta abajo, el footer necesitaría un margin-left:
-  */
-  /*
-  .content-wrapper.with-sidebar + .footer {
-    margin-left: 70px;
-  }
-  .content-wrapper.with-sidebar .sidebar:hover + ??? .footer { // This is tricky with current structure
-    margin-left: 240px;
-  }
-  */
+.app-footer.new-look-footer {
+  /* Los estilos de apariencia (colores, padding interno) están en Footer.css */
+  /* No necesita margin-left, ya que el padding-left del main-page-wrapper lo posicionará */
+  box-sizing: border-box; 
+  width: 100%; /* Ocupa el ancho de su contenedor (main-page-wrapper) */
+  flex-shrink: 0; /* Para que no se encoja si el contenido es muy alto */
 }
 
 
-/* Ajustes para pantallas pequeñas */
+/* --- LÓGICA DE SIDEBAR ACTIVO Y EXPANDIDO APLICADA AL .main-page-wrapper --- */
+
+/* Cuando el sidebar está activo (presente y colapsado) */
+.app-layout.sidebar-active .main-page-wrapper {
+  padding-left: 70px; /* Ancho del sidebar colapsado */
+}
+
+/* Cuando el sidebar está activo Y expandido */
+.app-layout.sidebar-expanded .main-page-wrapper {
+  padding-left: 240px; /* Ancho del sidebar expandido */
+}
+
+
+/* Para HomePage o vistas sin chrome (donde no hay .sidebar-active) */
+.main-page-wrapper .main-content.no-padding-main { /* Aplicado cuando showChrome es false */
+  padding: 0 !important; 
+  height: 100vh; 
+  overflow: hidden; 
+  background-color: transparent; 
+}
+.app-layout:not(.sidebar-active) .main-page-wrapper { /* Si no hay sidebar (ej. login, o user no logueado en homepage) */
+    padding-left: 0px;
+}
+
+
+/* Media queries para ajustar paddings */
 @media (max-width: 768px) {
-  /* Sidebar.css ahora maneja su propio width en hover (70px -> 200px) */
-  /* Ajustamos main-content para que coincida con esos estados en tablet */
-  .content-wrapper.with-sidebar .main-content {
-    margin-left: 70px; /* Collapsed */
-    width: calc(100% - 70px);
+  .app-layout.sidebar-active .main-page-wrapper {
+    padding-left: 65px; /* Ancho colapsado móvil */
   }
-  .content-wrapper.with-sidebar .sidebar:hover ~ .main-content {
-    margin-left: 200px; /* Expanded on tablet hover */
-    width: calc(100% - 200px);
+  .app-layout.sidebar-expanded .main-page-wrapper {
+    padding-left: 220px; /* Ancho expandido móvil */
   }
 }
 
+/* Lógica para móviles donde el sidebar podría estar completamente oculto/superpuesto */
+/* Esta parte dependerá de cómo implementes el toggle del sidebar en móvil */
 @media (max-width: 576px) {
-  /* En pantallas muy pequeñas, el sidebar se oculta con transform (translateX(-100%))
-     y se muestra con una clase .open (manejada por JS, no implementado en esta respuesta).
-     Cuando está oculto, el main-content ocupa todo.
-     Cuando está .open, el main-content necesitaría un margin-left igual al ancho del sidebar abierto.
-  */
-  .sidebar {
-    /* Originalmente: transform: translateX(-100%); */
-    /* Mantenemos el comportamiento de transform de Layout.css para <576px,
-       por lo que el hover no será el mecanismo principal aquí; un toggle JS lo sería.
-       Si se decide no usar el transform y mantenerlo fijo y colapsado por defecto: */
-    /* width: 70px !important; */ /* Forzaría el ancho colapsado */
-    transform: translateX(-100%); /* Mantiene la lógica original para móviles */
-    transition: transform 0.3s ease-in-out;
-    z-index: 1031;
+  /* Si el sidebar se oculta con transform translateX(-100%) y se muestra con una clase .sidebar-mobile-open en .app-layout */
+  /* El sidebar en sí (.sidebar.new-look) ya tiene su propio transform: translateX(-100%) en Sidebar.css para <576px */
+  
+  .app-layout:not(.sidebar-mobile-open) .main-page-wrapper { /* Asumiendo que sidebar-mobile-open se añade a app-layout */
+    padding-left: 0;
   }
-  .sidebar.open { /* Clase que se añadiría con JS para mostrarlo */
-      transform: translateX(0);
-      width: 200px; /* Ancho del sidebar abierto en móvil */
-  }
-  .content-wrapper.with-sidebar .main-content {
-    margin-left: 0; /* Por defecto, si el sidebar está oculto por transform */
-    width: 100%;
-  }
-  /* Si el sidebar se abre con .open en móvil, main-content debería ajustarse */
-  .content-wrapper.with-sidebar .sidebar.open ~ .main-content {
-    margin-left: 200px; /* O el ancho que tenga .sidebar.open */
-    width: calc(100% - 200px);
-  }
-}
 
-/* Cuando showChrome es false, para HomePage */
-.content-wrapper.full-page-content {
-  padding-top: 0 !important;
-}
-
-.content-wrapper.full-page-content .main-content.no-padding-main {
-  margin-left: 0 !important;
-  width: 100% !important;
-  padding: 0 !important;
-  height: 100vh;
-  overflow: hidden;
+  .app-layout.sidebar-mobile-open .main-page-wrapper {
+    /* Si el sidebar móvil se superpone (lo cual es común), el wrapper no necesita padding-left */
+     padding-left: 0; 
+     /* Si el sidebar móvil EMPUJA el contenido, entonces necesitarías un padding-left aquí: */
+     /* padding-left: 220px; */ /* O el ancho del sidebar móvil abierto */
+  }
 }
