@@ -1,25 +1,29 @@
 /* Ruta: finanzas-app-pro/frontend/src/components/Layout/Sidebar.css */
 
-/* Estilos base para el nuevo look del sidebar */
 .sidebar.new-look {
-  width: 70px; /* Ancho colapsado (solo iconos) */
-  background-color: #f8f9fa; /* Fondo claro, similar a un off-white */
-  color: #495057; /* Texto oscuro para contraste */
-  height: calc(100vh - 65px); /* Altura menos la altura de la nueva navbar */
+  width: 70px; 
+  background-color: #f8f9fa; 
+  color: #495057; 
+  height: 100vh; 
   position: fixed;
-  top: 65px; /* Debajo de la nueva navbar */
-  left: 0;
-  padding: 15px 0; /* Padding vertical */
-  box-shadow: 1px 0 5px rgba(0,0,0,0.07); /* Sombra sutil a la derecha */
+  top: 0; 
+  left: 0; 
+  padding: 0; 
+  box-sizing: border-box;
+  box-shadow: 1px 0 5px rgba(0,0,0,0.07); 
   overflow-x: hidden;
   overflow-y: auto;
   transition: width 0.25s ease-in-out;
-  z-index: 1020; /* Debajo de la navbar pero encima del contenido */
+  z-index: 1020; /* Por encima del main-content, pero Navbar y Footer estarán por encima de este si es necesario */
 }
 
 .sidebar.new-look:hover {
-  width: 240px; /* Ancho expandido */
-  overflow-x: hidden; 
+  width: 240px; 
+}
+
+.sidebar.new-look .sidebar-nav {
+    padding-top: calc(65px + 15px); /* Navbar height (65px) + desired top padding (15px) */
+    padding-bottom: calc(55px + 15px); /* Approx Footer height (55px) + desired bottom padding (15px) */
 }
 
 .sidebar.new-look .sidebar-nav ul {
@@ -56,7 +60,6 @@
   justify-content: flex-start; 
 }
 
-/* Icono (primer span) */
 .sidebar.new-look .sidebar-link span:first-child {
   font-size: 1.3em; 
   min-width: 30px; 
@@ -72,8 +75,6 @@
   margin-right: 12px;
 }
 
-
-/* Texto (segundo span) */
 .sidebar.new-look .sidebar-link span:last-child {
   opacity: 0;
   visibility: hidden;
@@ -105,169 +106,48 @@
     color: var(--primary-color); 
 }
 
-/* --- Separadores y Headers --- */
-
-/* Los HEADERS de texto se ocultan completamente cuando está colapsado */
+/* Separadores y Headers */
 .sidebar.new-look .sidebar-nav-header {
-  margin: 0; 
-  padding: 0; 
-  border: none; 
-  height: 0; 
-  overflow: hidden; 
-  opacity: 0;
+  margin: 0; padding: 0; border: none; height: 0; 
+  overflow: hidden; opacity: 0;
   transition: height 0.1s ease-out 0.05s, margin 0.25s ease-in-out, padding 0.25s ease-in-out, opacity 0.1s ease-out 0s;
 }
-
 .sidebar.new-look:hover .sidebar-nav-header {
-  height: auto; 
-  padding: 15px 20px 5px 20px; 
-  opacity: 1;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #6c757d;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
+  height: auto; padding: 15px 20px 5px 20px; opacity: 1;
+  font-size: 0.7rem; font-weight: 700; color: #6c757d;
+  text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
 }
-.sidebar.new-look .sidebar-nav-header span {
-    display: block;
-    white-space: nowrap;
-}
+.sidebar.new-look .sidebar-nav-header span { display: block; white-space: nowrap; }
 
-/* Los SEPARADORES ahora tendrán un estilo visible cuando están colapsados */
 .sidebar.new-look .sidebar-separator {
-  /* Estado COLAPSADO: se muestra como una línea más corta */
-  height: 1px;
-  background-color: rgba(0,0,0,0.1); /* Color de la línea colapsada */
-  margin: 10px 20px; /* Margen vertical (10px) crea el espacio, margen horizontal (20px) define el largo de la línea */
-  padding: 0;
-  border: none;
-  overflow: hidden; 
+  height: 1px; background-color: rgba(0,0,0,0.1); margin: 10px 20px; 
+  padding: 0; border: none; overflow: hidden; 
   transition: margin 0.25s ease-in-out, background-color 0.25s ease-in-out;
 }
-
 .sidebar.new-look:hover .sidebar-separator {
-  /* Estado EXPANDIDO: */
-  background-color: #dee2e6; 
-  margin: 12px 15px; /* Margen completo para que se vea más larga */
+  background-color: #dee2e6; margin: 12px 15px; 
 }
 
-/* Media queries para ajustar si es necesario */
+/* Media queries */
 @media (max-width: 768px) {
-  .sidebar.new-look {
-     width: 65px; 
-     height: calc(100vh - 60px); 
-     top: 60px; 
-  }
-  .sidebar.new-look:hover {
-      width: 220px; 
-  }
-  .sidebar.new-look .sidebar-link {
-    height: 42px;
-  }
-  .sidebar.new-look .sidebar-link span:first-child {
-    font-size: 1.2em;
-  }
-   .sidebar.new-look .sidebar-separator { 
-    margin: 8px 18px; 
-  }
-  .sidebar.new-look:hover .sidebar-separator {
-    margin: 10px 15px; 
-  }
+  .sidebar.new-look { width: 65px; }
+  .sidebar.new-look:hover { width: 220px; }
+  .sidebar.new-look .sidebar-link { height: 42px; }
+  .sidebar.new-look .sidebar-link span:first-child { font-size: 1.2em; }
+  .sidebar.new-look .sidebar-separator { margin: 8px 18px; }
+  .sidebar.new-look:hover .sidebar-separator { margin: 10px 15px; }
+  .sidebar.new-look .sidebar-nav { padding-top: calc(60px + 10px); padding-bottom: calc(55px + 10px); } 
 }
 
-/* --- ESTILOS DEL SIDEBAR ORIGINAL (si se usara sin .new-look) --- */
-.sidebar:not(.new-look) {
-  width: 70px; 
-  background-color: var(--dark-color, #343a40);
-  color: #f8f9fa;
-  height: calc(100vh - 60px);
-  position: fixed;
-  top: 60px;
-  left: 0;
-  padding: 20px 0; 
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-  overflow-x: hidden;
-  overflow-y: auto;
-  transition: width 0.3s ease-in-out;
-  z-index: 1020;
-}
-.sidebar:not(.new-look):hover {
-  width: 240px; 
-}
-.sidebar:not(.new-look) .sidebar-nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.sidebar:not(.new-look) .sidebar-nav li {
-  margin: 0;
-}
-.sidebar:not(.new-look) .sidebar-link {
-  display: flex;
-  align-items: center;
-  height: 48px; 
-  padding: 12px 0; 
-  justify-content: center; 
-  color: #adb5bd;
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, justify-content 0.3s ease-in-out, padding 0.3s ease-in-out;
-  border-left: 3px solid transparent;
-  white-space: nowrap;
-  position: relative; 
-  overflow: visible; 
-}
-.sidebar:not(.new-look):hover .sidebar-link {
-  justify-content: flex-start;
-  padding: 12px 20px; 
-}
-.sidebar:not(.new-look) .sidebar-link span:first-child {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4em;
-  line-height: 1;
-  flex-shrink: 0;
-  transition: margin-right 0.3s ease-in-out, width 0.3s ease-in-out;
-  width: 100%;
-  text-align: center;
-  margin-right: 0;
-}
-.sidebar:not(.new-look):hover .sidebar-link span:first-child {
-  width: auto; 
-  margin-right: 12px;
-}
-.sidebar:not(.new-look) .sidebar-link span:last-child {
-  opacity: 0;
-  visibility: hidden;
-  width: 0; 
-  overflow: hidden; 
-  transition: opacity 0.1s ease-out, visibility 0s linear 0.15s, width 0s linear 0.15s;
-}
-.sidebar:not(.new-look):hover .sidebar-link span:last-child {
-  opacity: 1;
-  visibility: visible;
-  width: auto; 
-  overflow: visible;
-  transition: opacity 0.2s ease-in 0.15s, visibility 0s linear 0.15s, width 0s linear 0.15s;
-}
-.sidebar:not(.new-look) .sidebar-link:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #f8f9fa;
-}
-.sidebar:not(.new-look) .sidebar-link.active {
-  background-color: rgba(var(--primary-rgb, 52, 152, 219), 0.15);
-  color: var(--primary-color-light, #7cceff);
-  border-left-color: var(--primary-color, #3498db);
-  font-weight: 500;
-}
-.sidebar:not(.new-look) .sidebar-separator {
-  height: 1px;
-  background-color: rgba(255, 255, 255, 0.1);
-  margin: 15px 0; 
-  transition: margin 0.3s ease-in-out;
-}
-.sidebar:not(.new-look):hover .sidebar-separator {
-  margin: 15px 20px; 
+@media (max-width: 576px) {
+  .sidebar.new-look {
+    transform: translateX(-100%); 
+    transition: transform 0.3s ease-in-out;
+    z-index: 1035; /* Más alto cuando está abierto en móvil para superponerse */
+    width: 220px; 
+  }
+  .sidebar.new-look.open { 
+      transform: translateX(0);
+  }
+   .sidebar.new-look .sidebar-nav { padding-top: 15px; padding-bottom: 15px;} 
 }

@@ -3,46 +3,48 @@ import React, { useState } from 'react';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import Footer from './Footer';   
-import { useAuth } from '../../contexts/AuthContext'; //
+import { useAuth } from '../../contexts/AuthContext';
 import './Layout.css';
 
 const Layout = ({ children, showChrome = true }) => {
-  const { user } = useAuth(); //
-  const [isSidebarHovered, setIsSidebarHovered] = useState(false); // Estado para el hover del Sidebar
+  const { user } = useAuth();
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false); 
 
-  // Clases para el div principal de la aplicación
   let appLayoutClasses = "app-layout";
   if (user && showChrome) {
-    appLayoutClasses += " sidebar-active"; // Indica que el sidebar está presente (aunque colapsado)
+    appLayoutClasses += " sidebar-active"; 
     if (isSidebarHovered) {
-      appLayoutClasses += " sidebar-expanded"; // Indica que el sidebar está expandido por hover
+      appLayoutClasses += " sidebar-expanded"; 
     }
   }
-  // En el futuro, si tienes un toggle para el sidebar en móvil, podrías añadir otra clase como:
-  // if (isMobileSidebarOpen) appLayoutClasses += " sidebar-mobile-open";
+  if (showChrome) {
+    appLayoutClasses += " app-chrome-visible";
+  } else {
+    appLayoutClasses += " app-chrome-hidden";
+  }
 
   return (
     <div className={appLayoutClasses}>
       {user && showChrome && (
-        // Este div envuelve al Sidebar y es el que detecta el hover
-        // para aplicar la clase .sidebar-expanded al .app-layout
         <div 
-          className="sidebar-container-area" 
+          className="sidebar-container-area" // Este div es solo para el hover
           onMouseEnter={() => setIsSidebarHovered(true)}
           onMouseLeave={() => setIsSidebarHovered(false)}
         >
-          <Sidebar />
+          <Sidebar /> {/* Sidebar con position:fixed */}
         </div>
       )}
 
-      {/* Este wrapper contiene todo lo que se debe desplazar cuando el sidebar cambia de tamaño */}
-      <div className="main-page-wrapper">
-        {showChrome && <Navbar />}
-        <main className={`main-content ${!showChrome ? 'no-padding-main' : ''}`}>
-          {children}
-        </main>
-        {showChrome && <Footer />} 
-      </div>
+      {/* Navbar es un elemento fijo global y ocupa todo el ancho */}
+      {showChrome && <Navbar />} 
+      
+      {/* main-content es el único que ajusta su padding-left */}
+      <main className={`main-content ${!showChrome ? 'no-padding-main' : ''}`}>
+        {children}
+      </main>
+      
+      {/* Footer es un elemento fijo global y ocupa todo el ancho */}
+      {showChrome && <Footer />} 
     </div>
   );
 };

@@ -1,23 +1,53 @@
 /* Ruta: finanzas-app-pro/frontend/src/components/Layout/Footer.css */
 .app-footer.new-look-footer {
-  background-color: #ffffff; /* Fondo blanco */
-  color: #6c757d; /* Texto gris oscuro, sutil */
-  padding: 20px 25px;
+  background-color: #ffffff;
+  color: #6c757d;
+  padding: 15px 25px; /* Padding interno base */
   text-align: center;
   font-size: 0.85rem;
-  border-top: 1px solid #e9ecef; /* Borde superior muy sutil */
-  /* La transición para margin-left se manejará en Layout.css si es necesaria allí */
-  box-sizing: border-box; 
+  border-top: 1px solid #e9ecef;
+  box-sizing: border-box;
+  position: fixed;
+  bottom: 0;
+  left: 0;       /* Siempre pegado a la izquierda del viewport */
+  width: 100%;   /* Siempre 100% del ancho del viewport */
+  z-index: 1025; /* Similar al Sidebar o ligeramente superior si es necesario */
+  /* Ya no se necesita transición de padding-left si no cambia dinámicamente por el sidebar */
+  /* transition: padding-left 0.25s ease-in-out; */
 }
 
+/* --- INICIO: MODIFICACIÓN - Eliminar o comentar las siguientes reglas --- */
+/* El contenido del footer se empuja cuando el sidebar está activo */
+/*
+.app-layout.sidebar-active:not(.sidebar-expanded) .app-footer.new-look-footer {
+  padding-left: calc(70px + 25px);
+}
+.app-layout.sidebar-expanded .app-footer.new-look-footer {
+  padding-left: calc(240px + 25px);
+}
+*/
+
+/* En móvil, si el sidebar se superpone, el footer vuelve a su padding original.
+   Esta regla ya alinea con el comportamiento deseado (usar el padding base de 25px).
+   Si las reglas de arriba se eliminan, el padding-left será consistentemente 25px en todos los casos.
+*/
+@media (max-width: 576px) {
+  .app-layout.sidebar-active .app-footer.new-look-footer,
+  .app-layout.sidebar-expanded .app-footer.new-look-footer {
+    padding-left: 25px; /* Esto asegura que el padding-left base se mantenga */
+  }
+}
+/* --- FIN: MODIFICACIÓN --- */
+
+
 .new-look-footer .footer-content {
-  max-width: 1200px; 
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between; 
-  gap: 10px;
+  justify-content: space-between;
+  gap: 5px;
 }
 
 .new-look-footer .footer-nav {
@@ -27,17 +57,17 @@
 }
 
 .new-look-footer .footer-nav a {
-  color: #495057; 
+  color: #495057;
   text-decoration: none;
   transition: color 0.2s ease-in-out;
 }
 
 .new-look-footer .footer-nav a:hover {
-  color: var(--primary-color); 
+  color: var(--primary-color);
   text-decoration: underline;
 }
 
-.new-look-footer .footer-nav span { /* Para el separador "|" */
+.new-look-footer .footer-nav span {
   color: #adb5bd;
 }
 
@@ -45,7 +75,7 @@
   .new-look-footer .footer-content {
     flex-direction: row;
   }
-  .new-look-footer p { /* El párrafo del copyright */
-    margin: 0; 
+  .new-look-footer p {
+    margin: 0;
   }
 }
