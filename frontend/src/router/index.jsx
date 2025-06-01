@@ -17,21 +17,23 @@ import EditBudgetPage from '../pages/EditBudgetPage';
 import ReportsPage from '../pages/ReportsPage';
 import InvestmentsPage from '../pages/InvestmentsPage';
 import AddInvestmentPage from '../pages/AddInvestmentPage';
-import EditInvestmentPage from '../pages/EditInvestmentPage';
+import EditInvestmentPage from '../pages/EditInvestmentPage'; 
 import CategoriesPage from '../pages/CategoriesPage';
 import RecurringTransactionsPage from '../pages/RecurringTransactionsPage';
 import AddRecurringTransactionPage from '../pages/AddRecurringTransactionPage';
 import EditRecurringTransactionPage from '../pages/EditRecurringTransactionPage'; 
 import DebtsAndLoansPage from '../pages/DebtsAndLoansPage';
 import AddDebtAndLoanPage from '../pages/AddDebtAndLoanPage';
-import EditDebtAndLoanPage from '../pages/EditDebtAndLoanPage';
+import EditDebtAndLoanPage from '../pages/EditDebtAndLoanPage'; 
 import ExchangeRatesPage from '../pages/ExchangeRatesPage';
-import NotFoundPage from '../pages/NotFoundPage';
-import PrivateRoute from '../components/Route/PrivateRoute';
-import AdminRoute from '../components/Route/AdminRoute'; // Aún puede ser útil para un chequeo general de rol
-import PermissionRoute from '../components/Route/PermissionRoute';
 import AdminUsersPage from '../pages/AdminUsersPage';
-import AdminPermissionsPage from '../pages/AdminPermissionsPage'; // *** NUEVO ***
+import AdminPermissionsPage from '../pages/AdminPermissionsPage';
+import HowItWorksPage from '../pages/HowItWorksPage'; // *** NUEVA IMPORTACIÓN ***
+import NotFoundPage from '../pages/NotFoundPage';
+
+import PrivateRoute from '../components/Route/PrivateRoute'; //
+import AdminRoute from '../components/Route/AdminRoute'; //
+import PermissionRoute from '../components/Route/PermissionRoute';
 
 import { useAuth } from '../contexts/AuthContext'; //
 
@@ -43,6 +45,7 @@ const AppRouter = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage />} />
       <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <RegisterPage />} />
+      <Route path="/como-funciona" element={<HowItWorksPage />} /> {/* *** NUEVA RUTA PÚBLICA *** */}
       
       <Route element={<PrivateRoute />}> {/* */}
         <Route path="/dashboard" element={<DashboardPage />} />
@@ -75,22 +78,19 @@ const AppRouter = () => {
         <Route path="/settings/recurring-transactions/edit/:recurringId" element={<EditRecurringTransactionPage />} />
         <Route path="/settings/exchange-rates" element={<ExchangeRatesPage />} />
         
-        {/* Rutas de Administración */}
-        {/* Primero envuelve con AdminRoute si quieres un chequeo de rol general */}
         <Route path="/admin" element={<AdminRoute />}> {/* */}
           <Route 
             path="users" 
             element={
               <PermissionRoute requiredPermission="admin_view_all_users">
-                <AdminUsersPage /> {/* */}
+                <AdminUsersPage />
               </PermissionRoute>
             } 
           />
-          {/* *** NUEVA RUTA PARA GESTIÓN DE PERMISOS *** */}
           <Route
             path="config/permissions"
             element={
-              <PermissionRoute requiredPermission="admin_manage_permissions_config"> {/* Usar el permiso específico */}
+              <PermissionRoute requiredPermission="admin_manage_permissions_config">
                 <AdminPermissionsPage />
               </PermissionRoute>
             }

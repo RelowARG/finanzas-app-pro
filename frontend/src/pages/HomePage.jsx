@@ -65,17 +65,20 @@ const HomePage = () => {
             <p className="hero-subtitle">
               Sumérgete en tus datos, crea presupuestos, sincroniza con tus bancos (próximamente) y disfruta de la categorización automática.
             </p>
+            {/* --- ENLACE A "CÓMO FUNCIONA" AÑADIDO AQUÍ --- */}
+            <Link to="/como-funciona" className="learn-more-link">
+              ✨ Descubre cómo funciona FinanzasApp Pro
+            </Link>
+            {/* --- FIN DEL ENLACE --- */}
             <div className="hero-image-container">
-              {/* Puedes reemplazar esto con una imagen real de tu app */}
               <img 
-                src="https://via.placeholder.com/450x300.png?text=Finanzas+App+Pro+Dashboard" 
+                src="/img/dashboard-mockup.png" // Asumiendo que tienes una imagen de ejemplo
                 alt="Finanzas App Pro en acción" 
                 className="hero-image"
               />
               <p className="hero-image-caption">Finanzas App Pro en acción</p>
             </div>
             
-            {/* --- BOTÓN DE CAFECITO AÑADIDO AQUÍ --- */}
             <div className="cafecito-button-container">
               <a href='https://cafecito.app/finanzasapp' rel='noopener noreferrer' target='_blank'>
                 <img 
@@ -85,8 +88,6 @@ const HomePage = () => {
                 />
               </a>
             </div>
-             {/* --- FIN BOTÓN DE CAFECITO --- */}
-
           </div>
         </div>
         <div className="app-branding">
