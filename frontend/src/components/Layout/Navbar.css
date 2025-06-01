@@ -1,20 +1,21 @@
-/* Ruta: src/components/Layout/Navbar.css (o añadir a App.css) */
+/* Ruta: src/components/Layout/Navbar.css */
 
-.navbar {
-  background-color: var(--dark-color, #343a40); /* Usando --dark-color de App.css */
-  color: white;
-  padding: 0 20px; /* Padding horizontal */
-  height: 60px; 
+/* Estilos para .navbar.new-style */
+.navbar.new-style {
+  background-color: #ffffff; /* Fondo blanco o muy claro */
+  color: var(--dark-color, #343a40); /* Texto oscuro */
+  padding: 0 25px; 
+  height: 65px; /* Un poco más de altura */
   display: flex; 
   align-items: center; 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08); /* Sombra más sutil */
   position: sticky; 
   top: 0;
   z-index: 1030; 
 }
 
-.nav-container {
-  max-width: 1200px; /* Un poco más de ancho para el contenedor */
+.navbar.new-style .nav-container {
+  max-width: 1200px; 
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -22,108 +23,316 @@
   width: 100%;
 }
 
-.nav-logo {
-  color: white;
+.navbar.new-style .nav-logo {
+  color: var(--primary-color); /* Logo con color primario */
   text-decoration: none;
-  font-size: 1.6rem; /* Ligeramente más pequeño */
-  font-weight: bold;
+  font-size: 1.7rem; 
+  font-weight: 700; /* Más peso */
+  letter-spacing: -0.5px;
 }
 
-.nav-menu {
+.navbar.new-style .nav-menu { /* Clase general para listas de menú */
   list-style: none;
   display: flex;
-  gap: 5px; /* Espacio reducido entre items principales */
+  gap: 10px; 
   margin: 0;
   padding: 0;
   align-items: center;
 }
 
-.nav-links {
-  color: rgba(255,255,255,0.8); /* Un poco más opaco para mejor contraste */
+.navbar.new-style .main-nav-links { /* Para los enlaces centrales */
+  flex-grow: 1; /* Ocupar espacio disponible */
+  justify-content: center; /* Centrar los enlaces */
+}
+
+.navbar.new-style .nav-links {
+  color: #555e69; /* Un gris medio para los enlaces */
   text-decoration: none;
-  padding: 8px 12px; /* Padding para los enlaces */
-  border-radius: var(--border-radius, 4px);
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
-  font-size: 0.9rem; /* Tamaño de fuente para enlaces */
+  padding: 8px 15px; 
+  border-radius: 6px; /* Bordes redondeados para el hover */
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  font-size: 0.95rem;
+  font-weight: 500; /* Ligeramente más peso */
 }
 
-.nav-links:hover, .nav-links.active { /* Suponiendo que uses NavLink y tenga clase active */
-  color: white;
-  background-color: rgba(255,255,255,0.15);
+.navbar.new-style .nav-links:hover, 
+.navbar.new-style .nav-links.active { 
+  color: var(--primary-color); /* Color primario al hover o activo */
+  background-color: rgba(var(--primary-rgb), 0.08); /* Fondo muy sutil */
 }
 
-.nav-button {
-  background: none;
-  border: none; /* Quitar borde por defecto */
-  cursor: pointer;
-  font-family: inherit; /* Heredar fuente */
+/* Contenedor para botones de acción a la derecha */
+.navbar.new-style .nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.nav-button-add {
-  background-color: var(--primary-color, #007bff) !important; /* Color para "+ Registros" */
+/* Estilos para los botones de acción */
+.navbar.new-style .nav-button-action { /* Clase común para los botones de acción */
+  padding: 9px 18px !important; /* Padding consistente */
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  border-radius: 20px !important; /* Bordes bien redondeados */
+  text-decoration: none; /* Para los Links que se estilizan como botones */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+}
+.navbar.new-style .nav-button-action:hover {
+    transform: translateY(-1px);
+}
+
+
+.navbar.new-style .button.button-primary.nav-button-action {
+  background-color: var(--primary-color) !important; 
+  border: 1px solid var(--primary-color) !important;
   color: white !important;
-  font-weight: 500;
 }
-.nav-button-add:hover {
-  background-color: #0056b3 !important; /* Oscurecer al hover */
-}
-
-.nav-button-logout {
-  /* Estilos específicos si quieres que el botón de logout sea diferente */
-  /* background-color: var(--danger-color) !important; */
-}
-.nav-button-logout:hover {
-  background-color: var(--danger-color) !important;
-  color: white !important;
+.navbar.new-style .button.button-primary.nav-button-action:hover {
+  background-color: var(--primary-color-dark, #0056b3) !important; /* Necesitarías definir --primary-color-dark */
+  border-color: var(--primary-color-dark, #0056b3) !important;
 }
 
-.nav-item-add-record {
-  position: relative; /* Para el posicionamiento del menú desplegable */
+.navbar.new-style .button.button-secondary.nav-button-action {
+  background-color: transparent !important;
+  border: 1px solid #ced4da !important; /* Borde gris claro */
+  color: var(--dark-color) !important;
+}
+.navbar.new-style .button.button-secondary.nav-button-action:hover {
+  background-color: #f0f2f5 !important; /* Fondo muy sutil al hover */
+  border-color: #adb5bd !important;
 }
 
-.add-menu-dropdown {
+
+/* Estilos para el menú desplegable "+ Registros" */
+.navbar.new-style .nav-item-add-record {
+  position: relative; 
+}
+
+.navbar.new-style .add-menu-dropdown {
   position: absolute;
-  top: calc(100% + 5px); /* Debajo del botón "+ Registros" */
-  left: 0;
-  background-color: var(--dark-color, #343a40);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: var(--border-radius, 4px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 1100; /* Por encima de otros elementos del navbar */
-  min-width: 200px; /* Ancho mínimo del desplegable */
-  padding: 5px 0;
+  top: calc(100% + 8px); /* Un poco más de espacio debajo */
+  right: 0; /* Alinear a la derecha del botón */
+  background-color: #ffffff; /* Fondo blanco para el menú */
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius, 6px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Sombra más pronunciada */
+  z-index: 1100; 
+  min-width: 220px; 
+  padding: 8px 0;
+  overflow: hidden;
 }
 
-.add-menu-item {
+.navbar.new-style .add-menu-item {
   display: block;
-  padding: 8px 15px;
-  color: rgba(255,255,255,0.8);
+  padding: 10px 18px; /* Más padding */
+  color: var(--dark-color); /* Texto oscuro */
   text-decoration: none;
   font-size: 0.9rem;
   white-space: nowrap;
 }
 
-.add-menu-item:hover {
-  background-color: rgba(255,255,255,0.15);
-  color: white;
+.navbar.new-style .add-menu-item:hover {
+  background-color: rgba(var(--primary-rgb), 0.08); /* Fondo hover con color primario sutil */
+  color: var(--primary-color);
 }
 
-/* Responsividad básica para el Navbar */
+/* Ajustes para responsividad */
+@media (max-width: 992px) { /* Punto de quiebre para cuando los enlaces centrales podrían no caber */
+  .navbar.new-style .main-nav-links {
+    /* Ocultar o mover a un menú hamburguesa en pantallas más pequeñas */
+    /* Por ahora, simplemente permitimos que se encojan o se muevan */
+    /* Si quieres un menú hamburguesa, esta parte sería más compleja */
+    display: none; /* Ejemplo: ocultar en pantallas más pequeñas */
+  }
+  /* Aquí necesitarías un botón de hamburguesa que muestre .main-nav-links */
+}
+
 @media (max-width: 768px) {
-  .nav-menu {
-    /* Aquí podrías implementar un menú hamburguesa si lo deseas */
-    /* Por ahora, simplemente se reducirá el gap o se ocultarán items */
-    gap: 2px;
+  .navbar.new-style {
+    padding: 0 15px;
   }
-  .nav-links, .nav-button-add, .nav-button-logout {
-    padding: 6px 8px;
-    font-size: 0.85rem;
+  .navbar.new-style .nav-logo {
+    font-size: 1.5rem;
   }
-  .nav-logo {
-    font-size: 1.4rem;
+  .navbar.new-style .nav-actions {
+    gap: 8px; /* Menos espacio entre botones de acción */
   }
-  .add-menu-dropdown {
-    left: auto; /* Permitir que se ajuste mejor */
-    right: 0; /* Alinear a la derecha en móviles si el botón está a la derecha */
+  .navbar.new-style .nav-button-action {
+    padding: 8px 12px !important;
+    font-size: 0.85rem !important;
+  }
+   .navbar.new-style .add-menu-dropdown {
+    min-width: 180px;
+  }
+}.navbar.new-style {
+  background-color: #ffffff; 
+  color: var(--dark-color, #343a40); 
+  padding: 0 25px; 
+  height: 65px; 
+  display: flex; 
+  align-items: center; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08); 
+  position: sticky; 
+  top: 0;
+  z-index: 1030; 
+}
+
+.navbar.new-style .nav-container {
+  max-width: 1200px; 
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.navbar.new-style .nav-logo {
+  color: var(--primary-color); 
+  text-decoration: none;
+  font-size: 1.7rem; 
+  font-weight: 700; 
+  letter-spacing: -0.5px;
+}
+
+.navbar.new-style .nav-menu {
+  list-style: none;
+  display: flex;
+  gap: 10px; 
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.navbar.new-style .main-nav-links {
+  flex-grow: 1; 
+  justify-content: center; 
+}
+
+.navbar.new-style .nav-links {
+  color: #555e69; 
+  text-decoration: none;
+  padding: 8px 15px; 
+  border-radius: 6px; 
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  font-size: 0.95rem;
+  font-weight: 500; 
+}
+
+.navbar.new-style .nav-links:hover, 
+.navbar.new-style .nav-links.active { 
+  color: var(--primary-color); 
+  background-color: rgba(var(--primary-rgb), 0.08); 
+}
+
+.navbar.new-style .nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Estilos para los botones de acción (+ Registros, Login, Signup, Cerrar Sesión) */
+.navbar.new-style .nav-button-action { 
+  padding: 9px 18px !important; 
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  border-radius: 20px !important; 
+  text-decoration: none; 
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+  white-space: nowrap; /* Evitar que el texto se parta en dos líneas */
+  min-width: 120px; /* Establecer un ancho mínimo para uniformidad, ajustar según necesidad */
+  text-align: center;
+}
+.navbar.new-style .nav-button-action:hover {
+    transform: translateY(-1px);
+}
+
+/* Botón Primario (Regístrate / + Registros) */
+.navbar.new-style .button.button-primary.nav-button-action {
+  background-color: var(--primary-color) !important; 
+  border: 1px solid var(--primary-color) !important;
+  color: white !important;
+}
+.navbar.new-style .button.button-primary.nav-button-action:hover {
+  background-color: var(--primary-color-dark, #0056b3) !important; 
+  border-color: var(--primary-color-dark, #0056b3) !important;
+}
+
+/* Botón Secundario (Iniciar Sesión / Cerrar Sesión) */
+.navbar.new-style .button.button-secondary.nav-button-action {
+  background-color: transparent !important;
+  border: 1px solid #ced4da !important; 
+  color: var(--dark-color) !important;
+}
+.navbar.new-style .button.button-secondary.nav-button-action:hover {
+  background-color: #f0f2f5 !important; 
+  border-color: #adb5bd !important;
+}
+
+
+/* Estilos para el menú desplegable "+ Registros" */
+.navbar.new-style .nav-item-add-record {
+  position: relative; 
+}
+
+.navbar.new-style .add-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px); 
+  right: 0; 
+  background-color: #ffffff; 
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius, 6px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+  z-index: 1100; 
+  min-width: 220px; 
+  padding: 8px 0;
+  overflow: hidden;
+}
+
+.navbar.new-style .add-menu-item {
+  display: block;
+  padding: 10px 18px; 
+  color: var(--dark-color); 
+  text-decoration: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.navbar.new-style .add-menu-item:hover {
+  background-color: rgba(var(--primary-rgb), 0.08); 
+  color: var(--primary-color);
+}
+
+/* Ajustes para responsividad */
+@media (max-width: 992px) { 
+  .navbar.new-style .main-nav-links {
+    display: none; 
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar.new-style {
+    padding: 0 15px;
+  }
+  .navbar.new-style .nav-logo {
+    font-size: 1.5rem;
+  }
+  .navbar.new-style .nav-actions {
+    gap: 8px; 
+  }
+  .navbar.new-style .nav-button-action {
+    padding: 8px 12px !important;
+    font-size: 0.85rem !important;
+    min-width: auto; /* Permitir que se ajusten en móviles */
+  }
+   .navbar.new-style .add-menu-dropdown {
+    min-width: 180px;
   }
 }

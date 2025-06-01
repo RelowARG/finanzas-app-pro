@@ -47,15 +47,28 @@
   width: auto;
 }
 
+/* --- ESTILOS PARA EL BOTÓN DEL HEADER --- */
 .hiw-try-button {
-  padding: 12px 28px !important;
-  font-size: 1.05rem !important;
-  background-color: var(--secondary-color) !important; /* Verde para el botón principal */
+  padding: 14px 30px !important; /* Ajusta el padding para que sea más grande */
+  font-size: 1.1rem !important; /* Fuente un poco más grande */
+  background-color: var(--secondary-color) !important; 
   border-color: var(--secondary-color) !important;
+  border-radius: 30px !important; /* <<<--- PUNTAS REDONDEADAS --- */
+  font-weight: 600 !important;
+  text-transform: none !important; /* Si no quieres que sea todo mayúsculas */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Sombra sutil */
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  color: white !important; /* Asegurar color de texto blanco */
+  text-decoration: none !important; /* Asegurar que no haya subrayado de Link */
+  display: inline-block !important; /* Para que respete padding y se comporte como botón */
+  line-height: normal !important; /* Resetear line-height si es afectado */
 }
 .hiw-try-button:hover {
-  background-color: #27ae60 !important;
+  background-color: #27ae60 !important; /* Un poco más oscuro al hover */
+  transform: translateY(-2px);
+  color: white !important; /* Mantener color de texto en hover */
 }
+/* --- FIN ESTILOS BOTÓN HEADER --- */
 
 
 .hiw-main-header-image img {
@@ -195,11 +208,9 @@
   color: white;
   padding: 60px 20px;
   text-align: center;
-  margin: 0 -20px; /* Para que ocupe todo el ancho si .page-container-fluid tiene padding */
-}
-.how-it-works-page-new .hiw-cta-final { /* Más específico si se usa page-container-fluid */
-    margin-left: calc((100% - 100vw) / 2);
-    margin-right: calc((100% - 100vw) / 2);
+  /* Ajuste para que ocupe todo el ancho si page-container-fluid no tiene padding horizontal */
+  margin-left: calc((100% - 100vw) / 2);
+  margin-right: calc((100% - 100vw) / 2);
 }
 
 
@@ -216,9 +227,17 @@
   color: var(--primary-color) !important;
   font-weight: bold;
   border-radius: 30px;
+  width: auto !important; 
+  display: inline-block !important; 
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  text-decoration: none !important; /* Asegurar que no haya subrayado de Link */
+  line-height: normal !important; /* Resetear line-height si es afectado */
 }
 .hiw-cta-final .button-xlarge:hover {
   background-color: #f0f0f0 !important;
+  transform: translateY(-2px);
+  color: var(--primary-color) !important; /* Mantener color de texto en hover */
 }
 
 /* Sección de Soporte Inferior */
@@ -240,6 +259,14 @@
 
 .cafecito-button-container-hiw {
   margin-top: 20px;
+}
+.cafecito-button-container-hiw img {
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease-out;
+}
+.cafecito-button-container-hiw img:hover {
+  transform: scale(1.03);
 }
 
 .hiw-page-footer {
