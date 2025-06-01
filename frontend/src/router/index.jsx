@@ -27,14 +27,16 @@ import AddDebtAndLoanPage from '../pages/AddDebtAndLoanPage';
 import EditDebtAndLoanPage from '../pages/EditDebtAndLoanPage';
 import ExchangeRatesPage from '../pages/ExchangeRatesPage';
 import NotFoundPage from '../pages/NotFoundPage';
-import PrivateRoute from '../components/Route/PrivateRoute'; // [cite: finanzas-app-pro/frontend/src/components/Route/PrivateRoute.jsx]
-import AdminRoute from '../components/Route/AdminRoute'; // NUEVA RUTA PROTEGIDA PARA ADMIN [cite: finanzas-app-pro/frontend/src/components/Route/AdminRoute.jsx]
-import AdminUsersPage from '../pages/AdminUsersPage'; // NUEVA PÁGINA DE ADMIN [cite: finanzas-app-pro/frontend/src/pages/AdminUsersPage.jsx]
+import PrivateRoute from '../components/Route/PrivateRoute';
+import AdminRoute from '../components/Route/AdminRoute'; // Aún puede ser útil para un chequeo general de rol
+import PermissionRoute from '../components/Route/PermissionRoute';
+import AdminUsersPage from '../pages/AdminUsersPage';
+import AdminPermissionsPage from '../pages/AdminPermissionsPage'; // *** NUEVO ***
 
-import { useAuth } from '../contexts/AuthContext'; // [cite: finanzas-app-pro/frontend/src/contexts/AuthContext.jsx]
+import { useAuth } from '../contexts/AuthContext'; //
 
 const AppRouter = () => {
-  const { user } = useAuth();
+  const { user } = useAuth(); //
 
   return (
     <Routes>
@@ -42,8 +44,7 @@ const AppRouter = () => {
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage />} />
       <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <RegisterPage />} />
       
-      {/* Rutas Privadas para Usuarios Autenticados */}
-      <Route element={<PrivateRoute />}>
+      <Route element={<PrivateRoute />}> {/* */}
         <Route path="/dashboard" element={<DashboardPage />} />
         
         <Route path="/accounts" element={<AccountsPage />} />
@@ -74,11 +75,27 @@ const AppRouter = () => {
         <Route path="/settings/recurring-transactions/edit/:recurringId" element={<EditRecurringTransactionPage />} />
         <Route path="/settings/exchange-rates" element={<ExchangeRatesPage />} />
         
-        {/* Rutas de Administración (dentro de PrivateRoute, y luego protegidas por AdminRoute) */}
-        <Route path="/admin" element={<AdminRoute />}>
-          <Route path="users" element={<AdminUsersPage />} />
-          {/* Aquí podrías añadir más sub-rutas de admin, ej: admin/settings, admin/reports-global */}
-          <Route index element={<Navigate to="users" replace />} /> {/* Redirigir /admin a /admin/users */}
+        {/* Rutas de Administración */}
+        {/* Primero envuelve con AdminRoute si quieres un chequeo de rol general */}
+        <Route path="/admin" element={<AdminRoute />}> {/* */}
+          <Route 
+            path="users" 
+            element={
+              <PermissionRoute requiredPermission="admin_view_all_users">
+                <AdminUsersPage /> {/* */}
+              </PermissionRoute>
+            } 
+          />
+          {/* *** NUEVA RUTA PARA GESTIÓN DE PERMISOS *** */}
+          <Route
+            path="config/permissions"
+            element={
+              <PermissionRoute requiredPermission="admin_manage_permissions_config"> {/* Usar el permiso específico */}
+                <AdminPermissionsPage />
+              </PermissionRoute>
+            }
+          />
+          <Route index element={<Navigate to="users" replace />} />
         </Route>
       </Route>
 

@@ -1,16 +1,14 @@
 // Ruta: finanzas-app-pro/backend/models/index.js
-const dbConfig = require('../config/db.config.js'); // No se usa directamente si las vars de entorno están configuradas
+const dbConfig = require('../config/db.config.js');
 const { Sequelize, DataTypes } = require('sequelize');
-const fs = require('fs'); // <--- AÑADIDO para leer el certificado
+const fs = require('fs'); 
 
-// Cargar variables de entorno desde .env en la raíz del backend
-// Asegúrate que .env esté presente o que las variables se definan en el entorno de Render
 require('dotenv').config(); 
 
 const sequelizeOptions = {
   host: process.env.DB_HOST,
   dialect: process.env.DB_DIALECT || 'mysql',
-  port: process.env.DB_PORT || 3306, // El puerto 4000 de TiDB
+  port: process.env.DB_PORT || 3306,
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   pool: {
     max: parseInt(process.env.DB_POOL_MAX, 10) || 5,
@@ -24,55 +22,35 @@ const sequelizeOptions = {
   }
 };
 
-// Configuración SSL para TiDB Cloud (o cualquier MySQL que requiera SSL con CA)
-// En producción (Render), asumimos que SSL es requerido.
 if (process.env.NODE_ENV === 'production') {
     if (process.env.DB_SSL_CA_PATH) {
         try {
-            // En Render, DB_SSL_CA_PATH será la ruta al "Secret File"
             const caCert = fs.readFileSync(process.env.DB_SSL_CA_PATH).toString();
             sequelizeOptions.dialectOptions = {
-                ssl: {
-                    ca: caCert,
-                    // rejectUnauthorized: true // Generalmente es bueno tenerlo, TiDB Cloud lo maneja bien con su CA
-                }
+                ssl: { ca: caCert }
             };
-            console.log('Certificado SSL CA cargado para la conexión a la base de datos desde:', process.env.DB_SSL_CA_PATH);
+            console.log('Certificado SSL CA cargado desde:', process.env.DB_SSL_CA_PATH);
         } catch (e) {
-            console.error('Error crítico al leer el archivo del certificado CA:', e.message);
-            console.error('La aplicación podría no conectarse a la base de datos. Asegúrate que DB_SSL_CA_PATH sea correcto y el archivo exista en Render.');
-            // Considera terminar el proceso si el CA es absolutamente necesario y no se puede cargar
-            // process.exit(1); 
+            console.error('Error crítico al leer el certificado CA:', e.message);
         }
     } else {
-        // Si estás seguro que tu TiDB Cloud Serverless no necesita un CA específico y solo TLS.
-        // Podrías configurar ssl: true o un objeto vacío, pero usar el CA provisto es más seguro.
-        // TiDB Cloud Serverless generalmente SÍ requiere el CA que ellos proveen.
-        console.warn('NODE_ENV es production pero DB_SSL_CA_PATH no está definido. La conexión SSL podría fallar o ser insegura si el CA es requerido por TiDB Cloud.');
-        // Como fallback, podrías intentar con una configuración SSL más genérica, aunque NO RECOMENDADO sin el CA:
-        // sequelizeOptions.dialectOptions = { ssl: { rejectUnauthorized: false } }; // ¡MENOS SEGURO!
+        console.warn('NODE_ENV es production pero DB_SSL_CA_PATH no está definido.');
     }
 } else if (process.env.DB_SSL_REQUIRED === 'true' && process.env.DB_SSL_CA_PATH) {
-    // Para pruebas locales con SSL
     try {
         const caCert = fs.readFileSync(process.env.DB_SSL_CA_PATH).toString();
-        sequelizeOptions.dialectOptions = {
-            ssl: {
-                ca: caCert,
-            }
-        };
-        console.log('Certificado SSL CA cargado (desarrollo/prueba local) desde:', process.env.DB_SSL_CA_PATH);
+        sequelizeOptions.dialectOptions = { ssl: { ca: caCert } };
+        console.log('Certificado SSL CA cargado (desarrollo) desde:', process.env.DB_SSL_CA_PATH);
     } catch (e) {
-        console.error('Error al leer el archivo del certificado CA (desarrollo/prueba local):', e.message);
+        console.error('Error al leer el certificado CA (desarrollo):', e.message);
     }
 }
-
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
   process.env.DB_PASS,
-  sequelizeOptions // Usa las opciones configuradas
+  sequelizeOptions
 );
 
 const db = {};
@@ -80,7 +58,7 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-// Cargar modelos
+// Cargar modelos existentes
 db.User = require("./user.model.js")(sequelize, Sequelize, DataTypes);
 db.Account = require("./account.model.js")(sequelize, Sequelize, DataTypes);
 db.Category = require("./category.model.js")(sequelize, Sequelize, DataTypes);
@@ -91,11 +69,15 @@ db.RecurringTransaction = require("./recurringTransaction.model.js")(sequelize, 
 db.DebtAndLoan = require("./debtAndLoan.model.js")(sequelize, Sequelize, DataTypes);
 db.ExchangeRate = require("./exchangeRate.model.js")(sequelize, Sequelize, DataTypes);
 
-// --- Definir Relaciones ---
-// (Las relaciones permanecen igual)
+// *** NUEVO: Cargar nuevos modelos ***
+db.Permission = require("./permission.model.js")(sequelize, Sequelize, DataTypes);
+db.RolePermission = require("./rolePermission.model.js")(sequelize, Sequelize, DataTypes);
+
+
+// --- Definir Relaciones Existentes ---
 db.User.hasMany(db.Account, { foreignKey: { name: 'userId', allowNull: false }, as: 'accounts' });
 db.Account.belongsTo(db.User, { foreignKey: { name: 'userId', allowNull: false }, as: 'user' });
-
+// ... (todas las demás relaciones existentes que tenías) ...
 db.User.hasMany(db.Category, { foreignKey: { name: 'userId', allowNull: true }, as: 'customCategories' });
 db.Category.belongsTo(db.User, { foreignKey: { name: 'userId', allowNull: true }, as: 'user' });
 
@@ -131,5 +113,15 @@ db.DebtAndLoan.belongsTo(db.User, { foreignKey: { name: 'userId', allowNull: fal
 
 db.User.hasMany(db.ExchangeRate, { foreignKey: { name: 'userId', allowNull: false }, as: 'exchangeRates' });
 db.ExchangeRate.belongsTo(db.User, { foreignKey: { name: 'userId', allowNull: false }, as: 'user' });
+
+
+// *** NUEVO: Definir Relaciones para Permisos ***
+// Un Permiso puede estar asociado a muchos RolePermissions (un permiso puede estar en muchos roles)
+db.Permission.hasMany(db.RolePermission, { foreignKey: 'permissionId', as: 'rolePermissions' });
+// Un RolePermission pertenece a un solo Permiso
+db.RolePermission.belongsTo(db.Permission, { foreignKey: 'permissionId', as: 'permissionDetail' });
+
+// No creamos un modelo Role explícito, así que no hay una asociación directa User -> RolePermission
+// o Role -> RolePermission. La lógica se basará en el campo User.role (string).
 
 module.exports = db;

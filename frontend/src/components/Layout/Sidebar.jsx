@@ -1,27 +1,28 @@
 // Ruta: finanzas-app-pro/frontend/src/components/Layout/Sidebar.jsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext'; // [cite: finanzas-app-pro/frontend/src/contexts/AuthContext.jsx]
-import './Sidebar.css'; // [cite: finanzas-app-pro/frontend/src/components/Layout/Sidebar.css]
+import { useAuth } from '../../contexts/AuthContext'; //
+import './Sidebar.css'; //
 
-// Definición de iconos (asumiendo que ya los tienes o los crearás)
 const DashboardIcon = () => <span role="img" aria-label="Dashboard">📊</span>;
 const AccountsIcon = () => <span role="img" aria-label="Cuentas">🏦</span>;
-const TransactionsIcon = () => <span role="img" aria-label="Movimientos">🔄</span>;
-const BudgetsIcon = () => <span role="img" aria-label="Presupuestos">🎯</span>;
-const ReportsIcon = () => <span role="img" aria-label="Informes">📈</span>;
-const InvestmentsIcon = () => <span role="img" aria-label="Inversiones">💹</span>;
-const DebtAndLoanIcon = () => <span role="img" aria-label="Deudas y Préstamos">🤝</span>;
+// ... (otros iconos que ya tenías)
 const CategoriesIcon = () => <span role="img" aria-label="Categorías">🏷️</span>;
 const RecurringIcon = () => <span role="img" aria-label="Recurrentes">🔁</span>;
 const ExchangeRateIcon = () => <span role="img" aria-label="Tasas de Cambio">💲</span>;
 const SettingsIcon = () => <span role="img" aria-label="Configuración">⚙️</span>;
 const AdminIcon = () => <span role="img" aria-label="Administración">👑</span>;
+const PermissionsIcon = () => <span role="img" aria-label="Permisos">🔑</span>; // *** NUEVO ICONO ***
+const TransactionsIcon = () => <span role="img" aria-label="Movimientos">🔄</span>;
+const BudgetsIcon = () => <span role="img" aria-label="Presupuestos">🎯</span>;
+const ReportsIcon = () => <span role="img" aria-label="Informes">📈</span>;
+const InvestmentsIcon = () => <span role="img" aria-label="Inversiones">💹</span>;
+const DebtAndLoanIcon = () => <span role="img" aria-label="Deudas y Préstamos">🤝</span>;
+
 
 const Sidebar = () => {
-  const { user } = useAuth(); // Obtener el usuario del contexto
+  const { user, hasPermission } = useAuth(); //
 
-  // Si no hay usuario (ej. en la página de login), no mostrar el sidebar
   if (!user) {
     return null;
   }
@@ -30,6 +31,7 @@ const Sidebar = () => {
     <aside className="sidebar">
       <nav className="sidebar-nav">
         <ul>
+          {/* ... (enlaces existentes) ... */}
           <li>
             <NavLink to="/dashboard" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
               <DashboardIcon />
@@ -93,25 +95,46 @@ const Sidebar = () => {
               <span>Tasas de Cambio</span>
             </NavLink>
           </li>
+           {/* El enlace general a /settings podría ir a la primera subpágina o a una página de resumen de config */}
           <li>
-            {/* Este enlace a "/settings" podría ser una página general de configuración o llevar al primer item de config */}
             <NavLink to="/settings/categories" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
               <SettingsIcon />
               <span>Configuración</span>
             </NavLink>
           </li>
 
-          {/* Enlace de Administración solo para usuarios con rol 'admin' */}
+
+          {/* Sección de Administración */}
           {user && user.role === 'admin' && (
             <>
-              <li className="sidebar-separator"></li>
-              <li>
-                <NavLink to="/admin/users" className={({ isActive }) => "sidebar-link sidebar-link-admin" + (isActive ? " active" : "")}>
-                  <AdminIcon />
-                  <span>Admin Usuarios</span>
-                </NavLink>
-              </li>
-              {/* Aquí podrías añadir más enlaces de administración en el futuro */}
+              {(hasPermission('admin_view_all_users') || hasPermission('admin_manage_permissions_config')) && (
+                <li className="sidebar-separator"></li>
+              )}
+
+              {hasPermission('admin_view_all_users') && (
+                <li>
+                  <NavLink 
+                    to="/admin/users" 
+                    className={({ isActive }) => "sidebar-link sidebar-link-admin" + (isActive ? " active" : "")}
+                  >
+                    <AdminIcon />
+                    <span>Admin Usuarios</span>
+                  </NavLink>
+                </li>
+              )}
+
+              {/* *** NUEVO ENLACE PARA GESTIÓN DE PERMISOS *** */}
+              {hasPermission('admin_manage_permissions_config') && (
+                 <li>
+                  <NavLink 
+                    to="/admin/config/permissions" 
+                    className={({ isActive }) => "sidebar-link sidebar-link-admin" + (isActive ? " active" : "")}
+                  >
+                    <PermissionsIcon />
+                    <span>Admin Permisos</span>
+                  </NavLink>
+                </li>
+              )}
             </>
           )}
         </ul>

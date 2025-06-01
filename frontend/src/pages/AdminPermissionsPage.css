@@ -1,0 +1,96 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/AdminPermissionsPage.css */
+.admin-permissions-page .admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--primary-color, #007bff); 
+}
+
+.admin-permissions-page .admin-page-header h1 {
+  margin: 0;
+  font-size: 1.8rem; 
+}
+
+.permissions-table-container {
+    overflow-x: auto; /* Para tablas anchas en pantallas pequeñas */
+}
+
+.permissions-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  background-color: #fff;
+  box-shadow: var(--box-shadow);
+  border-radius: var(--border-radius);
+}
+
+.permissions-table th,
+.permissions-table td {
+  border: 1px solid #e0e0e0;
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.permissions-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+}
+
+.permissions-table .permission-name {
+  font-family: monospace;
+  font-size: 0.85em;
+  color: var(--primary-color);
+  font-weight: 500;
+}
+.permissions-table .permission-description {
+  font-size: 0.8em;
+  color: #555;
+  max-width: 300px; /* Evitar que la descripción sea demasiado ancha */
+  white-space: normal;
+}
+
+.permissions-table .role-col {
+  text-align: center;
+  width: 180px; /* Ancho para las columnas de rol */
+}
+.permissions-table .role-col .save-role-button {
+    margin-left: 10px;
+    padding: 3px 8px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle;
+}
+
+
+.permissions-table .permission-checkbox {
+  transform: scale(1.3);
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+/* Para mejorar la accesibilidad de los checkboxes */
+.checkbox-label-sr-only {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    white-space: nowrap; 
+}
+
+
+.admin-permissions-page .loading-text,
+.admin-permissions-page .error-message.main-error-message,
+.admin-permissions-page p:not(.error-message) { 
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1rem;
+  color: #666;
+}

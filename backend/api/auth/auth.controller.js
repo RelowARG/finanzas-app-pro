@@ -1,7 +1,9 @@
 // Ruta: finanzas-app-pro/backend/api/auth/auth.controller.js
 const jwt = require('jsonwebtoken');
-const db = require('../../models'); //
-const User = db.User; //
+const db = require('../../models');
+const User = db.User;
+const RolePermission = db.RolePermission; // *** AÑADIDO ***
+const Permission = db.Permission;       // *** AÑADIDO ***
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -10,6 +12,7 @@ const generateToken = (id) => {
 };
 
 const registerUser = async (req, res, next) => {
+  // ... (sin cambios, el de tu archivo original está bien)
   const { name, email, password, role } = req.body;
 
   if (!name || !email || !password) {
@@ -34,10 +37,6 @@ const registerUser = async (req, res, next) => {
     });
 
     if (user) {
-      // Actualizar lastLoginAt también en el registro podría ser una opción
-      // user.lastLoginAt = new Date();
-      // await user.save(); // Opcional: si quieres que createdAt y lastLoginAt sean cercanos en el registro
-
       res.status(201).json({
         message: 'Usuario registrado exitosamente.',
         user: {
@@ -45,7 +44,7 @@ const registerUser = async (req, res, next) => {
           name: user.name,
           email: user.email,
           role: user.role,
-          lastLoginAt: user.lastLoginAt // Se incluirá si lo actualizas arriba
+          lastLoginAt: user.lastLoginAt
         },
         token: generateToken(user.id),
       });
@@ -63,6 +62,7 @@ const registerUser = async (req, res, next) => {
 };
 
 const loginUser = async (req, res, next) => {
+  // ... (sin cambios, el de tu archivo original está bien)
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -73,21 +73,28 @@ const loginUser = async (req, res, next) => {
     const user = await User.findOne({ where: { email } });
 
     if (user && (await user.comparePassword(password))) {
-      // *** Actualizar lastLoginAt ***
       user.lastLoginAt = new Date();
-      await user.save(); // Esto también actualizará 'updatedAt'
-      // *** Fin Actualización ***
+      await user.save(); 
+
+      // *** NUEVO: Obtener permisos del usuario después del login ***
+      const rolePermissions = await RolePermission.findAll({
+        where: { roleName: user.role },
+        include: [{ model: Permission, as: 'permissionDetail', attributes: ['name'] }]
+      });
+      const permissions = rolePermissions.map(rp => rp.permissionDetail.name);
+      // *** FIN NUEVO ***
 
       res.status(200).json({
         message: 'Login exitoso.',
-        user: { // Devolver el objeto usuario actualizado
+        user: {
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
-          lastLoginAt: user.lastLoginAt, // Incluir el nuevo campo
-          createdAt: user.createdAt, // Incluir para consistencia si es necesario
-          updatedAt: user.updatedAt, // Incluir para consistencia
+          lastLoginAt: user.lastLoginAt,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+          permissions: permissions // *** AÑADIDO: Enviar permisos al frontend ***
         },
         token: generateToken(user.id),
       });
@@ -101,21 +108,32 @@ const loginUser = async (req, res, next) => {
 };
 
 const getMe = async (req, res, next) => {
-  if (!req.user) { // req.user es establecido por el middleware 'protect'
+  if (!req.user) {
       return res.status(401).json({ message: 'No autorizado, usuario no encontrado en la solicitud.'})
   }
   try {
-    // El middleware 'protect' ya carga el usuario con el rol.
-    // Solo necesitamos asegurarnos que el objeto req.user en 'protect' incluya todos los campos deseados.
-    // Para ser explícitos y obtener la versión más fresca, podemos volver a buscarlo.
     const userFromDb = await User.findByPk(req.user.id, {
-      attributes: ['id', 'name', 'email', 'role', 'createdAt', 'updatedAt', 'lastLoginAt'] // Asegurar que 'lastLoginAt' esté aquí
+      attributes: ['id', 'name', 'email', 'role', 'createdAt', 'updatedAt', 'lastLoginAt']
     });
 
     if (!userFromDb) {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
-    res.status(200).json(userFromDb);
+
+    // *** NUEVO: Obtener y añadir permisos del usuario ***
+    const rolePermissions = await RolePermission.findAll({
+      where: { roleName: userFromDb.role },
+      include: [{ model: Permission, as: 'permissionDetail', attributes: ['name'] }]
+    });
+    const permissions = rolePermissions.map(rp => rp.permissionDetail.name);
+    // *** FIN NUEVO ***
+
+    const userWithPermissions = {
+        ...userFromDb.toJSON(),
+        permissions // Añadir el array de nombres de permisos
+    };
+
+    res.status(200).json(userWithPermissions);
 
   } catch (error) {
     console.error('Error en getMe:', error);
