@@ -1,60 +1,120 @@
 // Ruta: finanzas-app-pro/backend/utils/dateUtils.js
-// ARCHIVO NUEVO
-const calculateNextRunDate = (startDate, frequency, dayOfMonth, dayOfWeek) => {
-    let nextDate = new Date(startDate); // Empezar desde la fecha de inicio
-    const today = new Date();
-    today.setHours(0,0,0,0); // Normalizar a inicio del día
+/**
+ * Calcula la próxima fecha de ejecución para una transacción recurrente.
+ * @param {string} frequency - Ej: 'diaria', 'semanal', 'mensual', 'anual', 'quincenal', 'bimestral', 'trimestral', 'semestral'.
+ * @param {Date} baseDate - La fecha base para el cálculo (usualmente la última ejecución o la fecha de inicio).
+ * @param {number|null} dayOfMonth - Día del mes (1-31) para frecuencias mensuales, anuales, etc.
+ * @param {number|null} dayOfWeek - Día de la semana (0=Domingo, 1=Lunes...) para frecuencia semanal.
+ * @param {number|null} monthOfYear - Mes del año (1-12) para frecuencia anual.
+ * @param {boolean} isFirstCalculation - True si es el primer cálculo desde startDate, para asegurar que no se saltee la startDate.
+ * @returns {string} - Próxima fecha de ejecución en formato YYYY-MM-DD.
+ */
+const calculateNextRunDate = (frequency, baseDateInput, dayOfMonth, dayOfWeek, monthOfYear, isFirstCalculation = false) => {
+    let nextDate = new Date(baseDateInput.getTime()); // Clonar la fecha base para no modificarla
+    
+    // Si es el primer cálculo y la baseDate ya cumple la condición de día/mes, no la incrementamos innecesariamente al inicio.
+    // Pero si no es el primer cálculo, siempre avanzamos al menos un período.
+    let shouldIncrementPeriod = !isFirstCalculation;
 
-    // Asegurarse de que la primera ejecución no sea en el pasado respecto a hoy,
-    // a menos que la fecha de inicio sea hoy o en el futuro.
-    if (nextDate < today && new Date(startDate) < today) {
-        nextDate = new Date(today); // Si startDate es pasado, calcular desde hoy
-    }
-
+    // console.log(`CalcNextRun: Freq=${frequency}, Base=${baseDateInput.toISOString()}, DoM=${dayOfMonth}, DoW=${dayOfWeek}, MoY=${monthOfYear}, isFirst=${isFirstCalculation}`);
 
     switch (frequency) {
         case 'diaria':
-            if (nextDate < today) nextDate.setDate(today.getDate() + 1); // Si es pasado, el próximo es mañana
-            else if (nextDate.getTime() === today.getTime() && new Date().getHours() >=0) { // Si es hoy y ya pasó la hora de ejecución (asumimos 00:00)
-                 // No, esto es para la fecha. Si es hoy, es hoy. El job correrá hoy.
+            if (shouldIncrementPeriod || isFirstCalculation && nextDate < baseDateInput) {
+                 nextDate.setUTCDate(nextDate.getUTCDate() + 1);
             }
             break;
         case 'semanal':
             if (dayOfWeek === null || dayOfWeek === undefined) throw new Error('dayOfWeek es requerido para frecuencia semanal');
-            // Avanzar hasta el próximo dayOfWeek correcto
-            while (nextDate.getDay() !== dayOfWeek || nextDate < today) {
-                nextDate.setDate(nextDate.getDate() + 1);
-                 if (nextDate.getDay() === dayOfWeek && nextDate < today) { // Si encontramos el día pero es pasado
-                    nextDate.setDate(nextDate.getDate() + 7); // Saltar a la próxima semana
-                }
+            if (shouldIncrementPeriod) {
+                nextDate.setUTCDate(nextDate.getUTCDate() + 1); // Asegurar que avanzamos para buscar el próximo
+            }
+            while (nextDate.getUTCDay() !== dayOfWeek) {
+                nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+            }
+            break;
+        case 'quincenal': // Asume dos días fijos del mes, ej. 1 y 15, o 15 y último.
+            if (!dayOfMonth || dayOfMonth < 1 || dayOfMonth > 15) { // Asumimos que dayOfMonth es el primer día de la quincena (1-15)
+                // console.warn('Para frecuencia quincenal, se espera dayOfMonth entre 1 y 15. Usando 1 y 15 por defecto.');
+                dayOfMonth = 1; // O manejar como error
+            }
+            const secondQuincenaDay = dayOfMonth + 15; // Aproximado, podría ser fin de mes
+
+            if (shouldIncrementPeriod) {
+                nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+            }
+
+            const currentDay = nextDate.getUTCDate();
+            const currentMonth = nextDate.getUTCMonth();
+            const currentYear = nextDate.getUTCFullYear();
+            
+            if (currentDay > dayOfMonth && currentDay < secondQuincenaDay) { // Si estamos entre los dos días de quincena
+                nextDate.setUTCDate(secondQuincenaDay); // Ir al segundo día de quincena del mes actual
+                const daysInMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0)).getUTCDate();
+                if (nextDate.getUTCDate() > daysInMonth ) nextDate.setUTCDate(daysInMonth); // Ajustar si el día 30/31 no existe
+            } else if (currentDay >= secondQuincenaDay) { // Si ya pasó el segundo día de quincena
+                nextDate.setUTCMonth(nextDate.getUTCMonth() + 1); // Ir al próximo mes
+                nextDate.setUTCDate(dayOfMonth); // Al primer día de quincena del próximo mes
+            } else { // (currentDay <= dayOfMonth)
+                 nextDate.setUTCDate(dayOfMonth); // Ir al primer día de quincena del mes actual
             }
             break;
         case 'mensual':
-            if (!dayOfMonth) throw new Error('dayOfMonth es requerido para frecuencia mensual');
-            nextDate.setDate(dayOfMonth);
-            if (nextDate < today) { // Si este mes ya pasó o es hoy pero ya se ejecutó
-                nextDate.setMonth(nextDate.getMonth() + 1);
+        case 'bimestral':
+        case 'trimestral':
+        case 'semestral':
+            if (!dayOfMonth) throw new Error('dayOfMonth es requerido para frecuencia mensual, bimestral, trimestral o semestral.');
+            let monthIncrement = 1;
+            if (frequency === 'bimestral') monthIncrement = 2;
+            if (frequency === 'trimestral') monthIncrement = 3;
+            if (frequency === 'semestral') monthIncrement = 6;
+
+            if (shouldIncrementPeriod) {
+                nextDate.setUTCMonth(nextDate.getUTCMonth() + monthIncrement);
+            } else if (nextDate.getUTCDate() > dayOfMonth && nextDate.getUTCMonth() === baseDateInput.getUTCMonth()){
+                // Si es el primer cálculo, pero la baseDate es después del dayOfMonth en el mismo mes, saltar al siguiente período.
+                nextDate.setUTCMonth(nextDate.getUTCMonth() + monthIncrement);
             }
-             // Manejar meses con menos días que dayOfMonth
-            while (nextDate.getDate() !== dayOfMonth) {
-                nextDate.setDate(dayOfMonth); // Intentar de nuevo el próximo mes
-                if (nextDate < today) nextDate.setMonth(nextDate.getMonth() + 1);
+            
+            nextDate.setUTCDate(dayOfMonth);
+            // Ajustar si el día no existe en ese mes (ej. día 31 en Febrero)
+            let tempMonthCheck = nextDate.getUTCMonth();
+            while (nextDate.getUTCDate() !== dayOfMonth) { // Si setUTCDate cambió el mes (porque el día no existía)
+                nextDate.setUTCMonth(tempMonthCheck); // Volver al mes correcto
+                nextDate.setUTCDate(new Date(Date.UTC(nextDate.getUTCFullYear(), tempMonthCheck + 1, 0)).getUTCDate()); // último día del mes
+                if (nextDate.getUTCDate() < dayOfMonth) { // Si el último día sigue siendo menor (ej. día 30 y queremos día 31 en feb)
+                     nextDate.setUTCMonth(tempMonthCheck + monthIncrement); // Saltar al siguiente periodo
+                     nextDate.setUTCDate(dayOfMonth); // E intentar de nuevo
+                     tempMonthCheck = nextDate.getUTCMonth();
+                }
             }
             break;
-        case 'quincenal': // Lógica simplificada: día X y día X+15 (o fin de mes)
-             if (!dayOfMonth) throw new Error('dayOfMonth es requerido para frecuencia quincenal (primer día de la quincena)');
-             const midMonthDay = 15;
-             let firstOption = new Date(nextDate.getFullYear(), nextDate.getMonth(), dayOfMonth);
-             let secondOption = new Date(nextDate.getFullYear(), nextDate.getMonth(), Math.min(dayOfMonth + 15, new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate()));
-             
-             if (firstOption >= today) nextDate = firstOption;
-             else if (secondOption >= today) nextDate = secondOption;
-             else { // Ambas opciones son pasadas, ir al próximo mes
-                nextDate.setMonth(nextDate.getMonth() + 1);
-                nextDate.setDate(dayOfMonth);
-             }
+        case 'anual':
+            if (!dayOfMonth || !monthOfYear) throw new Error('dayOfMonth y monthOfYear son requeridos para frecuencia anual.');
+            if (shouldIncrementPeriod) {
+                nextDate.setUTCFullYear(nextDate.getUTCFullYear() + 1);
+            } else if (isFirstCalculation) {
+                const baseMonth = baseDateInput.getUTCMonth() + 1; // 1-12
+                const baseDay = baseDateInput.getUTCDate();
+                if (baseMonth > monthOfYear || (baseMonth === monthOfYear && baseDay > dayOfMonth)) {
+                    nextDate.setUTCFullYear(nextDate.getUTCFullYear() + 1);
+                }
+            }
+            nextDate.setUTCMonth(monthOfYear - 1); // Meses son 0-indexados
+            nextDate.setUTCDate(dayOfMonth);
+            // Ajustar día si no existe (similar a mensual)
+            let tempAnnualMonthCheck = nextDate.getUTCMonth();
+            while (nextDate.getUTCDate() !== dayOfMonth) {
+                nextDate.setUTCMonth(tempAnnualMonthCheck);
+                nextDate.setUTCDate(new Date(Date.UTC(nextDate.getUTCFullYear(), tempAnnualMonthCheck + 1, 0)).getUTCDate());
+                if (nextDate.getUTCDate() < dayOfMonth) {
+                     nextDate.setUTCFullYear(nextDate.getUTCFullYear() + 1);
+                     nextDate.setUTCMonth(monthOfYear - 1);
+                     nextDate.setUTCDate(dayOfMonth);
+                     tempAnnualMonthCheck = nextDate.getUTCMonth();
+                }
+            }
             break;
-        // Añadir lógica para 'anual', 'bimestral', 'trimestral', 'semestral'
         default:
             throw new Error(`Frecuencia no soportada: ${frequency}`);
     }

@@ -1,6 +1,5 @@
 /* Ruta: finanzas-app-pro/frontend/src/components/recurring/RecurringTransactionItem.css */
-/* ARCHIVO NUEVO */
-.recurring-tx-card {
+.recurring-item {
   background-color: #fff;
   border: 1px solid #e0e0e0;
   border-radius: var(--border-radius, 8px);
@@ -8,146 +7,181 @@
   margin-bottom: 15px;
   box-shadow: var(--box-shadow, 0 1px 3px rgba(0,0,0,0.05));
   transition: box-shadow 0.2s ease-in-out;
-  border-left: 5px solid #8e44ad; /* Color temático para recurrentes */
+  border-left-width: 5px;
+  border-left-style: solid;
 }
 
-.recurring-tx-card.inactive {
+.recurring-item.ingreso {
+  border-left-color: var(--secondary-color, #2ecc71); /* Verde para ingresos */
+}
+.recurring-item.egreso {
+  border-left-color: var(--danger-color, #e74c3c); /* Rojo para egresos */
+}
+
+.recurring-item.inactive {
   border-left-color: #bdc3c7; /* Gris para inactivos */
-  opacity: 0.7;
+  opacity: 0.75;
 }
-.recurring-tx-card.inactive .recurring-tx-description {
+.recurring-item.inactive .recurring-item-description {
     text-decoration: line-through;
+    color: #7f8c8d;
 }
 
-
-.recurring-tx-card:hover {
+.recurring-item:hover {
   box-shadow: 0 3px 8px rgba(0,0,0,0.08);
 }
 
-.recurring-tx-card-header {
+.recurring-item-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 12px;
   padding-bottom: 10px;
   border-bottom: 1px dashed #eee;
 }
 
-.recurring-tx-icon {
-  font-size: 1.6rem;
-  min-width: 28px;
+.recurring-item-icon {
+  font-size: 1.7rem; /* Un poco más grande */
+  min-width: 30px;
   text-align: center;
+  color: #555;
 }
 
-.recurring-tx-description {
-  font-size: 1.1rem;
+.recurring-item-description {
+  font-size: 1.15rem; /* Un poco más grande */
   font-weight: 600;
   color: var(--dark-color);
   flex-grow: 1;
+  margin: 0; /* Quitar margen del h3 */
 }
 
-.recurring-tx-status {
-  font-size: 0.75rem;
+.recurring-item-amount {
+  font-size: 1.1rem; /* Coherente con la descripción */
   font-weight: bold;
-  padding: 3px 8px;
-  border-radius: 10px;
-  text-transform: uppercase;
   white-space: nowrap;
 }
-.status-active {
-  color: var(--secondary-color);
-  background-color: rgba(46, 204, 113, 0.15);
-}
-.status-inactive {
-  color: #7f8c8d;
-  background-color: #ecf0f1;
-}
+.amount-positive { color: var(--secondary-color); }
+.amount-negative { color: var(--danger-color); }
 
 
-.recurring-tx-card-body {
+.recurring-item-details {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 8px 15px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Ajustar minmax si es necesario */
+  gap: 8px 15px; /* Espacio entre detalles */
   font-size: 0.85rem;
-  color: #444;
+  color: #454f5b; /* Un gris azulado */
+  margin-bottom: 15px; /* Espacio antes de las acciones */
 }
 
-.detail-item {
-  display: flex;
-  flex-direction: column; /* Label arriba, valor abajo */
-  padding: 4px 0;
+.recurring-item-details p {
+  margin: 0;
+  padding: 4px 0; /* Un poco de padding vertical para cada detalle */
+  display: flex; /* Para alinear label y value */
+  justify-content: space-between; /* Para que el valor se vaya a la derecha */
+  border-bottom: 1px solid #f5f5f5; /* Línea sutil entre detalles */
+}
+.recurring-item-details p:last-child {
+    border-bottom: none;
 }
 
-.detail-label {
-  font-size: 0.75rem;
-  color: #777;
-  margin-bottom: 2px;
-  text-transform: uppercase;
+.recurring-item-details strong {
+  color: #6c757d; /* Label un poco más clara */
+  margin-right: 5px;
 }
 
-.detail-value {
+.type-label {
   font-weight: 500;
-}
-
-.detail-value.amount-positive {
-  color: var(--secondary-color);
-  font-weight: bold;
-}
-.detail-value.amount-negative {
-  color: var(--danger-color);
-  font-weight: bold;
-}
-
-.detail-value.type-badge {
-  font-size: 0.8rem;
   padding: 2px 6px;
   border-radius: 4px;
   color: white;
+  font-size: 0.8em;
   text-transform: capitalize;
-  display: inline-block; /* Para que el padding funcione bien */
 }
-.recurring-tx-card .type-ingreso .type-badge { /* Heredar color si es necesario */
-  background-color: var(--secondary-color);
-}
-.recurring-tx-card .type-egreso .type-badge {
-  background-color: var(--danger-color);
-}
-.recurring-tx-card .type-badge { /* Genérico por si viene de rtx.type directamente */
-    background-color: var(--primary-color); /* Color por defecto */
-}
-.recurring-tx-card .type-badge[class*="ingreso"] { /* Un poco más específico */
-    background-color: var(--secondary-color);
-}
-.recurring-tx-card .type-badge[class*="egreso"] {
-    background-color: var(--danger-color);
-}
+.type-label.type-ingreso { background-color: var(--secondary-color); }
+.type-label.type-egreso { background-color: var(--danger-color); }
 
-
-
-.detail-value.date-value {
-    font-style: italic;
-    color: #3498db;
-}
-.notes-item {
+.recurring-item-notes {
     grid-column: 1 / -1; /* Que las notas ocupen todo el ancho */
-}
-.notes-value {
-    font-size: 0.8rem;
+    margin-top: 5px;
+    padding: 8px !important; /* Sobrescribir el padding de <p> */
     background-color: #f8f9fa;
-    padding: 5px;
-    border-radius: 3px;
-    white-space: pre-wrap; /* Para respetar saltos de línea en las notas */
+    border-radius: 4px;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: #555;
+    border-left: 3px solid #e0e0e0;
+}
+.recurring-item-notes strong {
+    display: block; /* Que el "Notas:" esté arriba */
+    margin-bottom: 3px;
+    color: #6c757d;
 }
 
-.recurring-tx-card-actions {
+.status-toggle {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+.status-toggle.active {
+    color: var(--secondary-color);
+    background-color: rgba(46, 204, 113, 0.1);
+}
+.status-toggle.active:hover {
+    background-color: rgba(46, 204, 113, 0.2);
+}
+.status-toggle.inactive {
+    color: #7f8c8d;
+    background-color: #ecf0f1;
+}
+.status-toggle.inactive:hover {
+    background-color: #dfe6e9;
+}
+
+.recurring-item-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px; /* Espacio entre botones */
   margin-top: 15px;
-  padding-top: 10px;
+  padding-top: 12px;
   border-top: 1px solid #eee;
 }
-.recurring-tx-card-actions .button-small {
-    font-size: 0.8rem !important;
-    padding: 5px 10px !important;
+
+/* Estilo base para todos los botones de acción en el item */
+.recurring-item-actions .button-small {
+  font-size: 0.8rem !important;
+  padding: 6px 12px !important; /* Un poco más de padding para mejor click */
+  width: auto !important; /* Asegurar que no ocupen todo el ancho */
+  text-transform: none !important; /* Quitar mayúsculas si las tiene por defecto */
+  font-weight: 500 !important;
+}
+
+/* Colores específicos para cada botón, manteniendo la base de .button-small */
+.recurring-item-actions .button-edit {
+  background-color: var(--primary-color) !important;
+  /* color: white !important; (ya debería estar por .button) */
+}
+.recurring-item-actions .button-edit:hover {
+  background-color: #2980b9 !important; /* Un poco más oscuro */
+}
+
+.recurring-item-actions .button-danger { /* Cambiado de button-delete */
+  background-color: var(--danger-color) !important;
+}
+.recurring-item-actions .button-danger:hover {
+  background-color: #c0392b !important;
+}
+
+.recurring-item-actions .button-secondary { /* Para "Registrar Ahora" */
+  background-color: var(--secondary-color) !important; /* Un verde diferente o el que prefieras */
+}
+.recurring-item-actions .button-secondary:hover {
+  background-color: #27ae60 !important;
+}
+.recurring-item-actions .button-secondary:disabled {
+    background-color: #bdc3c7 !important;
+    border-color: #bdc3c7 !important;
+    color: #7f8c8d !important;
+    cursor: not-allowed;
 }

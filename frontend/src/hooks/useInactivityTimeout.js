@@ -31,11 +31,11 @@ export const useInactivityTimeout = () => {
     inactivityTimerIdRef.current = null;
     clearInterval(warningCountdownTimerIdRef.current);
     warningCountdownTimerIdRef.current = null;
-    console.log('Hook: All timers cleared.');
+    // console.log('Hook: All timers cleared.');
   }, []);
   
   const performLogout = useCallback(() => {
-    console.log('Hook: Performing logout.');
+    // console.log('Hook: Performing logout.');
     logout(); //
     setIsWarningModalOpen(false); 
     clearAllTimers();
@@ -43,7 +43,7 @@ export const useInactivityTimeout = () => {
   }, [logout, navigate, clearAllTimers, setIsWarningModalOpen]);
 
   const startWarningCountdown = useCallback(() => {
-    console.log('Hook: Starting warning countdown.');
+    // console.log('Hook: Starting warning countdown.');
     setIsWarningModalOpen(true);
     setCountdown(WARNING_DURATION_SECONDS);
 
@@ -55,7 +55,7 @@ export const useInactivityTimeout = () => {
           performLogout(); 
           return WARNING_DURATION_SECONDS; 
         }
-        console.log('Hook: Modal Countdown:', prev - 1);
+        // console.log('Hook: Modal Countdown:', prev - 1);
         return prev - 1;
       });
     }, 1000);
@@ -66,9 +66,9 @@ export const useInactivityTimeout = () => {
     setIsWarningModalOpen(false); // Asegurar que el modal se cierre
 
     if (user) { 
-      console.log(`Hook: Starting main inactivity timer for ${INACTIVITY_TIMEOUT_MS / 1000}s.`);
+      // console.log(`Hook: Starting main inactivity timer for ${INACTIVITY_TIMEOUT_MS / 1000}s.`);
       inactivityTimerIdRef.current = setTimeout(() => {
-        console.log('Hook: Main inactivity timer expired. Showing warning.');
+        // console.log('Hook: Main inactivity timer expired. Showing warning.');
         // Verificar de nuevo el usuario por si se deslogueó mientras el timer corría.
         if (user && !isModalOpenRef.current) { // No mostrar si ya está abierto por alguna razón
             startWarningCountdown();
@@ -80,16 +80,16 @@ export const useInactivityTimeout = () => {
 
   useEffect(() => {
     if (user) {
-      console.log('Hook Effect [user]: User detected. Initializing inactivity detection.');
+      // console.log('Hook Effect [user]: User detected. Initializing inactivity detection.');
       resetMainInactivityTimer(); // Iniciar el timer principal
 
       const activityHandler = () => {
         // Solo resetear si el modal de advertencia NO está abierto (usar el ref)
         if (!isModalOpenRef.current) {
-          console.log('Hook Effect [user]: Activity detected. Resetting main timer.');
+          // console.log('Hook Effect [user]: Activity detected. Resetting main timer.');
           resetMainInactivityTimer();
         } else {
-          console.log('Hook Effect [user]: Activity detected, but warning modal is open. No reset.');
+          // console.log('Hook Effect [user]: Activity detected, but warning modal is open. No reset.');
         }
       };
       
@@ -97,13 +97,13 @@ export const useInactivityTimeout = () => {
       activityEvents.forEach(event => window.addEventListener(event, activityHandler, { passive: true }));
 
       return () => {
-        console.log('Hook Effect [user]: Cleanup. Removing activity listeners and clearing timers.');
+        // console.log('Hook Effect [user]: Cleanup. Removing activity listeners and clearing timers.');
         activityEvents.forEach(event => window.removeEventListener(event, activityHandler));
         clearAllTimers(); // Limpiar todos los timers al desmontar o si 'user' cambia
       };
     } else {
       // Si no hay usuario (logout o nunca se logueó)
-      console.log('Hook Effect [user]: No user. Clearing timers and ensuring modal is closed.');
+      // console.log('Hook Effect [user]: No user. Clearing timers and ensuring modal is closed.');
       clearAllTimers();
       setIsWarningModalOpen(false);
     }
@@ -111,7 +111,7 @@ export const useInactivityTimeout = () => {
 
 
   const handleStayLoggedIn = () => {
-    console.log('Hook: User clicked "Mantener Sesión".');
+    // console.log('Hook: User clicked "Mantener Sesión".');
     resetMainInactivityTimer(); // Esto limpiará el timer de advertencia, cerrará el modal y reiniciará el timer principal
   };
 
