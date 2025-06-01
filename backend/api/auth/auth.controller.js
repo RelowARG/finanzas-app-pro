@@ -1,19 +1,16 @@
 // Ruta: finanzas-app-pro/backend/api/auth/auth.controller.js
-// ACTUALIZA ESTE ARCHIVO CON LÓGICA REAL
 const jwt = require('jsonwebtoken');
-const db = require('../../models'); // Ajusta la ruta si models/index.js está en otro lugar
-const User = db.User; // Acceder al modelo User a través del objeto db
+const db = require('../../models'); //
+const User = db.User; //
 
-// Función para generar token JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '1d', // '1d', '30m', etc.
+    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
   });
 };
 
-// @desc    Registrar un nuevo usuario
 const registerUser = async (req, res, next) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body; // 'role' es opcional aquí, se usará el default 'user'
 
   if (!name || !email || !password) {
     return res.status(400).json({ message: 'Por favor, incluye nombre, email y contraseña.' });
@@ -29,11 +26,11 @@ const registerUser = async (req, res, next) => {
       return res.status(400).json({ message: 'El email ya está registrado.' });
     }
 
-    // El hook beforeCreate en el modelo User se encargará de hashear la contraseña
     const user = await User.create({
       name,
       email,
-      password, // La contraseña se hasheará antes de guardar por el hook
+      password,
+      role: role || 'user' // Asignar rol si se provee, sino default del modelo
     });
 
     if (user) {
@@ -43,6 +40,7 @@ const registerUser = async (req, res, next) => {
           id: user.id,
           name: user.name,
           email: user.email,
+          role: user.role, // Incluir rol
         },
         token: generateToken(user.id),
       });
@@ -51,8 +49,6 @@ const registerUser = async (req, res, next) => {
     }
   } catch (error) {
     console.error('Error en registerUser:', error);
-    // Usar next(error) para pasar al errorHandler general
-    // O manejar errores específicos como validaciones de Sequelize
     if (error.name === 'SequelizeValidationError') {
         const messages = error.errors.map(e => e.message);
         return res.status(400).json({ message: 'Error de validación', errors: messages });
@@ -61,7 +57,6 @@ const registerUser = async (req, res, next) => {
   }
 };
 
-// @desc    Autenticar un usuario
 const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -72,13 +67,14 @@ const loginUser = async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { email } });
 
-    if (user && (await user.comparePassword(password))) { // Usa el método del modelo
+    if (user && (await user.comparePassword(password))) {
       res.status(200).json({
         message: 'Login exitoso.',
         user: {
           id: user.id,
           name: user.name,
           email: user.email,
+          role: user.role, // Incluir rol
         },
         token: generateToken(user.id),
       });
@@ -91,17 +87,13 @@ const loginUser = async (req, res, next) => {
   }
 };
 
-// @desc    Obtener datos del usuario (requiere protección)
 const getMe = async (req, res, next) => {
-  // req.user es establecido por el middleware 'protect'
   if (!req.user) {
       return res.status(401).json({ message: 'No autorizado, usuario no encontrado en la solicitud.'})
   }
   try {
-    // Volver a buscar al usuario puede ser redundante si el middleware ya lo hace bien,
-    // pero es una capa extra de verificación o para obtener datos frescos.
     const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'name', 'email', 'createdAt', 'updatedAt'] // Excluir contraseña
+      attributes: ['id', 'name', 'email', 'role', 'createdAt', 'updatedAt'] // Incluir rol
     });
 
     if (!user) {

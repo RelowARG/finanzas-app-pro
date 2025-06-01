@@ -1,35 +1,28 @@
 // Ruta: finanzas-app-pro/backend/middleware/authMiddleware.js
-// ACTUALIZA ESTE ARCHIVO (descomenta y completa)
 const jwt = require('jsonwebtoken');
-const db = require('../models'); // Ajusta la ruta si es necesario
-const User = db.User;
+const db = require('../models'); //
+const User = db.User; //
 
 const protect = async (req, res, next) => {
   let token;
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
     try {
-      // Obtener token del header: "Bearer TOKEN_AQUI"
       token = req.headers.authorization.split(' ')[1];
-
-      // Verificar token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Obtener usuario del token (sin la contraseña)
-      // El payload del token que generamos solo tiene el 'id'
+      // *** PUNTO CLAVE: Asegurarse de incluir 'role' al buscar el usuario ***
       req.user = await User.findByPk(decoded.id, {
-        attributes: ['id', 'name', 'email'] // Excluir contraseña y otros datos sensibles
+        attributes: ['id', 'name', 'email', 'role'] // Incluir 'role' aquí
       });
 
       if (!req.user) {
-        // Si el usuario fue eliminado después de que el token fue emitido
         return res.status(401).json({ message: 'No autorizado, usuario no encontrado para este token.' });
       }
 
-      next(); // Pasar al siguiente middleware o controlador
+      next();
     } catch (error) {
       console.error('Error de autenticación de token:', error.message);
-      // Distinguir entre token expirado y otros errores de verificación
       if (error.name === 'TokenExpiredError') {
         return res.status(401).json({ message: 'No autorizado, el token ha expirado.' });
       }
@@ -42,4 +35,15 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+const isAdmin = (req, res, next) => {
+  // Ahora req.user.role debería estar disponible si protect lo cargó correctamente
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    // Log para depuración en el backend
+    console.log('[isAdmin Middleware] Acceso denegado. Usuario:', req.user ? { id: req.user.id, role: req.user.role } : 'No user');
+    res.status(403).json({ message: 'Acceso denegado. Se requiere rol de administrador.' });
+  }
+};
+
+module.exports = { protect, isAdmin }; // Exportar isAdmin si se usa por separado, o asegurar que authMiddleware lo haga

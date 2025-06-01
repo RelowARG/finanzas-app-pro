@@ -1,5 +1,4 @@
 // Ruta: finanzas-app-pro/backend/models/user.model.js
-// ARCHIVO NUEVO
 const bcrypt = require('bcryptjs');
 
 module.exports = (sequelize, Sequelize) => {
@@ -24,19 +23,27 @@ module.exports = (sequelize, Sequelize) => {
     password: {
       type: Sequelize.STRING,
       allowNull: false
+    },
+    role: { // NUEVO CAMPO PARA EL ROL
+      type: Sequelize.ENUM('user', 'admin'),
+      allowNull: false,
+      defaultValue: 'user'
     }
     // Timestamps (createdAt, updatedAt) se añaden automáticamente por Sequelize
   }, {
-    tableName: 'users', // Nombre explícito de la tabla
+    tableName: 'users',
     hooks: {
       beforeCreate: async (user) => {
         if (user.password) {
           const salt = await bcrypt.genSalt(10);
           user.password = await bcrypt.hash(user.password, salt);
         }
+        // Asegurarse de que el rol por defecto se aplique si no se especifica
+        if (!user.role) {
+            user.role = 'user';
+        }
       },
       beforeUpdate: async (user) => {
-        // Hashear la contraseña solo si ha sido modificada
         if (user.changed('password')) {
           const salt = await bcrypt.genSalt(10);
           user.password = await bcrypt.hash(user.password, salt);
@@ -45,7 +52,6 @@ module.exports = (sequelize, Sequelize) => {
     }
   });
 
-  // Método para comparar contraseñas (añadido al prototipo del modelo)
   User.prototype.comparePassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
   };

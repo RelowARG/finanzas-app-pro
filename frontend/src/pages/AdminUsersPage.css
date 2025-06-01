@@ -1,0 +1,115 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/AdminUsersPage.css */
+.admin-users-page .admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--dark-color); 
+}
+
+.admin-users-page .admin-page-header h1 {
+  margin: 0;
+  font-size: 1.8rem; 
+}
+
+.admin-users-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+
+.admin-users-table th,
+.admin-users-table td {
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap; /* Evitar que el contenido se rompa demasiado */
+}
+
+.admin-users-table th {
+  background-color: #f0f2f5; 
+  font-weight: 600;
+  color: #333;
+}
+
+.admin-users-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.admin-users-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.role-badge {
+  padding: 3px 8px;
+  border-radius: var(--border-radius);
+  font-weight: bold;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  color: white;
+  display: inline-block;
+}
+
+.role-badge.role-admin {
+  background-color: var(--primary-color, #007bff);
+}
+
+.role-badge.role-user {
+  background-color: #6c757d; 
+}
+
+.admin-users-table .button-small {
+  padding: 5px 10px !important;
+  font-size: 0.8rem !important;
+  margin-right: 5px;
+}
+.admin-users-table .button-small:last-child {
+  margin-right: 0;
+}
+
+.button-promote {
+  background-color: var(--secondary-color, #28a745) !important;
+}
+.button-promote:hover {
+  background-color: #218838 !important;
+}
+
+.button-demote {
+  background-color: #ffc107 !important; 
+  color: #212529 !important;
+}
+.button-demote:hover {
+  background-color: #e0a800 !important;
+}
+
+.admin-users-page .loading-text,
+.admin-users-page .error-message.main-error-message,
+.admin-users-page p { 
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+/* Ajustes para que la tabla sea más responsive si es necesario */
+@media (max-width: 992px) {
+  .admin-users-table th,
+  .admin-users-table td {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
+  .admin-users-table .button-small {
+    padding: 4px 8px !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-users-table {
+    display: block;
+    overflow-x: auto; /* Permitir scroll horizontal en tablas grandes */
+  }
+}

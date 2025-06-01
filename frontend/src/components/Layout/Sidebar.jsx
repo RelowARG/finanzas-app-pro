@@ -1,24 +1,27 @@
 // Ruta: finanzas-app-pro/frontend/src/components/Layout/Sidebar.jsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import './Sidebar.css';
+import { useAuth } from '../../contexts/AuthContext'; // [cite: finanzas-app-pro/frontend/src/contexts/AuthContext.jsx]
+import './Sidebar.css'; // [cite: finanzas-app-pro/frontend/src/components/Layout/Sidebar.css]
 
-const DashboardIcon = () => <span>📊</span>;
-const AccountsIcon = () => <span>🏦</span>;
-const TransactionsIcon = () => <span>🔄</span>;
-const BudgetsIcon = () => <span>🎯</span>;
-const ReportsIcon = () => <span>📈</span>;
-const InvestmentsIcon = () => <span>💹</span>;
-const DebtAndLoanIcon = () => <span>🤝</span>;
-const CategoriesIcon = () => <span>🏷️</span>;
-const RecurringIcon = () => <span>🔁</span>;
-const ExchangeRateIcon = () => <span>💲</span>; // NUEVO ICONO
-const SettingsIcon = () => <span>⚙️</span>;
+// Definición de iconos (asumiendo que ya los tienes o los crearás)
+const DashboardIcon = () => <span role="img" aria-label="Dashboard">📊</span>;
+const AccountsIcon = () => <span role="img" aria-label="Cuentas">🏦</span>;
+const TransactionsIcon = () => <span role="img" aria-label="Movimientos">🔄</span>;
+const BudgetsIcon = () => <span role="img" aria-label="Presupuestos">🎯</span>;
+const ReportsIcon = () => <span role="img" aria-label="Informes">📈</span>;
+const InvestmentsIcon = () => <span role="img" aria-label="Inversiones">💹</span>;
+const DebtAndLoanIcon = () => <span role="img" aria-label="Deudas y Préstamos">🤝</span>;
+const CategoriesIcon = () => <span role="img" aria-label="Categorías">🏷️</span>;
+const RecurringIcon = () => <span role="img" aria-label="Recurrentes">🔁</span>;
+const ExchangeRateIcon = () => <span role="img" aria-label="Tasas de Cambio">💲</span>;
+const SettingsIcon = () => <span role="img" aria-label="Configuración">⚙️</span>;
+const AdminIcon = () => <span role="img" aria-label="Administración">👑</span>;
 
 const Sidebar = () => {
-  const { user } = useAuth();
+  const { user } = useAuth(); // Obtener el usuario del contexto
 
+  // Si no hay usuario (ej. en la página de login), no mostrar el sidebar
   if (!user) {
     return null;
   }
@@ -69,7 +72,9 @@ const Sidebar = () => {
               <span>Deudas y Préstamos</span>
             </NavLink>
           </li>
+          
           <li className="sidebar-separator"></li>
+          
           <li>
             <NavLink to="/settings/categories" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
               <CategoriesIcon />
@@ -82,18 +87,33 @@ const Sidebar = () => {
               <span>Mov. Recurrentes</span>
             </NavLink>
           </li>
-          <li> {/* NUEVO ENLACE */}
+          <li>
             <NavLink to="/settings/exchange-rates" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
               <ExchangeRateIcon />
               <span>Tasas de Cambio</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/settings" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
+            {/* Este enlace a "/settings" podría ser una página general de configuración o llevar al primer item de config */}
+            <NavLink to="/settings/categories" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
               <SettingsIcon />
-              <span>Configuración General</span>
+              <span>Configuración</span>
             </NavLink>
           </li>
+
+          {/* Enlace de Administración solo para usuarios con rol 'admin' */}
+          {user && user.role === 'admin' && (
+            <>
+              <li className="sidebar-separator"></li>
+              <li>
+                <NavLink to="/admin/users" className={({ isActive }) => "sidebar-link sidebar-link-admin" + (isActive ? " active" : "")}>
+                  <AdminIcon />
+                  <span>Admin Usuarios</span>
+                </NavLink>
+              </li>
+              {/* Aquí podrías añadir más enlaces de administración en el futuro */}
+            </>
+          )}
         </ul>
       </nav>
     </aside>
