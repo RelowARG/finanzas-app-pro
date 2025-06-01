@@ -1,7 +1,6 @@
 // Ruta: finanzas-app-pro/frontend/src/contexts/AuthContext.jsx
-// ACTUALIZA ESTE ARCHIVO PARA VERIFICAR EL TOKEN AL INICIO
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import authService from '../services/auth.service';
+import authService from '../services/auth.service'; //
 
 const AuthContext = createContext(null);
 
@@ -9,13 +8,14 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loadingAuth, setLoadingAuth] = useState(true); // Para saber si se está verificando la auth inicial
+  const [loadingAuth, setLoadingAuth] = useState(true);
 
   useEffect(() => {
     const validateUserSession = async () => {
       setLoadingAuth(true);
-      const fetchedUser = await authService.verifyTokenAndFetchUser(); // Usar nueva función
-      setUser(fetchedUser); // será null si el token no es válido o no existe
+      const fetchedUser = await authService.verifyTokenAndFetchUser(); //
+      // fetchedUser ya debería incluir 'role' y 'lastLoginAt' si el backend los devuelve en /me
+      setUser(fetchedUser); 
       setLoadingAuth(false);
     };
 
@@ -23,22 +23,22 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (userDataFromBackend) => {
-    // userDataFromBackend ya debería tener { user, token }
-    // auth.service.js ya guardó el token y el usuario en localStorage
+    // userDataFromBackend viene de authService.login, que a su vez viene del backend
+    // y ahora debería incluir { id, name, email, role, lastLoginAt, createdAt, updatedAt }
     setUser(userDataFromBackend.user); 
   };
 
   const logout = () => {
-    authService.logout(); // Limpia localStorage y podría limpiar cabeceras de apiClient
+    authService.logout(); 
     setUser(null);
   };
 
   const value = {
-    user,
+    user, // Este objeto user ahora debería tener lastLoginAt si el backend lo envía
     loadingAuth,
     login,
     logout,
-    isAuthenticated: !!user, // Helper para saber si está autenticado
+    isAuthenticated: !!user,
   };
 
   return (

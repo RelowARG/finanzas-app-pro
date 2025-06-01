@@ -1,8 +1,8 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/AdminUsersPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import adminService from '../services/admin.service'; // [cite: finanzas-app-pro/frontend/src/services/admin.service.js]
-import { alertService } from '../utils/alert.service'; // [cite: finanzas-app-pro/frontend/src/utils/alert.service.js]
-import './AdminUsersPage.css'; // [cite: finanzas-app-pro/frontend/src/pages/AdminUsersPage.css]
+import adminService from '../services/admin.service'; //
+import { alertService } from '../utils/alert.service'; //
+import './AdminUsersPage.css'; //
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -12,6 +12,7 @@ const formatDate = (dateString) => {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    second: '2-digit' // Opcional: añadir segundos si se desea más precisión
   });
 };
 
@@ -109,7 +110,7 @@ const AdminUsersPage = () => {
               <th>Email</th>
               <th>Rol</th>
               <th>Creado</th>
-              <th>Últ. Actividad</th>
+              <th>Últ. Login</th> {/* CAMBIADO DE "Últ. Actividad" */}
               <th>Cambiar Rol</th>
               <th>Acciones</th>
             </tr>
@@ -124,7 +125,7 @@ const AdminUsersPage = () => {
                   <span className={`role-badge role-${user.role}`}>{user.role}</span>
                 </td>
                 <td>{formatDate(user.createdAt)}</td>
-                <td>{formatDate(user.updatedAt)}</td>
+                <td>{formatDate(user.lastLoginAt)}</td> {/* USAR lastLoginAt */}
                 <td>
                   {user.role === 'user' ? (
                     <button 

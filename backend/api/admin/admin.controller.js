@@ -1,6 +1,6 @@
 // Ruta: finanzas-app-pro/backend/api/admin/admin.controller.js
-const db = require('../../models'); // [cite: finanzas-app-pro/backend/models/index.js]
-const User = db.User; // [cite: finanzas-app-pro/backend/models/user.model.js]
+const db = require('../../models'); //
+const User = db.User; //
 const { Op } = require('sequelize');
 
 // @desc    Obtener todos los usuarios (para admin)
@@ -9,9 +9,10 @@ const { Op } = require('sequelize');
 const getAllUsers = async (req, res, next) => {
   try {
     const users = await User.findAll({
-      attributes: { exclude: ['password'] }, // Excluir la contraseña, los demás campos se incluyen
+      attributes: { exclude: ['password'] }, // Excluye solo la contraseña
       order: [['name', 'ASC']]
     });
+    // Los campos createdAt, updatedAt, y el nuevo lastLoginAt se incluirán por defecto.
     res.status(200).json(users);
   } catch (error) {
     console.error('Error en getAllUsers (admin):', error);
@@ -44,8 +45,9 @@ const updateUserRole = async (req, res, next) => {
     }
 
     user.role = role;
-    await user.save();
+    await user.save(); // Esto actualizará 'updatedAt'
 
+    // Devolver el usuario actualizado sin la contraseña
     const { password, ...userWithoutPassword } = user.toJSON();
     res.status(200).json(userWithoutPassword);
 
@@ -79,12 +81,9 @@ const deleteUserByAdmin = async (req, res, next) => {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
 
-    // Considerar la eliminación en cascada o el manejo de datos dependientes
-    // Por ejemplo, si las transacciones tienen onDelete: 'CASCADE' en el modelo User:
-    // await db.Transaction.destroy({ where: { userId: userId }, transaction: t });
-    // await db.Account.destroy({ where: { userId: userId }, transaction: t });
-    // ...etc.
-    // O, idealmente, configurar onDelete: 'CASCADE' en las asociaciones del modelo User.
+    // Considerar la eliminación en cascada (onDelete: 'CASCADE' en asociaciones del modelo User)
+    // para manejar datos dependientes (cuentas, transacciones, etc.).
+    // Si no está configurada, la eliminación podría fallar o dejar datos huérfanos.
 
     await user.destroy({ transaction: t });
     await t.commit();

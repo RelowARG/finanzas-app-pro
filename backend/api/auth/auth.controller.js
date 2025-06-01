@@ -10,7 +10,7 @@ const generateToken = (id) => {
 };
 
 const registerUser = async (req, res, next) => {
-  const { name, email, password, role } = req.body; // 'role' es opcional aquí, se usará el default 'user'
+  const { name, email, password, role } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({ message: 'Por favor, incluye nombre, email y contraseña.' });
@@ -30,17 +30,22 @@ const registerUser = async (req, res, next) => {
       name,
       email,
       password,
-      role: role || 'user' // Asignar rol si se provee, sino default del modelo
+      role: role || 'user' 
     });
 
     if (user) {
+      // Actualizar lastLoginAt también en el registro podría ser una opción
+      // user.lastLoginAt = new Date();
+      // await user.save(); // Opcional: si quieres que createdAt y lastLoginAt sean cercanos en el registro
+
       res.status(201).json({
         message: 'Usuario registrado exitosamente.',
         user: {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role, // Incluir rol
+          role: user.role,
+          lastLoginAt: user.lastLoginAt // Se incluirá si lo actualizas arriba
         },
         token: generateToken(user.id),
       });
@@ -68,13 +73,21 @@ const loginUser = async (req, res, next) => {
     const user = await User.findOne({ where: { email } });
 
     if (user && (await user.comparePassword(password))) {
+      // *** Actualizar lastLoginAt ***
+      user.lastLoginAt = new Date();
+      await user.save(); // Esto también actualizará 'updatedAt'
+      // *** Fin Actualización ***
+
       res.status(200).json({
         message: 'Login exitoso.',
-        user: {
+        user: { // Devolver el objeto usuario actualizado
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role, // Incluir rol
+          role: user.role,
+          lastLoginAt: user.lastLoginAt, // Incluir el nuevo campo
+          createdAt: user.createdAt, // Incluir para consistencia si es necesario
+          updatedAt: user.updatedAt, // Incluir para consistencia
         },
         token: generateToken(user.id),
       });
@@ -88,18 +101,21 @@ const loginUser = async (req, res, next) => {
 };
 
 const getMe = async (req, res, next) => {
-  if (!req.user) {
+  if (!req.user) { // req.user es establecido por el middleware 'protect'
       return res.status(401).json({ message: 'No autorizado, usuario no encontrado en la solicitud.'})
   }
   try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'name', 'email', 'role', 'createdAt', 'updatedAt'] // Incluir rol
+    // El middleware 'protect' ya carga el usuario con el rol.
+    // Solo necesitamos asegurarnos que el objeto req.user en 'protect' incluya todos los campos deseados.
+    // Para ser explícitos y obtener la versión más fresca, podemos volver a buscarlo.
+    const userFromDb = await User.findByPk(req.user.id, {
+      attributes: ['id', 'name', 'email', 'role', 'createdAt', 'updatedAt', 'lastLoginAt'] // Asegurar que 'lastLoginAt' esté aquí
     });
 
-    if (!user) {
+    if (!userFromDb) {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
-    res.status(200).json(user);
+    res.status(200).json(userFromDb);
 
   } catch (error) {
     console.error('Error en getMe:', error);

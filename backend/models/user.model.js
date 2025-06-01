@@ -24,10 +24,14 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: false
     },
-    role: { // NUEVO CAMPO PARA EL ROL
+    role: {
       type: Sequelize.ENUM('user', 'admin'),
       allowNull: false,
       defaultValue: 'user'
+    },
+    lastLoginAt: { // NUEVO CAMPO
+      type: Sequelize.DATE,
+      allowNull: true
     }
     // Timestamps (createdAt, updatedAt) se añaden automáticamente por Sequelize
   }, {
@@ -38,7 +42,6 @@ module.exports = (sequelize, Sequelize) => {
           const salt = await bcrypt.genSalt(10);
           user.password = await bcrypt.hash(user.password, salt);
         }
-        // Asegurarse de que el rol por defecto se aplique si no se especifica
         if (!user.role) {
             user.role = 'user';
         }
