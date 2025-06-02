@@ -1,7 +1,7 @@
 // Ruta: src/components/dashboard/AccountSummaryCard.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './DashboardComponents.css'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css]
+import './DashboardComponents.css';
 
 const formatCurrencyForCard = (amount, currency = 'ARS') => {
   const symbol = currency === 'USD' ? 'U$S' : '$';
@@ -16,7 +16,7 @@ const AccountSummaryCard = ({ account, bgColorClass, icon, onCustomizeClick }) =
     return (
       <div className="account-summary-card add-account-card-container"> {/* Contenedor actualizado */}
         <Link to="/accounts/add" className="add-account-card-link">
-          <div className="add-account-icon">➕</div>
+          <div className="add-account-icon">⊕</div> {/* CAMBIO DE ÍCONO */}
           <div>Añadir cuenta</div>
         </Link>
         {/* Botón para personalizar, solo se muestra en este placeholder */}
@@ -34,11 +34,11 @@ const AccountSummaryCard = ({ account, bgColorClass, icon, onCustomizeClick }) =
   }
 
   return (
-    <div className={`account-summary-card ${bgColorClass || ''}`}> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
-      <div className="account-card-icon">{icon || account.icon || '🏦'}</div> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
-      <div className="account-card-main-info"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
-        <div className="account-card-name">{account.name}</div> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
-        <div className="account-card-balance"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+    <div className={`account-summary-card ${bgColorClass || ''}`}>
+      <div className="account-card-icon">{icon || account.icon || '🏦'}</div>
+      <div className="account-card-main-info">
+        <div className="account-card-name">{account.name}</div>
+        <div className="account-card-balance">
           {formatCurrencyForCard(account.balance, account.currency)}
         </div>
       </div>

@@ -122,7 +122,7 @@ const DashboardPage = () => {
   const [displayedAccountIds, setDisplayedAccountIds] = useState([]); // IDs de cuentas para el resumen superior
   
   // Estado para las tarjetas de resumen de cuentas que se mostrarán efectivamente
-  const [summaryAccountsToDisplay, setSummaryAccountsToDisplay] = useState([]); // *** CORRECCIÓN: Añadido este estado ***
+  const [summaryAccountsToDisplay, setSummaryAccountsToDisplay] = useState([]);
 
   // Estados de UI y errores
   const [error, setError] = useState('');
@@ -153,18 +153,15 @@ const DashboardPage = () => {
         }
         initialDisplayedAccounts = user.dashboardConfig.displayedAccountIds || [];
         
-        // Cargar IDs de widgets visibles o usar todos los del orden por defecto si no hay nada guardado
         initialVisibleWidgets = (user.dashboardConfig.visibleWidgetIds && user.dashboardConfig.visibleWidgetIds.length > 0)
                                 ? user.dashboardConfig.visibleWidgetIds
-                                : initialWidgetOrder; // Si no hay visibleWidgetIds, usar el orden como base para la visibilidad inicial
+                                : initialWidgetOrder; 
       }
       
       setOrderedWidgetsList(initializeWidgetsConfig(initialWidgetOrder, ALL_AVAILABLE_WIDGETS));
       setDisplayedAccountIds(initialDisplayedAccounts);
       setVisibleWidgetIds(initialVisibleWidgets);
 
-      // Si no había config en el backend y ya tenemos cuentas, guardamos la default
-      // Esto se hace una sola vez
       if (!user.dashboardConfig && apiData.allUserAccounts.length > 0 && isInitialConfigSyncAttempted) {
         console.log("DashboardPage: No hay config en backend, usando default y guardando.");
         const defaultDisplayedAccountsFromApi = apiData.allUserAccounts
@@ -208,7 +205,6 @@ const DashboardPage = () => {
     const currentBackendDisplayedIds = currentBackendConfig.displayedAccountIds || [];
     const currentBackendVisibleIds = currentBackendConfig.visibleWidgetIds || getDefaultWidgetOrder();
 
-    // Comparar para evitar guardados innecesarios
     const orderChanged = JSON.stringify(currentBackendOrder) !== JSON.stringify(newWidgetOrder);
     const displayedIdsChanged = JSON.stringify(currentBackendDisplayedIds.sort()) !== JSON.stringify(newDisplayedAccountIds.sort());
     const visibleIdsChanged = JSON.stringify(currentBackendVisibleIds.sort()) !== JSON.stringify(newVisibleWidgetIds.sort());
@@ -230,7 +226,6 @@ const DashboardPage = () => {
 
   // Efecto para guardar cuando el orden de widgets, los visibles o las cuentas mostradas cambian
   useEffect(() => {
-    // Solo guardar si la carga inicial se completó y hay datos para guardar
     if (isInitialConfigSyncAttempted && orderedWidgetsList.length > 0) {
       const currentWidgetOrder = orderedWidgetsList.map(w => w.id);
       saveDashboardConfigToBackend(currentWidgetOrder, displayedAccountIds, visibleWidgetIds);
@@ -280,7 +275,7 @@ const DashboardPage = () => {
         loadingGlobalBudget: false, loadingBalanceTrend: false,
       }));
     }
-  }, [user]); // apiData.allUserAccounts quitado de aquí para evitar bucle si se actualiza en este mismo fetch
+  }, [user]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -349,9 +344,9 @@ const DashboardPage = () => {
             accountsForDisplay = apiData.allUserAccounts.slice(0, MAX_SUMMARY_CARDS_DISPLAY);
         }
       }
-      setSummaryAccountsToDisplay(accountsForDisplay); // *** CORRECCIÓN: Usar la función de estado correcta ***
+      setSummaryAccountsToDisplay(accountsForDisplay);
     } else {
-      setSummaryAccountsToDisplay([]); // *** CORRECCIÓN: Usar la función de estado correcta ***
+      setSummaryAccountsToDisplay([]);
     }
   }, [displayedAccountIds, apiData.allUserAccounts]);
 
@@ -383,7 +378,7 @@ const DashboardPage = () => {
     if (nameLower.includes('uala') || nameLower.includes('mercado pago')) return 'bg-uala';
     return '';
   };
-  const accountTypeIcons = {efectivo: '💵', bancaria: '🏦', tarjeta_credito: '💳', inversion: '📈', digital_wallet: '📱', otro: '📁',};
+  const accountTypeIcons = {efectivo: '💵', bancaria: '🏦', tarjeta_credito: '💳', inversion: '�', digital_wallet: '📱', otro: '📁',};
 
   const handleSaveAccountSelections = (selectedIds) => {
     setDisplayedAccountIds(selectedIds);
@@ -400,7 +395,7 @@ const DashboardPage = () => {
   if (!user && !error && !isInitialConfigSyncAttempted) { 
       return <div className="page-container loading-auth-home">Cargando datos de usuario...</div>;
   }
-  if (orderedWidgetsList.length === 0 && !error && !isInitialConfigSyncAttempted) { // Añadir !isInitialConfigSyncAttempted para que no muestre esto mientras carga la config
+  if (orderedWidgetsList.length === 0 && !error && !isInitialConfigSyncAttempted) {
       return <div className="page-container loading-auth-home">Inicializando dashboard...</div>;
   }
 
@@ -442,6 +437,7 @@ const DashboardPage = () => {
                 <widgetItem.Component {...widgetItem.props} />
               </SortableWidget>
             ))}
+            {/* Placeholder para añadir/gestionar widgets */}
             <AddWidgetPlaceholder onClick={() => setShowWidgetSelectionModal(true)} />
           </div>
         </SortableContext>
@@ -470,9 +466,9 @@ const DashboardPage = () => {
         <WidgetSelectionModal
           isOpen={showWidgetSelectionModal}
           onClose={() => setShowWidgetSelectionModal(false)}
-          allAvailableWidgets={ALL_AVAILABLE_WIDGETS}
-          currentVisibleWidgetIds={visibleWidgetIds}
-          onSave={handleSaveWidgetSelections}
+          allAvailableWidgets={ALL_AVAILABLE_WIDGETS} // Pasar todos los widgets definidos
+          currentVisibleWidgetIds={visibleWidgetIds} // Pasar los IDs actualmente visibles
+          onSave={handleSaveWidgetSelections} // Función para guardar la nueva selección
         />
       )}
     </DndContext>

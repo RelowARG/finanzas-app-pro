@@ -1,178 +1,182 @@
 /* finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css */
 
-/* src/components/dashboard/DashboardComponents.css (extracto relevante) */
+/* Estilos generales para los widgets del dashboard */
 .dashboard-widget {
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  padding: 15px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.05);
+  background-color: #f8f9fa; /* Color de fondo base para los widgets */
+  border-radius: 6px; /* Bordes redondeados consistentes */
+  padding: 15px; /* Espaciado interno */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.05); /* Sombra sutil */
   display: flex;
-  flex-direction: column;
-  height: 300px;
-  box-sizing: border-box;
-  overflow: hidden;
+  flex-direction: column; /* Dirección de los elementos internos */
+  height: 300px; /* Altura fija para todos los widgets estándar */
+  box-sizing: border-box; /* Para que el padding no afecte la altura total */
+  overflow: hidden; /* Evitar que el contenido se desborde sin scroll explícito */
   width: 100%; 
-  max-width: 420px; 
-  margin: 0; /* Sin márgenes automáticos laterales para que llene su pista de 420px */
+  max-width: 420px; /* Ancho máximo para los widgets en el grid */
+  margin: 0; /* Los widgets no deben tener margen para que el grid los maneje */
 }
 
+/* Estilos específicos para el widget Panel de Control si son necesarios */
 .control-panel-widget {
-  /* Estilos específicos si son necesarios */
+  /* Podrías añadir un borde o color de fondo distintivo si quisieras */
 }
 
-
+/* Título dentro de cada widget */
 .dashboard-widget h3 {
-  font-size: 0.95rem;
-  color: #374151;
-  margin-top: 0;
-  margin-bottom: 8px;
-  font-weight: 600;
-  flex-shrink: 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.95rem; /* Tamaño de fuente para el título del widget */
+  color: #374151; /* Color oscuro para el texto del título */
+  margin-top: 0; /* Sin margen superior */
+  margin-bottom: 8px; /* Espacio debajo del título */
+  font-weight: 600; /* Semi-negrita */
+  flex-shrink: 0; /* Para que el título no se encoja si el contenido es grande */
+  padding-bottom: 8px; /* Espacio antes del borde inferior */
+  border-bottom: 1px solid #e5e7eb; /* Línea divisoria sutil */
 }
 
+/* Contenedor del contenido principal del widget (después del título) */
 .dashboard-widget-content {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
+  flex-grow: 1; /* Permite que esta área ocupe el espacio restante */
+  overflow-y: auto; /* Scroll vertical si el contenido excede la altura */
+  min-height: 0; /* Necesario para que flex-grow funcione correctamente en algunos navegadores */
   display: flex;
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
 }
 
+/* Contenedor de los "medidores" en el Panel de Control */
 .control-panel-widget .gauges-container {
   display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  gap: 12px; /* Aumentado el gap como en la imagen de referencia */
-  flex-grow: 1;
+  justify-content: space-between; /* Espacio entre los items del panel */
+  align-items: stretch; /* Estirar items para igualar altura si es necesario */
+  gap: 12px; /* Espacio entre items */
+  flex-grow: 1; /* Ocupar espacio vertical */
   padding: 10px 0; 
   width: 100%;
   box-sizing: border-box;
 }
 
+/* Cada item individual dentro del Panel de Control */
 .control-panel-item {
-  border: 1px solid #e9ecef;
-  padding: 12px; /* Aumentado el padding */  
+  border: 1px solid #e9ecef; /* Borde sutil */
+  padding: 12px;  
   border-radius: 6px;
   text-align: center;
-  flex: 1 1 0;
+  flex: 1 1 0; /* Permitir que crezcan y se encojan por igual */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  background-color: #fff;
+  justify-content: space-between; /* Distribuir espacio verticalmente */
+  background-color: #fff; /* Fondo blanco para los items */
   box-shadow: 0 1px 2px rgba(0,0,0,0.03);
   box-sizing: border-box; 
-  min-width: 0; 
+  min-width: 0; /* Para que flex funcione correctamente */
 }
 
 .control-panel-item-title {
   font-size: 0.7rem;
-  color: #6c757d;
+  color: #6c757d; /* Color gris para el título del item */
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: uppercase; /* Títulos en mayúsculas */
   margin-bottom: 8px;
   line-height: 1.2; 
-  word-break: break-word; 
+  word-break: break-word; /* Para evitar desbordamiento de títulos largos */
 }
 
 .control-panel-item-value {
-  font-size: 1.5rem; /* Más grande como en la referencia */
+  font-size: 1.5rem; 
   font-weight: 700;
-  color: #2d3748;
+  color: #2d3748; /* Color oscuro para el valor principal */
   line-height: 1.1;
   margin-bottom: 4px;
-  word-break: break-all; 
+  word-break: break-all; /* Para valores muy largos */
 }
 .control-panel-item-currency {
-  font-size: 0.7rem; /* Más pequeño para que el valor destaque */
-  color: #718096;
+  font-size: 0.7rem; 
+  color: #718096; /* Color más suave para la moneda */
   margin-left: 4px;
   font-weight: 500;
 }
 
 .control-panel-item-subvalue {
   font-size: 0.7rem;
-  color: #a0aec0;
+  color: #a0aec0; /* Color muy suave para subvalores o notas */
   margin-bottom: 8px;
 }
 
+/* Contenedor de la barra de progreso en el Panel de Control */
 .control-panel-progress-bar-container {
   width: 80%; 
-  background-color: #e9ecef;
+  background-color: #e9ecef; /* Fondo de la barra */
   border-radius: 10px;
   height: 10px; 
-  overflow: hidden;
-  margin-top: auto; 
+  overflow: hidden; /* Para que el progreso no se salga del redondeo */
+  margin-top: auto; /* Empujar la barra hacia abajo si hay espacio */
 }
 
+/* Barra de progreso actual */
 .control-panel-progress-bar {
   height: 100%;
-  color: white;
+  color: white; /* Color del texto dentro de la barra (si lo hay) */
   text-align: right;
   font-size: 0.6rem; 
-  line-height: 10px;
+  line-height: 10px; /* Alinear texto verticalmente */
   font-weight: bold;
-  transition: width 0.4s ease-in-out;
+  transition: width 0.4s ease-in-out; /* Animación suave al cambiar el ancho */
   border-radius: 10px; 
   padding-right: 5px; 
   box-sizing: border-box;
 }
 
+/* Contenedor para gráficos (Chart.js) */
 .chart-container {
-  position: relative;
-  flex-grow: 1;
+  position: relative; /* Necesario para Chart.js */
+  flex-grow: 1; /* Ocupar espacio disponible */
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 0;
-  min-width: 0;
-  overflow: hidden;
+  min-height: 0; /* Para que flex funcione bien */
+  min-width: 0; /* Para que flex funcione bien */
+  overflow: hidden; /* Evitar que el canvas se desborde */
 }
 .chart-container canvas {
-  max-width: 100% !important;
+  max-width: 100% !important; /* Asegurar que el canvas no exceda el contenedor */
   max-height: 100% !important;
-  object-fit: contain;
+  object-fit: contain; /* Para que se ajuste manteniendo la proporción */
 }
 
 /* --- Estilos para AccountSummaryCard --- */
 .accounts-summary-row {
   display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-  padding-bottom: 10px;
-  overflow-x: auto;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: center; /* Centra las tarjetas si no ocupan todo el ancho */
+  gap: 15px; /* Espacio entre tarjetas de resumen */
+  margin-bottom: 25px; /* Espacio debajo de la fila de resúmenes */
+  padding-bottom: 10px; /* Espacio para la barra de scroll si es necesaria */
+  overflow-x: auto; /* Scroll horizontal si hay muchas tarjetas */
+  flex-wrap: nowrap; /* Evitar que las tarjetas se envuelvan a la siguiente línea */
+  align-items: center; /* Alinear verticalmente todas las tarjetas y placeholders */
+  justify-content: center; 
 }
 
+/* Estilo base para cada tarjeta de resumen de cuenta */
 .account-summary-card {
   border-radius: 8px; 
   padding: 15px;
-  
-  min-width: 250px;
-  max-width: 280px;
-  height: 85px;     
-
-  flex: 0 0 auto;
+  min-width: 250px; /* Ancho mínimo para cada tarjeta */
+  max-width: 280px; /* Ancho máximo */
+  height: 85px; /* Altura fija para las tarjetas */    
+  flex: 0 0 auto; /* Evitar que se estiren o encojan en la fila flex */
   box-shadow: 0 2px 5px rgba(0,0,0,0.12); 
-  
   border: none; 
-  background-color: #6c757d; /* Color de fondo por defecto */
-  color: #ffffff; /* Color de texto por defecto */
-
+  background-color: #6c757d; 
+  color: #ffffff; 
   display: flex;
   flex-direction: row;
   align-items: center;
-  text-decoration: none;
+  text-decoration: none; 
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, background-color 0.2s ease;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: hidden; 
   position: relative;
 }
 
@@ -181,7 +185,6 @@
   box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
 }
 
-/* Asegurar que el texto dentro de la tarjeta sea blanco o claro */
 .account-summary-card .account-card-icon,
 .account-summary-card .account-card-name,
 .account-summary-card .account-card-balance {
@@ -191,8 +194,8 @@
 .account-summary-card .account-card-icon {
   font-size: 1.8rem; 
   margin-right: 15px;
-  flex-shrink: 0;
-  line-height: 1;
+  flex-shrink: 0; 
+  line-height: 1; 
 }
 
 .account-summary-card .account-card-main-info { 
@@ -202,16 +205,16 @@
   align-items: flex-start; 
   overflow: hidden; 
   flex-grow: 1; 
-  height: 100%;
+  height: 100%; 
 }
 
 .account-summary-card .account-card-name {
   font-size: 0.85rem; 
   font-weight: 500; 
   margin-bottom: 4px;
-  white-space: nowrap;
+  white-space: nowrap; 
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: ellipsis; 
   width: 100%;
   line-height: 1.2;
 }
@@ -220,26 +223,25 @@
   font-size: 1.3rem; 
   font-weight: 700;
   line-height: 1.2;
-  white-space: nowrap;
+  white-space: nowrap; 
 }
 
-/* Colores de fondo específicos */
 .account-summary-card.bg-efectivo {
-  background-color: #4DB6AC; /* Teal/Verde agua */
+  background-color: #4DB6AC; 
 }
 .account-summary-card.bg-icbc {
-  background-color: #E57373; /* Rojo suave */
+  background-color: #E57373; 
 }
 .account-summary-card.bg-uala {
-  background-color: #64B5F6; /* Azul claro */
+  background-color: #64B5F6; 
 }
-/* Si tienes una clase para Mercado Pago en tu getAccountCardStyle */
 .account-summary-card.bg-mercadopago {
-  background-color: #00AEEF; /* Azul Mercado Pago */
+  background-color: #00AEEF; 
 }
 /* --- Fin Estilos para AccountSummaryCard --- */
 
 
+/* Placeholder para "Añadir Widget" (que es un .dashboard-widget) */
 .dashboard-widget.add-card-placeholder { 
   background-color: #f7fafc; 
   border: 2px dashed #d3dce6; 
@@ -249,12 +251,15 @@
   color: #6c757d; 
   text-align: center; 
   flex-grow: 0; 
+  cursor: pointer; 
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 .dashboard-widget.add-card-placeholder:hover { 
-  border-color: #007bff; 
-  background-color: #e9f2ff; 
+  border-color: var(--primary-color); 
+  background-color: #eef2f7; 
 }
-.dashboard-widget.add-card-placeholder a { 
+.dashboard-widget.add-card-placeholder a, 
+.dashboard-widget.add-card-placeholder > div { 
   display: flex; 
   flex-direction: column; 
   align-items: center; 
@@ -265,19 +270,31 @@
   color: inherit; 
   padding: 15px; 
 }
-.dashboard-widget.add-card-placeholder div:first-child { 
-  font-size: 2.2rem; 
-  margin-bottom: 8px; 
+.dashboard-widget.add-card-placeholder div[style*="font-size: 3rem"] { 
+  font-size: 3rem; 
+  margin-bottom: 15px; 
   line-height: 1; 
+  color: var(--primary-color);
 }
-.dashboard-widget.add-card-placeholder div:last-child { 
-  font-size: 0.9rem; 
+.dashboard-widget.add-card-placeholder div:not([style*="font-size: 3rem"]) { 
+  font-size: 1rem; 
   font-weight: 500; 
+  color: var(--primary-color);
+}
+.dashboard-widget.add-card-placeholder p { 
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 10px;
+  max-width: 80%;
+  text-align: center;
 }
 
+
+/* Clases de utilidad para colores de texto */
 .text-positive { color: var(--secondary-color, #2ecc71) !important; }
 .text-negative { color: var(--danger-color, #e74c3c) !important; }
 
+/* Mensajes de carga o sin datos dentro de los widgets */
 .loading-text-widget, .no-data-widget { 
   font-size: 0.85rem; 
   color: #718096; 
@@ -291,7 +308,8 @@
   flex-grow: 1; 
 }
 
-.balance-overview-widget {}
+/* Estilos específicos para BalanceOverviewWidget */
+.balance-overview-widget {} 
 .balance-overview-widget .balance-total-multi-currency { margin-bottom: 12px; }
 .balance-currency-item { 
   display: flex; 
@@ -334,6 +352,7 @@
   font-size: 1.25em !important; 
 }
 
+/* Estilos para RecentTransactionsWidget */
 .recent-transactions-widget .transactions-list { 
   list-style: none; 
   padding: 0; 
@@ -400,10 +419,10 @@
   color: #a0aec0; 
 }
 
+/* Estilos para BalanceTrendWidget */
 .balance-trend-widget .dashboard-widget-content {
     padding: 5px 10px 10px 0; 
 }
-
 .balance-trend-summary {
     padding: 0 10px 10px 10px; 
     text-align: left;
@@ -420,14 +439,10 @@
     color: #718096;
 }
 .balance-trend-summary .period-change.positive {
-    color: #2ecc71;
+    color: #2ecc71; 
 }
 .balance-trend-summary .period-change.negative {
-    color: #e74c3c;
-}
-
-.balance-trend-widget .chart-container {
-  /* Estilos para el contenedor del gráfico de tendencia */
+    color: #e74c3c; 
 }
 
 /* Estilos para el Modal de Selección de Cuentas */
@@ -451,7 +466,7 @@
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   width: 90%;
   max-width: 500px;
-  max-height: 80vh;
+  max-height: 80vh; 
   display: flex;
   flex-direction: column;
 }
@@ -469,7 +484,7 @@
 }
 
 .account-selection-list {
-  overflow-y: auto;
+  overflow-y: auto; 
   margin-bottom: 20px;
   padding-right: 10px; 
   max-height: 50vh; 
@@ -492,8 +507,8 @@
 
 .account-selection-item input[type="checkbox"] {
   margin-right: 12px;
-  transform: scale(1.2);
-  accent-color: var(--primary-color);
+  transform: scale(1.2); 
+  accent-color: var(--primary-color); 
 }
 .account-selection-item .account-icon {
   margin-right: 8px;
@@ -509,37 +524,36 @@
   border-top: 1px solid #eee;
 }
 .dashboard-modal-actions .button {
-  width: auto !important;
+  width: auto !important; 
   padding: 8px 18px !important;
 }
 
 /* Estilos para el contenedor del placeholder de "Añadir Cuenta" y "Personalizar" */
 .add-account-card-container {
-  display: flex; 
-  flex-direction: column; 
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center; 
+  justify-content: center; /* Centra verticalmente el contenido */
   text-align: center;
-  background-color: #f8f9fa;
-  color: #007bff;
-  border: 2px dashed #007bff !important; 
-  /* border-top: 2px dashed #007bff !important; No es necesario si ya es dashed general */
-  cursor: default; 
+  background-color: #f7fafc;  
+  color: var(--primary-color); 
+  border: 2px dashed #d3dce6 !important; 
+  cursor: default;
   min-width: 180px; 
   max-width: 240px; 
-  height: 100px; /* Ajustado para que coincida más con la altura de las tarjetas de cuenta reales si se reduce */
-  padding: 10px; 
+  height: 85px; /* IGUALAR ALTURA a .account-summary-card */
+  padding: 8px; /* Reducir padding para dar más espacio al contenido */
   box-sizing: border-box;
-  position: relative; 
-  border-radius: 8px; /* Consistente con las tarjetas de cuenta */
+  position: relative;
+  border-radius: var(--border-radius, 8px); 
   flex: 0 0 auto; 
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, border-color 0.2s ease;
 }
 .add-account-card-container:hover { 
-    transform: translateY(-1px); 
-    box-shadow: 0 3px 6px rgba(0,0,0,0.09); 
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.09);
+    border-color: var(--primary-color) !important; 
 }
-
 
 .add-account-card-link {
   display: flex;
@@ -547,64 +561,55 @@
   align-items: center;
   justify-content: center; 
   text-decoration: none;
-  color: inherit;
+  color: inherit; 
   width: 100%;
-  margin-bottom: 5px; 
+  margin-bottom: 4px; /* Aún más pequeño para el botón */
+  cursor: pointer; 
 }
 
 .add-account-icon { 
-  font-size: 1.8rem; 
-  margin-bottom: 5px; 
-  color: #007bff; 
+  font-size: 1.5rem; /* Más pequeño */
+  margin-bottom: 3px; /* Más pequeño */
+  color: var(--primary-color); 
+  line-height: 1; /* Para que el emoji no tenga espacio extra */
 }
 .add-account-card-container div:not(.add-account-icon) { 
-  font-weight: 500; 
-  font-size: 0.8rem; 
+  font-weight: 500;
+  font-size: 0.75rem; /* Más pequeño */
+  line-height: 1.2;
 }
 
 .button-customize-placeholder {
   background-color: transparent !important;
-  color: var(--primary-color) !important;
-  border: 1px solid var(--primary-color) !important;
-  padding: 5px 10px !important; 
-  font-size: 0.75rem !important;
-  margin-top: auto; 
-  line-height: 1.2; 
-  border-radius: var(--border-radius) !important;
-  width: auto !important; 
-  white-space: nowrap; 
+  color: #555 !important; 
+  border: 1px solid #ccc !important;
+  padding: 2px 5px !important;  /* Muy pequeño */
+  font-size: 0.6rem !important; /* Muy pequeño */
+  margin-top: 3px; /* Ajuste fino del margen superior */
+  line-height: 1.1;
+  border-radius: 3px !important; 
+  width: auto !important;
+  white-space: nowrap;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  cursor: pointer; 
 }
 .button-customize-placeholder:hover {
-  background-color: rgba(var(--primary-rgb), 0.05) !important;
-}
-.dashboard-widget.add-card-placeholder { 
-  background-color: #f7fafc; 
-  border: 2px dashed #d3dce6; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  color: #6c757d; 
-  text-align: center; 
-  flex-grow: 0; /* Para que no intente crecer más de lo necesario */
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-.dashboard-widget.add-card-placeholder:hover { 
-  border-color: var(--primary-color); 
-  background-color: #eef2f7; /* Un hover un poco más oscuro */
+  background-color: #e9ecef !important; 
+  color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
 }
 
-/* Estilo específico para el placeholder de añadir widget si es necesario diferenciarlo del de añadir cuenta */
-.add-widget-placeholder {
-  /* Puedes añadir estilos específicos aquí si el .add-card-placeholder no es suficiente */
-  /* Por ejemplo, si quieres un color de borde diferente por defecto */
-  border-color: var(--primary-color-light, #a0cff9); /* Un borde más suave por defecto */
+/* Estilo específico para el placeholder de añadir widget (el grande en el grid principal) */
+.add-widget-placeholder { 
+  /* Hereda de .dashboard-widget y .dashboard-widget.add-card-placeholder */
+  border-color: var(--primary-color-light, #a0cff9) !important; 
 }
 
 .add-widget-placeholder:hover {
-  border-color: var(--primary-color);
-  background-color: rgba(var(--primary-rgb), 0.05);
+  border-color: var(--primary-color) !important; 
+  background-color: rgba(var(--primary-rgb), 0.05) !important; 
 }
 
-.add-widget-placeholder div[style*="font-size: 3rem"] { /* Icono grande */
-  line-height: 1;
+.add-widget-placeholder div[style*="font-size: 3rem"] { 
+  line-height: 1; 
 }
