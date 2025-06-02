@@ -1,11 +1,11 @@
 // Ruta: finanzas-app-pro/frontend/src/router/index.jsx
 import React from 'react';
-import { Routes, Route, Navigate, Outlet, useOutletContext } from 'react-router-dom'; // Outlet y useOutletContext añadidos
+import { Routes, Route, Navigate, Outlet, useOutletContext } from 'react-router-dom';
 import HomePage from '../pages/HomePage'; //
 import LoginPage from '../pages/LoginPage'; //
 import RegisterPage from '../pages/RegisterPage'; //
 import DashboardPage from '../pages/DashboardPage'; //
-import DashboardWrapper from '../pages/DashboardWrapper'; // <--- NUEVO: Importar el Wrapper
+import DashboardWrapper from '../pages/DashboardWrapper';
 import AccountsPage from '../pages/AccountsPage'; //
 import AddAccountPage from '../pages/AddAccountPage'; //
 import EditAccountPage from '../pages/EditAccountPage';  //
@@ -30,15 +30,16 @@ import ExchangeRatesPage from '../pages/ExchangeRatesPage'; //
 import AdminUsersPage from '../pages/AdminUsersPage'; //
 import AdminPermissionsPage from '../pages/AdminPermissionsPage'; //
 import HowItWorksPage from '../pages/HowItWorksPage'; //
+import TermsOfServicePage from '../pages/TermsOfServicePage'; // <--- NUEVO
+import PrivacyPolicyPage from '../pages/PrivacyPolicyPage'; // <--- NUEVO
 import NotFoundPage from '../pages/NotFoundPage'; //
 
-import PrivateRoute from '../components/Route/PrivateRoute'; 
-import AdminRoute from '../components/Route/AdminRoute'; 
+import PrivateRoute from '../components/Route/PrivateRoute'; //
+import AdminRoute from '../components/Route/AdminRoute'; //
 import PermissionRoute from '../components/Route/PermissionRoute'; //
 
-import { useAuth } from '../contexts/AuthContext'; 
+import { useAuth } from '../contexts/AuthContext'; //
 
-// Hook para pasar datos del wrapper a las rutas anidadas
 export function useDashboardWrapperContext() {
   return useOutletContext();
 }
@@ -52,14 +53,12 @@ const AppRouter = () => {
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage />} /> 
       <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <RegisterPage />} /> 
       <Route path="/como-funciona" element={<HowItWorksPage />} /> 
+      <Route path="/terms" element={<TermsOfServicePage />} /> {/* <--- NUEVA RUTA */}
+      <Route path="/privacy" element={<PrivacyPolicyPage />} /> {/* <--- NUEVA RUTA */}
       
       <Route element={<PrivateRoute />}> {/* */}
-        {/* Envolver las rutas del dashboard con DashboardWrapper */}
         <Route element={<DashboardWrapper />}>
           <Route path="/dashboard" element={<DashboardPage />} /> 
-          {/* Si otras páginas también dependen de estos datos iniciales, podrían ir aquí.
-              Si no, pueden quedarse fuera del DashboardWrapper pero dentro de PrivateRoute.
-              Por ahora, solo DashboardPage necesita este manejo de carga global. */}
         </Route>
         
         <Route path="/accounts" element={<AccountsPage />} /> 

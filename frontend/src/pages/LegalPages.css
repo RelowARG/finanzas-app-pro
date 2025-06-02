@@ -1,0 +1,191 @@
+/* Ruta: finanzas-app-pro/frontend/src/pages/LegalPages.css */
+body.legal-page-active {
+  background-color: #f8f9faff; /* Gris muy claro para el fondo general si se aplica esta clase al body */
+}
+
+.legal-page-container {
+  max-width: 800px; /* Mantenemos un ancho de lectura cómodo */
+  margin: 0 auto;   /* Centrar el contenedor blanco */
+  /* Eliminamos el padding superior e inferior del contenedor principal,
+     ya que el header y el content tendrán los suyos */
+  padding: 0; 
+  background-color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* El font-size base se definirá en .legal-page-content p */
+}
+
+/* Nuevo contenedor para el título principal, similar al de Budgetbakers */
+.legal-main-title-header {
+  background-color: #f8f9faff; /* Fondo gris claro para la sección del título principal */
+  padding: 40px 20px 35px 20px; /* Padding generoso */
+  text-align: center; /* Centrar el título */
+  margin-bottom: 0; /* Sin margen inferior, el padding del container siguiente lo manejará */
+}
+
+.legal-main-title-header h1 {
+  font-size: 36px; /* Tamaño grande, similar a Budgetbakers (ellos usan 40px o más) */
+  color: #1e2224;   /* Negro/gris oscuro */
+  margin: 0 0 15px 0; /* Margen inferior para separar de la fecha */
+  font-weight: 700; /* Bien bold */
+  line-height: 1.2;
+}
+
+.legal-effective-date { /* Se mueve al .legal-page-content o se estiliza diferente si va en el header */
+  font-size: 13px;
+  color: #6c757d; /* Un gris medio */
+  text-align: center; /* Centrar la fecha debajo del título */
+}
+
+/* Contenedor del header del contenido (donde podría ir la fecha de actualización si no está en el título principal) */
+.legal-page-header {
+  text-align: left; 
+  padding: 40px 60px 20px 60px; /* Padding para el inicio del contenido textual */
+  margin-bottom: 0;
+  border-bottom: none;
+}
+/* Si el h1 se movió al .legal-main-title-header, este H1 es para un título interno si fuera necesario,
+   o puedes eliminarlo si no se usa más aquí.
+.legal-page-header h1 {
+  font-size: 26px; 
+  color: #1e2224; 
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-weight: 500; 
+  line-height: 1.3;
+}
+*/
+/* Si la fecha de actualización va aquí en lugar del header principal */
+.legal-page-header .legal-effective-date { 
+  font-size: 13px;
+  color: #757575;
+  margin-top: -10px; /* Ajustar si el H1 de arriba fue eliminado */
+  margin-bottom: 20px;
+}
+
+
+.legal-page-content {
+  padding: 0 60px 50px 60px; /* Padding para el cuerpo del contenido, sin el superior si ya lo tiene el header */
+  text-align: left;
+  line-height: 1.7; /* Interlineado general para el contenido */
+  color: #434445;
+  font-size: 15px; /* Tamaño base para el cuerpo del texto, Budgetbakers usa ~15px-16px */
+}
+
+.legal-page-content h2 {
+  font-size: 18px; /* Budgetbakers usa ~18px para H2 */
+  color: #1e2224;
+  margin-top: 35px;
+  margin-bottom: 18px;
+  font-weight: 600; /* Más bold que el 500 anterior */
+  line-height: 1.4;
+}
+
+.legal-page-content h3 { 
+  font-size: 16px; /* Un poco más grande que el cuerpo */
+  color: #1e2224;
+  margin-top: 28px;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.legal-page-content p,
+.legal-page-content ul li {
+  margin-bottom: 18px;
+  font-size: inherit; /* Hereda del .legal-page-content (15px) */
+  color: #434445;
+  line-height: inherit;
+}
+
+.legal-page-content ul {
+  padding-left: 20px;
+  list-style-position: outside;
+}
+
+.legal-page-content ul li {
+  margin-bottom: 10px;
+}
+
+.legal-page-content strong {
+    font-weight: 600; 
+    color: #1e2224; 
+}
+
+.legal-page-content a {
+  color: #008269; 
+  text-decoration: none;
+  font-weight: 500; 
+}
+
+.legal-page-content a:hover {
+  text-decoration: underline;
+  color: #005f4d;
+}
+
+.legal-important-note {
+  margin-top: 35px;
+  padding: 18px 20px;
+  background-color: #f7f7f7;
+  border: 1px solid #ededed;
+  color: #555;
+  font-size: 13px;
+  border-radius: 3px;
+  line-height: 1.6;
+}
+
+.legal-important-note strong {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .legal-page-container {
+    margin: 20px 0 40px 0; /* Sin margen lateral, ocupa todo el ancho */
+    border-left: none;
+    border-right: none;
+    border-radius: 0; /* Sin radio en móvil */
+    box-shadow: none; /* Sin sombra en móvil */
+    padding: 0; /* El padding se manejará en los hijos */
+  }
+  .legal-main-title-header {
+    padding: 30px 20px 25px 20px;
+  }
+  .legal-main-title-header h1 {
+    font-size: 28px;
+  }
+  .legal-page-header {
+    padding: 30px 20px 15px 20px; /* Ajustar padding para móvil */
+  }
+  .legal-page-content {
+    padding: 0 20px 40px 20px; /* Ajustar padding para móvil */
+  }
+}
+
+@media (max-width: 768px) {
+  .legal-main-title-header h1 {
+    font-size: 24px;
+  }
+  .legal-page-content h2 {
+    font-size: 17px;
+  }
+  .legal-page-content h3 {
+    font-size: 15px;
+  }
+   .legal-page-content p,
+  .legal-page-content ul li {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+    .legal-main-title-header h1 {
+      font-size: 22px;
+    }
+    .legal-page-container {
+      font-size: 13px; /* Reducir un poco más la base en pantallas muy pequeñas */
+    }
+    .legal-page-content p,
+    .legal-page-content ul li {
+        font-size: 13px;
+    }
+}
