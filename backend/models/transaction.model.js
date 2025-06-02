@@ -10,7 +10,7 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true 
     },
-    amount: { // Este monto se guardará negativo para egresos, positivo para ingresos
+    amount: { // Este monto se guardará negativo para egresos/transferencias salientes, positivo para ingresos/transferencias entrantes
       type: DataTypes.DECIMAL(15, 2), 
       allowNull: false
     },
@@ -25,8 +25,20 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
       defaultValue: Sequelize.NOW
     },
     type: { 
-      type: DataTypes.ENUM('ingreso', 'egreso'),
+      // *** AÑADIDO 'transferencia' AL ENUM ***
+      type: DataTypes.ENUM('ingreso', 'egreso', 'transferencia'),
       allowNull: false
+    },
+    // *** NUEVO CAMPO OPCIONAL para identificar la contraparte de una transferencia ***
+    relatedAccountId: { // Para transferencias, ID de la cuenta de destino/origen
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'accounts', // Nombre de la tabla de cuentas
+            key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL' // O 'RESTRICT' si no quieres que se eliminen transacciones si se borra la cuenta relacionada
     },
     notes: {
       type: DataTypes.TEXT,
@@ -57,6 +69,8 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
         { fields: ['accountId'] },
         { fields: ['categoryId'] },
         { fields: ['date'] },
+        { fields: ['type'] }, // *** AÑADIR ÍNDICE AL NUEVO TIPO SI ES NECESARIO ***
+        { fields: ['relatedAccountId'] },
         { fields: ['isInstallment'] } 
     ],
     hooks: {
@@ -71,22 +85,23 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
                 if (parseInt(transaction.currentInstallment, 10) > parseInt(transaction.totalInstallments, 10)) {
                     throw new Error('El número de cuota actual no puede ser mayor al total de cuotas.');
                 }
-                // Si es una cuota (que asumimos es un egreso), el monto viene positivo del formulario.
-                // No hacemos nada con el signo aquí; beforeSave se encargará.
             } else {
                 transaction.currentInstallment = null;
                 transaction.totalInstallments = null;
             }
+            // Si es transferencia, la categoría podría ser opcional o una especial
+            if (transaction.type === 'transferencia' && !transaction.categoryId) {
+                // Podrías asignar una categoría por defecto para transferencias aquí
+                // o permitir que sea nula y manejarlo en la lógica de negocio/UI.
+            }
         },
         beforeSave: (transaction, options) => { 
-            // El monto del formulario (transaction.amount) siempre se espera positivo.
-            // El tipo ('ingreso' o 'egreso') determina el signo final.
-            const numericAmount = Math.abs(parseFloat(transaction.amount) || 0); // Asegurar que trabajamos con el valor absoluto
+            const numericAmount = Math.abs(parseFloat(transaction.amount) || 0);
 
-            if (transaction.type === 'egreso') {
-                transaction.amount = -numericAmount; // Guardar como negativo
-            } else if (transaction.type === 'ingreso') {
-                transaction.amount = numericAmount; // Guardar como positivo
+            if (transaction.type === 'egreso' || (transaction.type === 'transferencia' && transaction.amount < 0) ) {
+                transaction.amount = -numericAmount; 
+            } else if (transaction.type === 'ingreso' || (transaction.type === 'transferencia' && transaction.amount >= 0) ) {
+                transaction.amount = numericAmount; 
             }
         }
     }

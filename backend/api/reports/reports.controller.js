@@ -2,17 +2,17 @@
 const db = require('../../models');
 const Transaction = db.Transaction;
 const Category = db.Category;
-const ExchangeRate = db.ExchangeRate; // Import ExchangeRate model
+const ExchangeRate = db.ExchangeRate;
 const { Op, Sequelize } = require('sequelize');
 
-// Helper function to get exchange rates for a range of transaction dates
+// ... (getRatesForTransactions existente) ...
 const getRatesForTransactions = async (userId, transactions) => {
     if (!transactions || transactions.length === 0) return {};
     
-    const dateRateMap = {}; // Cache rates to avoid fetching multiple times for same month/year
+    const dateRateMap = {}; 
     const uniqueMonthYears = new Set();
     transactions.forEach(tx => {
-        if (tx.currency === 'USD') { // Only need rates for USD transactions
+        if (tx.currency === 'USD') { 
             const date = new Date(tx.date);
             uniqueMonthYears.add(`${date.getFullYear()}-${date.getMonth() + 1}`);
         }
@@ -22,7 +22,7 @@ const getRatesForTransactions = async (userId, transactions) => {
 
     const ratePromises = Array.from(uniqueMonthYears).map(async (yearMonth) => {
         const [year, month] = yearMonth.split('-').map(Number);
-        if (dateRateMap[yearMonth]) return; // Already fetched or being fetched
+        if (dateRateMap[yearMonth]) return; 
 
         const rateEntry = await ExchangeRate.findOne({
             where: { userId, year, month, fromCurrency: 'USD', toCurrency: 'ARS' }
@@ -30,7 +30,7 @@ const getRatesForTransactions = async (userId, transactions) => {
         if (rateEntry) {
             dateRateMap[yearMonth] = parseFloat(rateEntry.rate);
         } else {
-            dateRateMap[yearMonth] = null; // Mark as null if not found
+            dateRateMap[yearMonth] = null; 
             console.warn(`[ReportsController] No exchange rate for USD to ARS for ${month}/${year} for user ${userId}`);
         }
     });
@@ -38,15 +38,19 @@ const getRatesForTransactions = async (userId, transactions) => {
     return dateRateMap;
 };
 
+
 const getExpensesByCategoryReport = async (req, res, next) => {
   const userId = req.user.id;
-  // currency filter will now mean "target currency for display"
   const { dateFrom, dateTo, currency: targetCurrency = 'ARS' } = req.query; 
 
   try {
     const transactionWhereClause = {
       userId,
-      type: 'egreso',
+      type: 'egreso', // *** MANTENER 'egreso' AQUÍ, ya que las transferencias salientes son 'transferencia' ***
+                      // Si quisieras un reporte de "salidas de dinero" que incluya transferencias,
+                      // podrías hacer type: { [Op.in]: ['egreso', 'transferencia'] } y luego filtrar en el frontend
+                      // o tener un reporte específico para flujos de transferencia.
+                      // Para "Gastos", solo queremos 'egreso'.
     };
     if (dateFrom && dateTo) {
       transactionWhereClause.date = { [Op.between]: [dateFrom, dateTo] };
@@ -55,10 +59,13 @@ const getExpensesByCategoryReport = async (req, res, next) => {
     const transactions = await Transaction.findAll({
       where: transactionWhereClause,
       include: [{ model: Category, as: 'category', attributes: ['id', 'name', 'icon'] }],
-      raw: true, // Get plain objects
-      nest: true, // Nest included category data
+      raw: true, 
+      nest: true, 
     });
 
+    // ... (resto de la lógica de conversión y agregación sin cambios, ya que solo toma 'egresos') ...
+    // La lógica actual ya no debería incluir los pagos de tarjeta si se marcaron como 'transferencia'.
+    
     if (transactions.length === 0) {
       return res.status(200).json({
         labels: [],
@@ -76,7 +83,7 @@ const getExpensesByCategoryReport = async (req, res, next) => {
     const expensesMap = new Map();
 
     for (const tx of transactions) {
-      let amountInTargetCurrency = parseFloat(tx.amount); // Amount is negative for expenses
+      let amountInTargetCurrency = parseFloat(tx.amount); 
 
       if (tx.currency !== targetCurrency) {
         if (tx.currency === 'USD' && targetCurrency === 'ARS') {
@@ -88,15 +95,10 @@ const getExpensesByCategoryReport = async (req, res, next) => {
           } else {
             const note = `Transacción ${tx.id} (${tx.description}) en USD no convertida por falta de tasa para ${txDate.getMonth() + 1}/${txDate.getFullYear()}.`;
             if (!conversionNotes.includes(note)) conversionNotes.push(note);
-            // Decide how to handle: skip, or add to a separate "unconverted" category
-            // For now, we'll sum it up if no rate, meaning it appears as if USD=ARS for that tx in the total
-            // This is not ideal. Better to exclude or explicitly state.
-            // Let's exclude for now if rate is missing for accurate ARS report
              console.warn(note);
-             continue; // Skip this transaction from ARS report if rate is missing
+             continue; 
           }
         } else if (targetCurrency !== tx.currency) {
-          // Conversion between other currencies not supported in this example
           const note = `Conversión de ${tx.currency} a ${targetCurrency} no soportada para transacción ${tx.id}.`;
           if (!conversionNotes.includes(note)) conversionNotes.push(note);
           console.warn(note);
@@ -111,7 +113,7 @@ const getExpensesByCategoryReport = async (req, res, next) => {
         icon: tx.category.icon
       };
       
-      currentCategoryData.totalAmount += Math.abs(amountInTargetCurrency); // Sum absolute values for chart
+      currentCategoryData.totalAmount += Math.abs(amountInTargetCurrency); 
       expensesMap.set(categoryKey, currentCategoryData);
     }
     
@@ -159,11 +161,11 @@ const getIncomeVsExpensesReport = async (req, res, next) => {
     let startDate, endDate;
 
     if (dateFrom && dateTo) {
-        startDate = new Date(dateFrom + 'T00:00:00Z'); // Ensure UTC context
-        endDate = new Date(dateTo + 'T23:59:59Z');   // Ensure UTC context
+        startDate = new Date(dateFrom + 'T00:00:00Z'); 
+        endDate = new Date(dateTo + 'T23:59:59Z');   
     } else {
         const numberOfMonths = parseInt(numberOfMonthsQuery, 10) || 6;
-        endDate = new Date(); // Today
+        endDate = new Date(); 
         endDate.setUTCHours(23, 59, 59, 999);
         startDate = new Date(endDate);
         startDate.setUTCMonth(startDate.getUTCMonth() - (numberOfMonths - 1));
@@ -171,13 +173,13 @@ const getIncomeVsExpensesReport = async (req, res, next) => {
         startDate.setUTCHours(0, 0, 0, 0);
     }
     
-    console.log(`[ReportsController] IncomeVsExpenses - Filtering between: ${startDate.toISOString()} and ${endDate.toISOString()}`);
-
     try {
         const transactions = await Transaction.findAll({
             where: {
                 userId,
-                date: { [Op.between]: [startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]] }
+                date: { [Op.between]: [startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]] },
+                // *** AQUÍ FILTRAMOS PARA INCLUIR SOLO INGRESOS Y EGRESOS, NO TRANSFERENCIAS ***
+                type: { [Op.in]: ['ingreso', 'egreso'] } 
             },
             order: [['date', 'ASC']],
             raw: true,
@@ -192,6 +194,7 @@ const getIncomeVsExpensesReport = async (req, res, next) => {
         let conversionNotes = [];
 
         transactions.forEach(tx => {
+            // ... (lógica de conversión de moneda existente) ...
             const txDate = new Date(tx.date);
             const year = txDate.getFullYear();
             const month = txDate.getMonth() + 1; 
@@ -219,24 +222,23 @@ const getIncomeVsExpensesReport = async (req, res, next) => {
                         const note = `Transacción ${tx.id} (${tx.description}) en USD del ${month}/${year} no convertida a ARS por falta de tasa.`;
                         if (!conversionNotes.includes(note)) conversionNotes.push(note);
                         console.warn(note);
-                        return; // Skip this transaction from the unified report
+                        return; 
                     }
                 } else {
                      const note = `Conversión de ${tx.currency} a ${displayCurrency} no soportada para transacción ${tx.id}.`;
                     if (!conversionNotes.includes(note)) conversionNotes.push(note);
                     console.warn(note);
-                    return; // Skip
+                    return; 
                 }
             }
-
+            // *** ASEGURARSE QUE EL TIPO ES 'ingreso' O 'egreso' ANTES DE SUMAR ***
             if (tx.type === 'ingreso') {
                 monthlyReport[monthKey].income += amountInDisplayCurrency;
             } else if (tx.type === 'egreso') {
-                monthlyReport[monthKey].expenses += Math.abs(amountInDisplayCurrency); // Store as positive
+                monthlyReport[monthKey].expenses += Math.abs(amountInDisplayCurrency);
             }
         });
         
-        // Ensure all months in the range are present, even if no data
         let currentIterDate = new Date(startDate);
         while(currentIterDate <= endDate) {
             const year = currentIterDate.getFullYear();

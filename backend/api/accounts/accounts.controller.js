@@ -1,7 +1,9 @@
 // Ruta: finanzas-app-pro/backend/api/accounts/accounts.controller.js
-const db = require('../../models'); //
-const Account = db.Account; //
-const Transaction = db.Transaction; // Para la nueva funcionalidad de pago
+const db = require('../../models');
+const Account = db.Account;
+const Transaction = db.Transaction;
+const Category = db.Category;
+const { Op } = require('sequelize');
 
 // @desc    Obtener todas las cuentas del usuario autenticado
 // @route   GET /api/accounts
@@ -27,7 +29,7 @@ const createAccount = async (req, res, next) => {
     name, type, balance, currency, icon, 
     bankName, accountNumberLast4, creditLimit,
     includeInDashboardSummary,
-    statementBalance, statementCloseDate, statementDueDate // Nuevos campos
+    statementBalance, statementCloseDate, statementDueDate
   } = req.body;
   
   if (!name || !type) {
@@ -96,7 +98,7 @@ const updateAccount = async (req, res, next) => {
     name, type, balance, currency, icon, 
     bankName, accountNumberLast4, creditLimit,
     includeInDashboardSummary,
-    statementBalance, statementCloseDate, statementDueDate // Nuevos campos
+    statementBalance, statementCloseDate, statementDueDate
   } = req.body;
   try {
     const account = await Account.findOne({
@@ -111,7 +113,7 @@ const updateAccount = async (req, res, next) => {
     }
 
     account.name = name !== undefined ? name : account.name;
-    // El tipo de cuenta generalmente no se edita, pero si se permite:
+    // El tipo de cuenta generalmente no se edita. Si se permite, descomentar:
     // account.type = type !== undefined ? type : account.type; 
     account.balance = balance !== undefined ? parseFloat(balance) : account.balance;
     account.currency = currency !== undefined ? currency : account.currency;
@@ -125,8 +127,8 @@ const updateAccount = async (req, res, next) => {
       account.statementBalance = statementBalance !== undefined ? (statementBalance ? parseFloat(statementBalance) : null) : account.statementBalance;
       account.statementCloseDate = statementCloseDate !== undefined ? statementCloseDate : account.statementCloseDate;
       account.statementDueDate = statementDueDate !== undefined ? statementDueDate : account.statementDueDate;
-    } else { // Si cambia de tipo o no es tarjeta, limpiar estos campos
-        if (type !== undefined && type !== 'tarjeta_credito') {
+    } else { 
+        if (type !== undefined && type !== 'tarjeta_credito') { // Si se cambia el tipo y ya no es tarjeta
             account.statementBalance = null;
             account.statementCloseDate = null;
             account.statementDueDate = null;
@@ -160,7 +162,7 @@ const deleteAccount = async (req, res, next) => {
       return res.status(404).json({ message: 'Cuenta no encontrada o no pertenece al usuario para eliminar.' });
     }
     
-    const transactionsExist = await db.Transaction.findOne({ where: { accountId: req.params.id, userId: req.user.id }}); //
+    const transactionsExist = await db.Transaction.findOne({ where: { accountId: req.params.id, userId: req.user.id }});
     if (transactionsExist) {
         return res.status(400).json({ message: 'No se puede eliminar la cuenta porque tiene movimientos asociados. Por favor, reasigna o elimina los movimientos primero.' });
     }
@@ -208,63 +210,70 @@ const payCreditCardStatement = async (req, res, next) => {
       return res.status(400).json({ message: 'La cuenta pagadora no puede ser la misma tarjeta de crédito.' });
     }
 
-    // Opcional: Verificar saldo de la cuenta pagadora (considerando su moneda)
-    // if (payingAccount.currency === 'ARS' && parseFloat(payingAccount.balance) < amountToPay) {
-    //   // ... (manejar conversión si la tarjeta es USD y pago ARS o viceversa)
-    // }
-
-
-    // 1. Crear transacción de egreso en la cuenta pagadora
-    const categoryPayment = await db.Category.findOrCreate({ //
-        where: { name: 'Pago de Tarjetas', type: 'egreso', userId: null }, // Categoría global o personalizada
-        defaults: { name: 'Pago de Tarjetas', type: 'egreso', icon: '💳', userId: null}
+    let categoryPayment;
+    const existingCategoryPayment = await Category.findOne({
+        where: {
+            name: 'Pago de Tarjetas',
+            [Op.or]: [{ userId: null }, { userId: userId }]
+        },
+        transaction: t
     });
-    const categoryIdForPayment = categoryPayment[0].id;
 
-    await Transaction.create({ //
+    if (existingCategoryPayment) {
+        categoryPayment = existingCategoryPayment;
+    } else {
+        const [newCat] = await Category.findOrCreate({
+            where: { name: 'Pago de Tarjetas', userId: null }, 
+            defaults: { name: 'Pago de Tarjetas', type: 'egreso', icon: '💳' }, 
+            transaction: t
+        });
+        categoryPayment = newCat;
+    }
+    const categoryIdForPayment = categoryPayment.id;
+
+    // 1. Crear transacción de "transferencia saliente" en la cuenta pagadora
+    await Transaction.create({
       description: `Pago Tarjeta ${creditCardAccount.name}`,
-      amount: -Math.abs(amountToPay), // Egreso siempre negativo
-      currency: payingAccount.currency, // Moneda de la cuenta pagadora
+      amount: -Math.abs(amountToPay),
+      currency: payingAccount.currency,
       date: paymentDate,
-      type: 'egreso',
-      notes: notes || `Pago desde ${payingAccount.name}`,
-      icon: categoryPayment[0].icon,
+      type: 'transferencia', // Tipo 'transferencia'
+      notes: notes || `Pago desde ${payingAccount.name} a Tarjeta ${creditCardAccount.name}`,
+      icon: categoryPayment.icon,
       userId,
       accountId: payingAccount.id,
       categoryId: categoryIdForPayment,
+      relatedAccountId: creditCardAccount.id 
     }, { transaction: t });
 
     // 2. Actualizar saldo de la cuenta pagadora
     payingAccount.balance = parseFloat(payingAccount.balance) - Math.abs(amountToPay);
     await payingAccount.save({ transaction: t });
 
-    // 3. Crear transacción de "ingreso" (compensación) en la tarjeta de crédito
-    // Asumimos que el pago se hace en la misma moneda que la tarjeta o que el monto ya está convertido
-    await Transaction.create({ //
+    // 3. Crear transacción de "transferencia entrante" en la tarjeta de crédito
+    await Transaction.create({
       description: `Pago Recibido desde ${payingAccount.name}`,
-      amount: Math.abs(amountToPay), // Ingreso siempre positivo
-      currency: creditCardAccount.currency, // Moneda de la tarjeta
+      amount: Math.abs(amountToPay), 
+      currency: creditCardAccount.currency,
       date: paymentDate,
-      type: 'ingreso', 
-      notes: notes || `Pago a Tarjeta ${creditCardAccount.name}`,
-      icon: categoryPayment[0].icon,
+      type: 'transferencia', // Tipo 'transferencia'
+      notes: notes || `Pago a Tarjeta ${creditCardAccount.name} desde ${payingAccount.name}`,
+      icon: categoryPayment.icon,
       userId,
       accountId: creditCardAccount.id,
       categoryId: categoryIdForPayment,
+      relatedAccountId: payingAccount.id
     }, { transaction: t });
     
-    // 4. Actualizar saldo de la tarjeta de crédito
     creditCardAccount.balance = parseFloat(creditCardAccount.balance) + Math.abs(amountToPay);
-    
-    // Opcional: Limpiar/actualizar campos del resumen de la tarjeta
-    // creditCardAccount.statementBalance = Math.max(0, (parseFloat(creditCardAccount.statementBalance) || 0) - Math.abs(amountToPay));
-    // Si se paga completo el statementBalance, podrías limpiarlo o marcarlo.
-    // Por ahora, el usuario puede actualizarlo manualmente.
-
     await creditCardAccount.save({ transaction: t });
 
     await t.commit();
-    res.status(200).json({ message: 'Pago de tarjeta registrado exitosamente.', payingAccount, creditCardAccount });
+    res.status(200).json({ 
+        message: 'Pago de tarjeta registrado exitosamente como transferencia.', 
+        payingAccountAfterPayment: payingAccount, 
+        creditCardAccountAfterPayment: creditCardAccount 
+    });
 
   } catch (error) {
     if (t && !t.finished) {
@@ -275,12 +284,12 @@ const payCreditCardStatement = async (req, res, next) => {
   }
 };
 
-
+// Asegúrate que este bloque esté al final del archivo y después de todas las definiciones de funciones.
 module.exports = {
   getAccounts,
   createAccount,
   getAccountById,
   updateAccount,
   deleteAccount,
-  payCreditCardStatement, // Exportar la nueva función
+  payCreditCardStatement,
 };

@@ -19,12 +19,12 @@ const AddTransactionPage = () => {
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]); 
   const [accountId, setAccountId] = useState('');
+  const [relatedAccountId, setRelatedAccountId] = useState(''); // *** Para transferencias ***
   const [categoryId, setCategoryId] = useState('');
   const [description, setDescription] = useState('');
   const [notes, setNotes] = useState('');
-  const [icon, setIcon] = useState(initialType === 'ingreso' ? '➕' : '💸'); 
+  const [icon, setIcon] = useState(initialType === 'ingreso' ? '➕' : (initialType === 'transferencia' ? '↔️' : '💸')); 
 
-  // Estados para cuotas
   const [isInstallment, setIsInstallment] = useState(false);
   const [currentInstallment, setCurrentInstallment] = useState('');
   const [totalInstallments, setTotalInstallments] = useState('');
@@ -53,11 +53,17 @@ const AddTransactionPage = () => {
       setLoadingInitialData(false);
     };
     loadInitialAccounts();
-  }, [user]);
+  }, [user, accountId]); 
 
   useEffect(() => {
     const loadCategoriesAndSetDefault = async () => {
       if (type && !loadingInitialData && user) {
+        if (type === 'transferencia') {
+          setCategories([]); 
+          setCategoryId(''); 
+          setIcon('↔️');
+          return;
+        }
         try {
           setError('');
           const fetchedCategoriesForType = await categoriesService.getCategoriesByType(type);
@@ -97,12 +103,13 @@ const AddTransactionPage = () => {
       }
     };
     loadCategoriesAndSetDefault();
-  }, [type, user, loadingInitialData]); 
+  }, [type, user, loadingInitialData, categoryId]); 
 
   const handleTypeChange = (newType) => {
     setType(newType);
     setCategoryId(''); 
-    setIsInstallment(false); // Resetear cuotas si cambia el tipo (generalmente cuotas son egresos)
+    setRelatedAccountId(''); 
+    setIsInstallment(false); 
     setCurrentInstallment('');
     setTotalInstallments('');
   };
@@ -112,9 +119,9 @@ const AddTransactionPage = () => {
     setCategoryId(selectedCatId);
     const selectedCategory = categories.find(cat => cat.id.toString() === selectedCatId);
     if (selectedCategory) {
-      setIcon(selectedCategory.icon || (type === 'ingreso' ? '➕' : '💸'));
+      setIcon(selectedCategory.icon || (type === 'ingreso' ? '➕' : (type === 'transferencia' ? '↔️' : '💸')));
     } else {
-      setIcon(type === 'ingreso' ? '➕' : '💸');
+      setIcon(type === 'ingreso' ? '➕' : (type === 'transferencia' ? '↔️' : '💸'));
     }
   };
   
@@ -124,9 +131,21 @@ const AddTransactionPage = () => {
         setError('Usuario no autenticado. Por favor, inicie sesión.');
         return;
     }
-    if (!amount || !accountId || !categoryId || !date || !type) {
-      setError('Por favor, completa tipo, monto, cuenta, categoría y fecha.');
+    if (!amount || !accountId || !date || !type) {
+      setError('Por favor, completa tipo, monto, cuenta y fecha.');
       return;
+    }
+    if (type !== 'transferencia' && !categoryId) {
+        setError('Por favor, selecciona una categoría para ingresos o egresos.');
+        return;
+    }
+    if (type === 'transferencia' && !relatedAccountId) {
+        setError('Por favor, selecciona la cuenta de destino/origen para la transferencia.');
+        return;
+    }
+    if (type === 'transferencia' && accountId === relatedAccountId) {
+        setError('La cuenta de origen y destino no pueden ser la misma para una transferencia.');
+        return;
     }
     if (isInstallment && (!currentInstallment || !totalInstallments || parseInt(currentInstallment,10) <= 0 || parseInt(totalInstallments,10) <=0 )) {
       setError('Para compras en cuotas, completa el número de cuota actual y el total de cuotas (mayores a cero).');
@@ -136,7 +155,6 @@ const AddTransactionPage = () => {
       setError('La cuota actual no puede ser mayor al total de cuotas.');
       return;
     }
-
 
     setError('');
     setLoading(true);
@@ -149,16 +167,21 @@ const AddTransactionPage = () => {
       currency: selectedAccount?.currency || 'ARS', 
       date,
       accountId: parseInt(accountId, 10), 
-      categoryId: parseInt(categoryId, 10), 
+      categoryId: type !== 'transferencia' ? parseInt(categoryId, 10) : null,
+      relatedAccountId: type === 'transferencia' ? parseInt(relatedAccountId, 10) : null,
       description: description.trim(),
       notes: notes.trim(),
       userId: user.id, 
-      isInstallment,
-      currentInstallment: isInstallment ? parseInt(currentInstallment, 10) : null,
-      totalInstallments: isInstallment ? parseInt(totalInstallments, 10) : null,
+      isInstallment: type === 'egreso' && isInstallment, 
+      currentInstallment: (type === 'egreso' && isInstallment) ? parseInt(currentInstallment, 10) : null,
+      totalInstallments: (type === 'egreso' && isInstallment) ? parseInt(totalInstallments, 10) : null,
     };
 
     try {
+      if (type === 'transferencia') {
+          const destinationAccount = accounts.find(acc => acc.id.toString() === relatedAccountId.toString());
+          transactionData.description = transactionData.description || `Transferencia a ${destinationAccount?.name || 'otra cuenta'}`;
+      }
       await transactionService.createTransaction(transactionData);
       navigate('/transactions'); 
     } catch (err) {
@@ -179,7 +202,7 @@ const AddTransactionPage = () => {
   return (
     <div className="page-container add-transaction-page">
       <div className="form-container" style={{maxWidth: '700px'}}>
-        <h2>{type === 'ingreso' ? 'Registrar Nuevo Ingreso' : 'Registrar Nuevo Gasto'}</h2>
+        <h2>{type === 'ingreso' ? 'Registrar Ingreso' : (type === 'transferencia' ? 'Registrar Transferencia' : 'Registrar Gasto')}</h2>
         <form onSubmit={handleSubmit}>
           {error && <p className="error-message">{error}</p>}
 
@@ -196,24 +219,22 @@ const AddTransactionPage = () => {
               onClick={() => handleTypeChange('ingreso')}>
               ➕ Ingreso
             </button>
+            <button 
+              type="button" 
+              className={`button-type ${type === 'transferencia' ? 'active' : ''}`}
+              onClick={() => handleTypeChange('transferencia')}>
+              ↔️ Transferencia
+            </button>
           </div>
 
           <div className="form-grid">
             <div className="form-group">
               <label htmlFor="amount">Monto (*):</label>
-              <input
-                type="number"
-                id="amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                step="0.01"
-                placeholder="0.00"
-                required
-              />
+              <input type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} step="0.01" placeholder="0.00" required />
             </div>
 
             <div className="form-group">
-              <label htmlFor="accountId">Cuenta (*):</label>
+              <label htmlFor="accountId">{type === 'transferencia' ? 'Cuenta Origen (*):' : 'Cuenta (*):'}</label>
               <select id="accountId" value={accountId} onChange={(e) => setAccountId(e.target.value)} required disabled={accounts.length === 0}>
                 <option value="" disabled>{accounts.length === 0 ? 'No hay cuentas' : 'Selecciona una cuenta'}</option>
                 {accounts.map(acc => (
@@ -224,63 +245,70 @@ const AddTransactionPage = () => {
               </select>
             </div>
 
+            {type === 'transferencia' && (
+                <div className="form-group">
+                    <label htmlFor="relatedAccountId">Cuenta Destino (*):</label>
+                    <select id="relatedAccountId" value={relatedAccountId} onChange={(e) => setRelatedAccountId(e.target.value)} required disabled={accounts.length === 0}>
+                        <option value="" disabled>Selecciona cuenta destino</option>
+                        {accounts.filter(acc => acc.id.toString() !== accountId.toString()).map(acc => ( 
+                            <option key={acc.id} value={acc.id.toString()}>{acc.icon} {acc.name} ({acc.currency})</option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
             <div className="form-group">
               <label htmlFor="date">Fecha (*):</label>
               <input type="date" id="date" value={date} onChange={(e) => setDate(e.target.value)} required />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="categoryId">Categoría (*):</label>
-              <select 
-                id="categoryId" 
-                value={categoryId} 
-                onChange={handleCategoryChange} 
-                required 
-                disabled={!type || categories.length === 0}
-              >
-                <option value="" disabled>
-                  {!type ? 'Selecciona un tipo primero' : categories.length === 0 ? `No hay categorías de ${type}` : 'Selecciona una categoría'}
-                </option>
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.id.toString()}>
-                  {cat.icon} {cat.name}
+            {type !== 'transferencia' && (
+              <div className="form-group">
+                <label htmlFor="categoryId">Categoría (*):</label>
+                <select 
+                  id="categoryId" 
+                  value={categoryId} 
+                  onChange={handleCategoryChange} 
+                  required={type !== 'transferencia'} 
+                  disabled={!type || type === 'transferencia' || categories.length === 0}
+                >
+                  <option value="" disabled>
+                    {!type ? 'Selecciona un tipo primero' : (type === 'transferencia' ? 'N/A para transferencias' : (categories.length === 0 ? `No hay categorías de ${type}` : 'Selecciona una categoría'))}
                   </option>
-                ))}
-              </select>
-            </div>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id.toString()}>
+                    {cat.icon} {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           
           <div className="form-group">
-            <label htmlFor="description">Descripción (*):</label>
+            <label htmlFor="description">Descripción {type === 'transferencia' ? '(Opcional)' : '(*)'}:</label>
             <input
               type="text"
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ej: Compra supermercado, Sueldo Mayo"
-              required 
+              placeholder={type === 'transferencia' ? "Ej: Ahorros para viaje" : "Ej: Compra supermercado, Sueldo Mayo"}
+              required={type !== 'transferencia'} 
             />
           </div>
            <div className="form-group">
             <label htmlFor="notes">Notas (Opcional):</label>
-            <textarea 
-                id="notes" 
-                value={notes} 
-                onChange={(e) => setNotes(e.target.value)} 
-                rows="3"
-                placeholder="Detalles adicionales..."
-            ></textarea>
+            <textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows="3" placeholder="Detalles adicionales..."></textarea>
           </div>
 
-          {/* Campos de Cuotas */}
-          {type === 'egreso' && ( // Generalmente las cuotas son para egresos
+          {type === 'egreso' && (
             <>
               <div className="form-group">
                 <label htmlFor="isInstallment" className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    id="isInstallment"
-                    checked={isInstallment}
+                  <input 
+                    type="checkbox" 
+                    id="isInstallment" 
+                    checked={isInstallment} 
                     onChange={(e) => {
                       const checked = e.target.checked;
                       setIsInstallment(checked);
@@ -288,12 +316,11 @@ const AddTransactionPage = () => {
                         setCurrentInstallment('');
                         setTotalInstallments('');
                       }
-                    }}
+                    }} 
                   />
                   ¿Es una compra en cuotas?
                 </label>
               </div>
-
               {isInstallment && (
                 <div className="form-grid-halves" style={{marginBottom: '15px'}}>
                   <div className="form-group">
@@ -327,7 +354,7 @@ const AddTransactionPage = () => {
           
           <div className="form-actions">
             <button type="submit" disabled={loading || loadingInitialData} className="button-primary">
-              {loading ? 'Guardando...' : (type === 'ingreso' ? 'Registrar Ingreso' : 'Registrar Gasto')}
+              {loading ? 'Guardando...' : (type === 'ingreso' ? 'Registrar Ingreso' : (type === 'transferencia' ? 'Registrar Transferencia' : 'Registrar Gasto'))}
             </button>
             <button type="button" onClick={() => navigate(-1)} className="button-secondary" disabled={loading || loadingInitialData}>
               Cancelar

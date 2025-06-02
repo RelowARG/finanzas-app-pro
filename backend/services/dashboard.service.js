@@ -1,10 +1,10 @@
 // finanzas-app-pro/backend/services/dashboard.service.js
 const db = require('../models');
-const { Op, Sequelize, literal } = require('sequelize'); // Asegúrate que Op y Sequelize estén importados
+const { Op, Sequelize, literal } = require('sequelize');
+// ... (otras importaciones y helpers como getMonthDateRange, getRatesForItems, convertItemAmount) ...
 
-// Asegúrate que esta función esté disponible o impleméntala si es necesaria para otros contextos.
-// Si solo es para el formato de fecha en este archivo, puedes simplificarlo o moverlo.
 const getMonthDateRange = (date = new Date(), monthsOffset = 0) => {
+  // ... (código existente)
   const d = new Date(date);
   d.setUTCMonth(d.getUTCMonth() + monthsOffset);
 
@@ -27,12 +27,80 @@ const getMonthDateRange = (date = new Date(), monthsOffset = 0) => {
   };
 };
 
-
-// --- FUNCIONES EXISTENTES DEL DASHBOARD ---
-// (getDashboardSummary, getMonthlySpendingByCategory, etc., como estaban antes)
-// ... (Tu código existente para las otras funciones del dashboard service) ...
-const getDashboardSummary = async (userId) => {
+const getRatesForItems = async (userId, items, targetCurrency = 'ARS') => {
   // ... (código existente)
+  if (!items || items.length === 0) return { rates: {}, notes: [] };
+  
+  const rateMap = {}; 
+  const uniqueRateLookups = new Set();
+  let notes = [];
+
+  items.forEach(item => {
+    if (item.currency && item.currency !== targetCurrency) {
+      try {
+        const itemDate = new Date(item.date + 'T00:00:00Z'); 
+        const year = itemDate.getUTCFullYear();
+        const month = itemDate.getUTCMonth() + 1;
+        uniqueRateLookups.add(`${year}-${month}-${item.currency}`);
+      } catch (e) {
+        console.warn(`[getRatesForItems] Invalid date for item: ${item.date}`);
+      }
+    }
+  });
+
+  if (uniqueRateLookups.size === 0) return { rates: {}, notes: [] };
+
+  const ratePromises = Array.from(uniqueRateLookups).map(async (lookupKey) => {
+    const [year, month, fromCurrency] = lookupKey.split('-');
+    const numYear = parseInt(year);
+    const numMonth = parseInt(month);
+
+    if (rateMap[lookupKey]) return; 
+
+    const rateEntry = await db.ExchangeRate.findOne({
+      where: { userId, year: numYear, month: numMonth, fromCurrency, toCurrency: targetCurrency }
+    });
+
+    if (rateEntry) {
+      rateMap[lookupKey] = parseFloat(rateEntry.rate);
+    } else {
+      rateMap[lookupKey] = null; 
+      const noteMsg = `No se encontró tasa de cambio para ${fromCurrency} a ${targetCurrency} en ${numMonth}/${numYear}.`;
+      if (!notes.includes(noteMsg)) notes.push(noteMsg);
+    }
+  });
+  await Promise.all(ratePromises);
+  return { rates: rateMap, notes };
+};
+
+const convertItemAmount = (amount, currency, dateStr, ratesMap, targetCurrency = 'ARS', notesSet) => {
+  // ... (código existente)
+  const originalAmount = parseFloat(amount);
+  if (currency === targetCurrency) return originalAmount;
+  if (isNaN(originalAmount)) return 0; 
+
+  try {
+    const itemDate = new Date(dateStr + 'T00:00:00Z');
+    const year = itemDate.getUTCFullYear();
+    const month = itemDate.getUTCMonth() + 1;
+    const rateKey = `${year}-${month}-${currency}`;
+    const rate = ratesMap[rateKey];
+
+    if (rate !== null && rate !== undefined) {
+      return originalAmount * rate;
+    } else {
+      return null; 
+    }
+  } catch (e) {
+    notesSet.add(`Error al procesar fecha '${dateStr}' para conversión de ${currency}.`);
+    return null;
+  }
+};
+
+
+// --- getDashboardSummary (sin cambios directos aquí, pero su lógica de saldos es correcta) ---
+const getDashboardSummary = async (userId) => {
+  // ... (código existente) ...
   console.log('[DEBUG] Backend Service: Entering getDashboardSummary for userId:', userId);
   try {
     const accounts = await db.Account.findAll({ 
@@ -97,74 +165,8 @@ const getDashboardSummary = async (userId) => {
   }
 };
 
-const getRatesForItems = async (userId, items, targetCurrency = 'ARS') => {
-  if (!items || items.length === 0) return { rates: {}, notes: [] };
-  
-  const rateMap = {}; 
-  const uniqueRateLookups = new Set();
-  let notes = [];
 
-  items.forEach(item => {
-    if (item.currency && item.currency !== targetCurrency) {
-      try {
-        const itemDate = new Date(item.date + 'T00:00:00Z'); 
-        const year = itemDate.getUTCFullYear();
-        const month = itemDate.getUTCMonth() + 1;
-        uniqueRateLookups.add(`${year}-${month}-${item.currency}`);
-      } catch (e) {
-        console.warn(`[getRatesForItems] Invalid date for item: ${item.date}`);
-      }
-    }
-  });
-
-  if (uniqueRateLookups.size === 0) return { rates: {}, notes: [] };
-
-  const ratePromises = Array.from(uniqueRateLookups).map(async (lookupKey) => {
-    const [year, month, fromCurrency] = lookupKey.split('-');
-    const numYear = parseInt(year);
-    const numMonth = parseInt(month);
-
-    if (rateMap[lookupKey]) return; 
-
-    const rateEntry = await db.ExchangeRate.findOne({
-      where: { userId, year: numYear, month: numMonth, fromCurrency, toCurrency: targetCurrency }
-    });
-
-    if (rateEntry) {
-      rateMap[lookupKey] = parseFloat(rateEntry.rate);
-    } else {
-      rateMap[lookupKey] = null; 
-      const noteMsg = `No se encontró tasa de cambio para ${fromCurrency} a ${targetCurrency} en ${numMonth}/${numYear}.`;
-      if (!notes.includes(noteMsg)) notes.push(noteMsg);
-    }
-  });
-  await Promise.all(ratePromises);
-  return { rates: rateMap, notes };
-};
-
-const convertItemAmount = (amount, currency, dateStr, ratesMap, targetCurrency = 'ARS', notesSet) => {
-  const originalAmount = parseFloat(amount);
-  if (currency === targetCurrency) return originalAmount;
-  if (isNaN(originalAmount)) return 0; 
-
-  try {
-    const itemDate = new Date(dateStr + 'T00:00:00Z');
-    const year = itemDate.getUTCFullYear();
-    const month = itemDate.getUTCMonth() + 1;
-    const rateKey = `${year}-${month}-${currency}`;
-    const rate = ratesMap[rateKey];
-
-    if (rate !== null && rate !== undefined) {
-      return originalAmount * rate;
-    } else {
-      return null; 
-    }
-  } catch (e) {
-    notesSet.add(`Error al procesar fecha '${dateStr}' para conversión de ${currency}.`);
-    return null;
-  }
-};
-
+// --- getMonthlySpendingByCategory ---
 const getMonthlySpendingByCategory = async (userId, filters = {}) => {
   console.log('[DashboardService Backend] Fetching MonthlySpendingByCategory for userId:', userId, 'Filters:', filters);
   try {
@@ -175,10 +177,11 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
 
     const transactionWhereClause = {
       userId,
-      type: 'egreso',
+      type: 'egreso', // *** MANTENER 'egreso' para este widget específico de gastos ***
       date: { [Op.between]: [dateFrom, dateTo] },
     };
 
+    // ... (resto de la función sin cambios, ya que solo considera 'egreso') ...
     const transactions = await db.Transaction.findAll({
       where: transactionWhereClause,
       include: [{ model: db.Category, as: 'category', attributes: ['id', 'name', 'icon'] }],
@@ -232,42 +235,13 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
         numberOfCategories: labels.length, currencyReported: targetCurrency, conversionNotes
       }
     };
-
   } catch (error) {
     console.error("[DashboardService Backend] Error fetching monthly spending for chart:", error);
     return { labels: [], datasets: [{ data: [] }], summary: { totalExpenses: 0, numberOfCategories: 0, currencyReported: 'ARS', conversionNotes:['Error al cargar datos.'] } };
   }
 };
 
-const getInvestmentHighlights = async (userId, topN = 3) => {
-  console.log('[DashboardService Backend] getInvestmentHighlights for userId:', userId);
-  try {
-    const allInvestments = await db.Investment.findAll({ where: { userId }});
-    if (!allInvestments || allInvestments.length === 0) {
-        return { totalValueByCurrency: {}, topInvestments: [], totalNumberOfInvestments: 0 };
-    }
-    const summaryByCurrency = allInvestments.reduce((acc, inv) => {
-      const currency = inv.currency || 'ARS';
-      acc[currency] = (acc[currency] || 0) + (parseFloat(inv.currentValue) || 0); 
-      return acc;
-    }, {});
-
-    const sortedByValue = [...allInvestments].sort((a, b) => (parseFloat(b.currentValue) || 0) - (parseFloat(a.currentValue) || 0));
-    const topInvestments = sortedByValue.slice(0, topN).map(inv => ({
-        id: inv.id, name: inv.name, currentValue: parseFloat(inv.currentValue) || 0, 
-        currency: inv.currency, icon: inv.icon, type: inv.type,
-    }));
-    return {
-      totalValueByCurrency: summaryByCurrency, 
-      topInvestments: topInvestments,
-      totalNumberOfInvestments: allInvestments.length,
-    };
-  } catch (error) {
-    console.error("[DashboardService Backend] Error getting investment highlights:", error);
-    return { totalValueByCurrency: {}, topInvestments: [], totalNumberOfInvestments: 0 };
-  }
-};
-
+// --- getCurrentMonthFinancialStatus ---
 const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') => {
   console.log('\n[DashService-MonthlyStatus] =================================================');
   console.log('[DashService-MonthlyStatus] INICIO getCurrentMonthFinancialStatus para user:', userId);
@@ -280,11 +254,14 @@ const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') =>
     const currentMonthTransactions = await db.Transaction.findAll({
         where: {
             userId,
-            date: { [Op.between]: [dateFrom, dateTo] } 
+            date: { [Op.between]: [dateFrom, dateTo] },
+            // *** FILTRAR PARA EXCLUIR TRANSFERENCIAS DEL CÁLCULO DE INGRESOS/EGRESOS DEL MES ***
+            type: { [Op.in]: ['ingreso', 'egreso'] }
         },
         raw: true
     });
-    console.log(`[DashService-MonthlyStatus] Transacciones encontradas para ${monthName} ${year}: ${currentMonthTransactions.length}`);
+    // ... (resto de la lógica de conversión y agregación sin cambios) ...
+    console.log(`[DashService-MonthlyStatus] Transacciones (no transferencias) encontradas para ${monthName} ${year}: ${currentMonthTransactions.length}`);
     
     const { rates, notes: rateConversionNotes } = await getRatesForItems(userId, currentMonthTransactions, targetCurrency);
     let conversionNotes = [...rateConversionNotes];
@@ -315,7 +292,7 @@ const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') =>
 
             if (tx.type === 'ingreso') {
                 totalIncomeTargetCurrency += amountInTarget;
-            } else if (tx.type === 'egreso') {
+            } else if (tx.type === 'egreso') { // Ya está filtrado para que no sea 'transferencia'
                 totalExpensesTargetCurrency += Math.abs(amountInTarget);
             }
         }
@@ -367,7 +344,39 @@ const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') =>
   }
 };
 
+// ... (getInvestmentHighlights, getGlobalBudgetStatus, getBalanceTrend, calculateFinancialHealth, getUpcomingEvents sin cambios necesarios para este fix específico) ...
+const getInvestmentHighlights = async (userId, topN = 3) => {
+  // ... (código existente)
+  console.log('[DashboardService Backend] getInvestmentHighlights for userId:', userId);
+  try {
+    const allInvestments = await db.Investment.findAll({ where: { userId }});
+    if (!allInvestments || allInvestments.length === 0) {
+        return { totalValueByCurrency: {}, topInvestments: [], totalNumberOfInvestments: 0 };
+    }
+    const summaryByCurrency = allInvestments.reduce((acc, inv) => {
+      const currency = inv.currency || 'ARS';
+      acc[currency] = (acc[currency] || 0) + (parseFloat(inv.currentValue) || 0); 
+      return acc;
+    }, {});
+
+    const sortedByValue = [...allInvestments].sort((a, b) => (parseFloat(b.currentValue) || 0) - (parseFloat(a.currentValue) || 0));
+    const topInvestments = sortedByValue.slice(0, topN).map(inv => ({
+        id: inv.id, name: inv.name, currentValue: parseFloat(inv.currentValue) || 0, 
+        currency: inv.currency, icon: inv.icon, type: inv.type,
+    }));
+    return {
+      totalValueByCurrency: summaryByCurrency, 
+      topInvestments: topInvestments,
+      totalNumberOfInvestments: allInvestments.length,
+    };
+  } catch (error) {
+    console.error("[DashboardService Backend] Error getting investment highlights:", error);
+    return { totalValueByCurrency: {}, topInvestments: [], totalNumberOfInvestments: 0 };
+  }
+};
+
 const getGlobalBudgetStatus = async (userId, targetCurrency = 'ARS') => {
+  // ... (código existente)
   console.log('[DashboardService Backend] Calculating Global Budget Status for user:', userId);
   const currentServerDate = new Date();
   const { dateFrom, dateTo, monthName, year } = getMonthDateRange(currentServerDate);
@@ -407,7 +416,7 @@ const getGlobalBudgetStatus = async (userId, targetCurrency = 'ARS') => {
       const transactionsInBudgetedCategories = await db.Transaction.findAll({
         where: {
           userId,
-          type: 'egreso',
+          type: 'egreso', // Solo egresos para presupuestos
           date: { [Op.between]: [dateFrom, dateTo] }, 
           categoryId: { [Op.in]: budgetCategoryIds },
         },
@@ -446,6 +455,7 @@ const getGlobalBudgetStatus = async (userId, targetCurrency = 'ARS') => {
 };
 
 const getBalanceTrend = async (userId, numberOfMonths = 6, targetCurrency = 'ARS') => {
+  // ... (código existente)
   console.log(`[DashboardService Backend] Calculating Balance Trend for ${numberOfMonths} months for user:`, userId);
   try {
     const accounts = await db.Account.findAll({ where: { userId }, raw: true }); 
@@ -495,7 +505,11 @@ const getBalanceTrend = async (userId, numberOfMonths = 6, targetCurrency = 'ARS
         const flowMonthRange = getMonthDateRange(new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - i + 1, 1)));
 
         const transactionsThisFlowMonth = await db.Transaction.findAll({
-          where: { userId, date: { [Op.between]: [flowMonthRange.dateFrom, flowMonthRange.dateTo] } },
+          where: { 
+            userId, 
+            date: { [Op.between]: [flowMonthRange.dateFrom, flowMonthRange.dateTo] },
+            type: { [Op.in]: ['ingreso', 'egreso'] } // *** EXCLUIR TRANSFERENCIAS ***
+          },
           raw: true,
         });
         
@@ -550,6 +564,7 @@ const getBalanceTrend = async (userId, numberOfMonths = 6, targetCurrency = 'ARS
 };
 
 const calculateFinancialHealth = async (userId, targetCurrency = 'ARS') => {
+  // ... (código existente, asegurándose que los cálculos de ingresos/egresos excluyan transferencias) ...
   console.log(`[DashboardService] Calculating Financial Health for userId: ${userId} in ${targetCurrency}`);
   const today = new Date(); 
   const currentMonthRange = getMonthDateRange(today);
@@ -560,7 +575,11 @@ const calculateFinancialHealth = async (userId, targetCurrency = 'ARS') => {
   const dateForAveragesStart = getMonthDateRange(today, -2).dateFrom; 
   
   const recentTransactionsRaw = await db.Transaction.findAll({
-      where: { userId, date: { [Op.gte]: dateForAveragesStart } },
+      where: { 
+        userId, 
+        date: { [Op.gte]: dateForAveragesStart },
+        type: { [Op.in]: ['ingreso', 'egreso'] } // *** EXCLUIR TRANSFERENCIAS ***
+      },
       raw: true
   });
   
@@ -679,9 +698,8 @@ const calculateFinancialHealth = async (userId, targetCurrency = 'ARS') => {
   };
 };
 
-
-// Nueva función para obtener próximos vencimientos
 const getUpcomingEvents = async (userId, daysInFuture = 15) => {
+  // ... (código existente)
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
 
@@ -735,7 +753,7 @@ const getUpcomingEvents = async (userId, daysInFuture = 15) => {
         [Op.gte]: todayString,
         [Op.lte]: futureDateString,
       },
-      statementBalance: { [Op.gt]: 0 }
+      statementBalance: { [Op.gt]: 0 } // Solo si hay saldo a pagar
     },
     order: [['statementDueDate', 'ASC']],
     raw: true,
@@ -744,7 +762,7 @@ const getUpcomingEvents = async (userId, daysInFuture = 15) => {
   creditCards.forEach(card => {
     upcomingEvents.push({
       type: 'tarjeta',
-      eventType: 'egreso',
+      eventType: 'egreso', // Pagar tarjeta es un egreso del flujo de caja
       date: card.statementDueDate,
       description: `Venc. Tarjeta ${card.name}`,
       amount: parseFloat(card.statementBalance),
@@ -783,7 +801,7 @@ const getUpcomingEvents = async (userId, daysInFuture = 15) => {
     if (item.dueDate && new Date(item.dueDate) >= today && new Date(item.dueDate) <= futureDate) {
         if (!relevantDate || new Date(item.dueDate) < new Date(relevantDate)) {
             relevantDate = item.dueDate;
-            isNextExpectedPayment = false; // dueDate tiene precedencia si es anterior o si no hay nextExpectedPaymentDate
+            isNextExpectedPayment = false; 
         }
     }
 
@@ -791,13 +809,13 @@ const getUpcomingEvents = async (userId, daysInFuture = 15) => {
         if (isNextExpectedPayment) {
             descriptionPrefix = item.type === 'debt' ? "Próx. Pago Deuda: " : "Próx. Cobro Préstamo: ";
             eventAmount = item.nextExpectedPaymentAmount ? parseFloat(item.nextExpectedPaymentAmount) : (parseFloat(item.totalAmount) - parseFloat(item.paidAmount));
-        } else { // Es un dueDate
+        } else { 
             descriptionPrefix = item.type === 'debt' ? "Venc. Deuda: " : "Venc. Préstamo: ";
             eventAmount = parseFloat(item.totalAmount) - parseFloat(item.paidAmount);
         }
 
         upcomingEvents.push({
-            type: item.type,
+            type: item.type, // 'debt' o 'loan'
             eventType: item.type === 'debt' ? 'egreso' : 'ingreso',
             date: relevantDate,
             description: `${descriptionPrefix}${item.description}`,
@@ -826,10 +844,10 @@ const getUpcomingEvents = async (userId, daysInFuture = 15) => {
   fixedTermInvestments.forEach(inv => {
     upcomingEvents.push({
       type: 'inversion',
-      eventType: 'info',
+      eventType: 'info', // Es informativo, no un egreso/ingreso directo de flujo de caja
       date: inv.endDate,
       description: `Venc. P.Fijo: ${inv.name}`,
-      amount: parseFloat(inv.currentValue) || parseFloat(inv.initialInvestment),
+      amount: parseFloat(inv.currentValue) || parseFloat(inv.initialInvestment), // Mostrar valor final
       currency: inv.currency,
       icon: inv.icon || '📜',
       source: `Inversión: ${inv.entity || inv.name}`
