@@ -1,5 +1,5 @@
 /* Ruta: src/pages/DashboardPage.css */
-/* CSS para optimizar la distribución de widgets */
+/* CSS para un layout de dashboard globalmente responsivo */
 
 .dashboard-page {
   /* Estilos generales para la página del dashboard */
@@ -23,38 +23,39 @@
   margin: 0;
 }
 
+/* Este es AHORA el contenedor principal para TODOS los widgets */
 .dashboard-widgets-grid-target {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Dos columnas principales de igual ancho */
-  gap: 20px;
+  /* Crea tantas columnas de 420px como quepan en el ancho disponible.
+     'auto-fill' asegura que el espacio se reserve incluso si no hay widgets para llenarlo,
+     lo que ayuda a que justify-content: center funcione de manera predecible. */
+  grid-template-columns: repeat(auto-fill, 420px);
+  gap: 20px; /* Espacio entre widgets */
+  
+  /* Centra todo el bloque de columnas de widgets si no ocupan el 100% del ancho.
+     Esto maneja el "espacio desperdiciado" a los costados de la página. */
+  justify-content: center; 
+  
   margin-top: 25px;
   width: 100%;
   box-sizing: border-box;
-  align-items: start;
+  align-items: start; /* Para el caso de que los widgets tengan alturas diferentes y se ordenen en filas */
+  align-content: start; /* Alinea las filas de la cuadrícula al inicio */
 }
 
-.dashboard-main-column-target,
-.dashboard-sidebar-column-target {
-  display: grid;
-  /* Crea tantas columnas de widgets de 420px como quepan.
-     'auto-fill' reserva espacio para las columnas aunque no haya suficientes widgets. */
-  grid-template-columns: repeat(auto-fill, 420px);
-  gap: 20px; 
-  min-width: 0; 
-  align-content: start; 
-  /* Centra el bloque de columnas de widgets si no ocupan todo el ancho de esta columna principal. */
-  justify-content: center;
-}
+/* Las clases .dashboard-main-column-target y .dashboard-sidebar-column-target
+   ya no se usan para el layout de los widgets y pueden ser eliminadas de este CSS
+   si también se eliminan del JSX. */
 
-/* Media query para apilar las columnas principales */
+
+/* Media queries para responsividad */
 @media (max-width: 1024px) {
+  /* En pantallas medianas, repeat(auto-fill, 420px) seguirá funcionando.
+     Si solo cabe una columna de 420px, justify-content: center la centrará. */
   .dashboard-widgets-grid-target {
-    grid-template-columns: 1fr; /* Columnas principales se apilan */
-    /* justify-content: initial; No es necesario aquí, afecta a los items 1fr, no al grid en sí */
+    /* Podrías considerar reducir el tamaño base de las columnas de widgets aquí si 420px es muy grande */
+    /* grid-template-columns: repeat(auto-fill, minmax(380px, 420px)); */
   }
-  /* .dashboard-main-column-target y .dashboard-sidebar-column-target 
-     (ahora apilados y con width 1fr) seguirán usando su propia lógica interna
-     de repeat(auto-fill, 420px) y justify-content: center para su contenido. */
 }
 
 @media (max-width: 768px) {
@@ -64,17 +65,23 @@
   .welcome-message {
     font-size: 0.9rem;
   }
-  .dashboard-widgets-grid-target,
-  .dashboard-main-column-target,
-  .dashboard-sidebar-column-target {
-    gap: 15px;
-  }
+  .dashboard-widgets-grid-target {
+    gap: 15px; /* Reducir gap en pantallas más pequeñas */
+    /* Para asegurar que los widgets no se vean demasiado pequeños,
+       podemos hacer que ocupen un poco más o se ajusten a 1fr antes */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    /* Con minmax y 1fr, los widgets necesitarán margin:auto si quieres que se centren si el track es > max-width del widget.
+       O quitar margin:auto del widget y que llenen el track hasta su max-width.
+       Si quieres mantener el comportamiento de tracks de 420px centrados hasta que no quepan: */
+    /* grid-template-columns: repeat(auto-fill, minmax(320px, 420px)); */ /* (Esto es más consistente con el de arriba) */
 
-  .dashboard-main-column-target,
-  .dashboard-sidebar-column-target {
-    grid-template-columns: 1fr; /* Una sola pista para los widgets */
-    justify-content: initial; /* El track 1fr ocupa todo, no necesita justificación de bloque */
-                               /* Los widgets dentro se centrarán por su propio margin:auto si se reintroduce,
-                                  o llenarán el track si margin:0. */
   }
+}
+
+@media (max-width: 480px) { 
+    .dashboard-widgets-grid-target {
+        grid-template-columns: 1fr; /* Widgets ocupan todo el ancho */
+        justify-content: initial; /* No es necesario centrar cuando es 1fr */
+        gap: 10px;
+    }
 }

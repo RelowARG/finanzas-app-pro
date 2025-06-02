@@ -32,11 +32,17 @@ const registerUser = async (req, res, next) => {
       name,
       email,
       password,
-      role: role || 'user'
-      // dashboardConfig se establecerá a null por defecto según el modelo
+      role: role || 'user',
+      // dashboardConfig se establecerá a null o el default de la BD al crear
     });
 
     if (user) {
+      const rolePermissions = await RolePermission.findAll({
+        where: { roleName: user.role },
+        include: [{ model: Permission, as: 'permissionDetail', attributes: ['name'] }]
+      });
+      const permissions = rolePermissions.map(rp => rp.permissionDetail.name);
+
       res.status(201).json({
         message: 'Usuario registrado exitosamente.',
         user: {
@@ -44,7 +50,9 @@ const registerUser = async (req, res, next) => {
           name: user.name,
           email: user.email,
           role: user.role,
-          // No incluimos dashboardConfig aquí ya que será null y se cargará/creará en el primer login o getMe
+          permissions: permissions,
+          // Devuelve una estructura inicial válida para dashboardConfig si es null
+          dashboardConfig: user.dashboardConfig || { widgetOrder: [], displayedAccountIds: [] } 
         },
         token: generateToken(user.id),
       });
@@ -69,15 +77,13 @@ const loginUser = async (req, res, next) => {
   }
 
   try {
-    // Asegurarse de que se seleccionen todos los campos necesarios, incluyendo dashboardConfig
     const user = await User.findOne({
       where: { email }
-      // attributes: por defecto trae todos si no se especifica, lo cual está bien.
     });
 
     if (user && (await user.comparePassword(password))) {
       user.lastLoginAt = new Date();
-      await user.save({ fields: ['lastLoginAt', 'updatedAt'] }); // Guardar solo los campos modificados explícitamente
+      await user.save({ fields: ['lastLoginAt', 'updatedAt'] }); 
 
       const rolePermissions = await RolePermission.findAll({
         where: { roleName: user.role },
@@ -96,7 +102,8 @@ const loginUser = async (req, res, next) => {
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
           permissions: permissions,
-          dashboardConfig: user.dashboardConfig // Incluir dashboardConfig
+          // Si dashboardConfig es null, el frontend lo inicializará, pero si existe, se envía
+          dashboardConfig: user.dashboardConfig || { widgetOrder: [], displayedAccountIds: [] } 
         },
         token: generateToken(user.id),
       });
@@ -110,12 +117,11 @@ const loginUser = async (req, res, next) => {
 };
 
 const getMe = async (req, res, next) => {
-  if (!req.user || !req.user.id) { // req.user es establecido por 'protect'
+  if (!req.user || !req.user.id) { 
       return res.status(401).json({ message: 'No autorizado, usuario no identificado en la solicitud.'})
   }
   try {
     const userFromDb = await User.findByPk(req.user.id, {
-      // Especificar atributos para asegurar que dashboardConfig se incluya
       attributes: ['id', 'name', 'email', 'role', 'createdAt', 'updatedAt', 'lastLoginAt', 'dashboardConfig']
     });
 
@@ -128,10 +134,21 @@ const getMe = async (req, res, next) => {
       include: [{ model: Permission, as: 'permissionDetail', attributes: ['name'] }]
     });
     const permissions = rolePermissions.map(rp => rp.permissionDetail.name);
+    
+    const userData = userFromDb.toJSON ? userFromDb.toJSON() : userFromDb;
+
+    // Asegurar que dashboardConfig siempre tenga la estructura esperada por el frontend
+    const currentDashboardConfig = userData.dashboardConfig || {};
+    const normalizedDashboardConfig = {
+        widgetOrder: Array.isArray(currentDashboardConfig.widgetOrder) ? currentDashboardConfig.widgetOrder : [],
+        displayedAccountIds: Array.isArray(currentDashboardConfig.displayedAccountIds) ? currentDashboardConfig.displayedAccountIds : [],
+    };
+
 
     const userResponse = {
-        ...userFromDb.toJSON(),
-        permissions
+        ...userData,
+        permissions,
+        dashboardConfig: normalizedDashboardConfig // Enviar config normalizada
     };
 
     res.status(200).json(userResponse);
@@ -149,16 +166,15 @@ const updateDashboardConfig = async (req, res, next) => {
 
   const { dashboardConfig } = req.body;
 
-  // Validación básica del objeto de configuración (ajusta según tu estructura esperada)
+  // --- VALIDACIÓN ACTUALIZADA ---
   if (!dashboardConfig || typeof dashboardConfig !== 'object' ||
-      !dashboardConfig.widgetLayout || // Asumiendo que widgetLayout es una propiedad
-      !Array.isArray(dashboardConfig.widgetLayout.left) ||
-      !Array.isArray(dashboardConfig.widgetLayout.right) ||
-      !dashboardConfig.displayedAccountIds || !Array.isArray(dashboardConfig.displayedAccountIds)
+      !dashboardConfig.hasOwnProperty('widgetOrder') || !Array.isArray(dashboardConfig.widgetOrder) ||
+      !dashboardConfig.hasOwnProperty('displayedAccountIds') || !Array.isArray(dashboardConfig.displayedAccountIds)
      ) {
     console.error('[AUTH_CTRL] Formato de dashboardConfig inválido recibido:', JSON.stringify(dashboardConfig, null, 2));
-    return res.status(400).json({ message: 'Formato de dashboardConfig inválido. Debe ser un objeto con widgetLayout (con propiedades left y right como arrays) y displayedAccountIds (como array).' });
+    return res.status(400).json({ message: 'Formato de dashboardConfig inválido. Debe ser un objeto con las propiedades "widgetOrder" (array) y "displayedAccountIds" (array).' });
   }
+  // --- FIN DE VALIDACIÓN ACTUALIZADA ---
 
   try {
     const user = await User.findByPk(req.user.id);
@@ -166,15 +182,18 @@ const updateDashboardConfig = async (req, res, next) => {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
 
-    console.log('[AUTH_CTRL] Configuración del dashboard recibida para guardar:', JSON.stringify(dashboardConfig, null, 2));
-    console.log('[AUTH_CTRL] Tipo de dato de dashboardConfig recibido:', typeof dashboardConfig);
+    console.log('[AUTH_CTRL] Configuración del dashboard RECIBIDA para guardar:', JSON.stringify(dashboardConfig, null, 2));
 
-    user.dashboardConfig = dashboardConfig;
+    // Asegurarse de que solo se guarden las propiedades esperadas y nada más.
+    const newDashboardConfig = {
+        widgetOrder: dashboardConfig.widgetOrder,
+        displayedAccountIds: dashboardConfig.displayedAccountIds
+    };
 
-    console.log('[AUTH_CTRL] Objeto usuario ANTES de save:', JSON.stringify(user.toJSON(), null, 2));
-    console.log('[AUTH_CTRL] Intentando user.save()...');
-    await user.save(); // Aquí se guardará el dashboardConfig
-    console.log('[AUTH_CTRL] user.save() exitoso.');
+    user.dashboardConfig = newDashboardConfig; // Asigna el objeto validado y limpio
+
+    await user.save({ fields: ['dashboardConfig', 'updatedAt'] }); // Especificar campos a guardar explícitamente
+    console.log('[AUTH_CTRL] user.save() exitoso. dashboardConfig guardado:', JSON.stringify(user.dashboardConfig, null, 2));
 
     res.status(200).json({
         message: 'Configuración del dashboard actualizada exitosamente.',
@@ -182,19 +201,12 @@ const updateDashboardConfig = async (req, res, next) => {
     });
   } catch (error) {
     console.error('Error actualizando dashboardConfig en auth.controller:', error);
-    console.error('Error Name:', error.name);
-    console.error('Error Message:', error.message);
-    if (error.original) {
-      console.error('Original DB Error:', error.original);
-      console.error('Original DB Error Code:', error.original.code);
-      console.error('Original DB Error Errno:', error.original.errno);
-      console.error('Original DB Error SQL State:', error.original.sqlState);
+    // ... (el resto del manejo de errores como estaba antes)
+    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+        const messages = error.errors.map(e => e.message);
+        console.error(`[AUTH_CTRL] Sequelize Error (${error.name}):`, messages);
+        return res.status(400).json({ message: 'Error de base de datos al guardar configuración.', errors: messages });
     }
-    if (error.errors) { // Errores de validación de Sequelize
-      console.error('Sequelize Validation Errors:', JSON.stringify(error.errors, null, 2));
-      return res.status(400).json({ message: 'Error de validación al guardar la configuración.', errors: error.errors.map(e => e.message) });
-    }
-    // Enviar al manejador de errores global que logueará el stack en desarrollo
     next(error);
   }
 };
