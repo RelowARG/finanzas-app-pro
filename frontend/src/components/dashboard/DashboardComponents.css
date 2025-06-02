@@ -1,7 +1,7 @@
 /* finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css */
 
 .dashboard-widget {
-  background-color: #ffffff;
+  background-color: #f8f9fa; /* Widget background (gris muy claro) */
   border-radius: 6px;
   padding: 15px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.05);
@@ -46,7 +46,7 @@
   display: flex;
   justify-content: space-between;
   align-items: stretch;
-  gap: 8px;
+  gap: 12px; /* Aumentado el gap como en la imagen de referencia */
   flex-grow: 1;
   padding: 10px 0; 
   width: 100%;
@@ -55,7 +55,7 @@
 
 .control-panel-item {
   border: 1px solid #e9ecef;
-  padding: 8px;   
+  padding: 12px; /* Aumentado el padding */  
   border-radius: 6px;
   text-align: center;
   flex: 1 1 0;
@@ -80,7 +80,7 @@
 }
 
 .control-panel-item-value {
-  font-size: 1.4rem; 
+  font-size: 1.5rem; /* Más grande como en la referencia */
   font-weight: 700;
   color: #2d3748;
   line-height: 1.1;
@@ -88,7 +88,7 @@
   word-break: break-all; 
 }
 .control-panel-item-currency {
-  font-size: 0.7rem;
+  font-size: 0.7rem; /* Más pequeño para que el valor destaque */
   color: #718096;
   margin-left: 4px;
   font-weight: 500;
@@ -139,6 +139,7 @@
   object-fit: contain;
 }
 
+/* --- Estilos para AccountSummaryCard --- */
 .accounts-summary-row {
   display: flex;
   gap: 15px;
@@ -146,142 +147,259 @@
   padding-bottom: 10px;
   overflow-x: auto;
   flex-wrap: nowrap;
-  align-items: center; /* Para alinear el botón con las tarjetas */
+  align-items: center;
+  justify-content: center; /* Centra las tarjetas si no ocupan todo el ancho */
 }
+
 .account-summary-card {
-  background-color: #ffffff;
-  border-radius: 6px;
+  border-radius: 8px; 
   padding: 15px;
-  min-width: 200px;
-  max-width: 240px;
-  height: 100px;
+  
+  min-width: 250px;
+  max-width: 280px;
+  height: 85px;     
+
   flex: 0 0 auto;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
-  border-top: 4px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.12); 
+  
+  border: none; 
+  background-color: #6c757d; /* Color de fondo por defecto */
+  color: #ffffff; /* Color de texto por defecto */
+
   display: flex;
   flex-direction: row;
   align-items: center;
   text-decoration: none;
-  color: inherit;
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, background-color 0.2s ease;
   box-sizing: border-box;
   overflow: hidden;
+  position: relative;
 }
-.account-summary-card:hover { transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.09); }
-.account-summary-card.bg-efectivo { border-top-color: #2ecc71; }
-.account-summary-card.bg-icbc { border-top-color: #e74c3c; }
-.account-summary-card.bg-uala { border-top-color: #3498db; }
-.account-card-icon { font-size: 1.6rem; margin-right: 12px; color: #555; flex-shrink: 0; }
-.account-card-main-info { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; overflow: hidden; flex-grow: 1; height: 100%;}
-.account-card-name { font-size: 0.85rem; font-weight: 600; color: #4a5568; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; line-height: 1.2; }
-.account-card-balance { font-size: 1.25rem; font-weight: 700; color: #1a202c; line-height: 1.2; white-space: nowrap; }
-.add-account-card { flex-direction: column; align-items: center; justify-content: center; text-align: center; background-color: #f8f9fa; color: #007bff; border-top-style: dashed; border-top-color: #007bff; cursor: pointer; height: 100px; min-width: 180px; }
-.add-account-card .add-account-icon { font-size: 2rem; margin-bottom: 8px; color: #007bff; }
-.add-account-card div:last-child { font-weight: 500; font-size: 0.85rem; }
-.dashboard-widget.add-card-placeholder { background-color: #f7fafc; border: 2px dashed #d3dce6; display: flex; align-items: center; justify-content: center; color: #6c757d; text-align: center; flex-grow: 0; }
-.dashboard-widget.add-card-placeholder:hover { border-color: #007bff; background-color: #e9f2ff; }
-.dashboard-widget.add-card-placeholder a { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; text-decoration: none; color: inherit; padding: 15px; }
-.dashboard-widget.add-card-placeholder div:first-child { font-size: 2.2rem; margin-bottom: 8px; line-height: 1; }
-.dashboard-widget.add-card-placeholder div:last-child { font-size: 0.9rem; font-weight: 500; }
+
+.account-summary-card:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
+}
+
+/* Asegurar que el texto dentro de la tarjeta sea blanco o claro */
+.account-summary-card .account-card-icon,
+.account-summary-card .account-card-name,
+.account-summary-card .account-card-balance {
+  color: #ffffff; 
+}
+
+.account-summary-card .account-card-icon {
+  font-size: 1.8rem; 
+  margin-right: 15px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.account-summary-card .account-card-main-info { 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: flex-start; 
+  overflow: hidden; 
+  flex-grow: 1; 
+  height: 100%;
+}
+
+.account-summary-card .account-card-name {
+  font-size: 0.85rem; 
+  font-weight: 500; 
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  line-height: 1.2;
+}
+
+.account-summary-card .account-card-balance {
+  font-size: 1.3rem; 
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Colores de fondo específicos */
+.account-summary-card.bg-efectivo {
+  background-color: #4DB6AC; /* Teal/Verde agua */
+}
+.account-summary-card.bg-icbc {
+  background-color: #E57373; /* Rojo suave */
+}
+.account-summary-card.bg-uala {
+  background-color: #64B5F6; /* Azul claro */
+}
+/* Si tienes una clase para Mercado Pago en tu getAccountCardStyle */
+.account-summary-card.bg-mercadopago {
+  background-color: #00AEEF; /* Azul Mercado Pago */
+}
+/* --- Fin Estilos para AccountSummaryCard --- */
+
+
+.dashboard-widget.add-card-placeholder { 
+  background-color: #f7fafc; 
+  border: 2px dashed #d3dce6; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  color: #6c757d; 
+  text-align: center; 
+  flex-grow: 0; 
+}
+.dashboard-widget.add-card-placeholder:hover { 
+  border-color: #007bff; 
+  background-color: #e9f2ff; 
+}
+.dashboard-widget.add-card-placeholder a { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  height: 100%; 
+  width: 100%; 
+  text-decoration: none; 
+  color: inherit; 
+  padding: 15px; 
+}
+.dashboard-widget.add-card-placeholder div:first-child { 
+  font-size: 2.2rem; 
+  margin-bottom: 8px; 
+  line-height: 1; 
+}
+.dashboard-widget.add-card-placeholder div:last-child { 
+  font-size: 0.9rem; 
+  font-weight: 500; 
+}
+
 .text-positive { color: var(--secondary-color, #2ecc71) !important; }
 .text-negative { color: var(--danger-color, #e74c3c) !important; }
-.loading-text-widget, .no-data-widget { font-size: 0.85rem; color: #718096; padding: 20px 10px; text-align: center; display: flex; align-items: center; justify-content: center; background-color: #fdfdfe; border-radius: 4px; flex-grow: 1; }
+
+.loading-text-widget, .no-data-widget { 
+  font-size: 0.85rem; 
+  color: #718096; 
+  padding: 20px 10px; 
+  text-align: center; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  background-color: #fdfdfe; 
+  border-radius: 4px; 
+  flex-grow: 1; 
+}
+
 .balance-overview-widget {}
 .balance-overview-widget .balance-total-multi-currency { margin-bottom: 12px; }
-.balance-currency-item { display: flex; justify-content: space-between; align-items: baseline; font-size: 1rem; padding: 6px 0; }
-.balance-currency-item span:first-child { font-weight: 500; color: #4a5568; font-size: 0.85em; }
-.balance-currency-item strong { font-weight: 600; font-size: 1.15em; color: #2d3748; }
-.balance-overview-note { font-size: 0.75rem; color: #718096; margin-top: 8px; text-align: left; font-style: italic; line-height: 1.4; background-color: #f7fafc; padding: 8px; border-radius: 4px; }
-.consolidated-total { border-top: 1px solid #e2e8f0; padding-top: 8px !important; margin-top: 8px; }
-.consolidated-total span:first-child { font-weight: 600 !important; font-size: 0.9em !important; }
-.consolidated-total strong { font-size: 1.25em !important; }
-.recent-transactions-widget .transactions-list { list-style: none; padding: 0; margin: 0; }
-.dashboard-transaction-item { border-bottom: 1px solid #edf2f7; }
-.dashboard-transaction-item:last-child { border-bottom: none; }
-.dashboard-transaction-link { display: flex; align-items: center; padding: 8px 2px; text-decoration: none; color: inherit; transition: background-color 0.15s ease-in-out; }
-.dashboard-transaction-link:hover { background-color: #f7fafc; }
-.dashboard-transaction-icon { font-size: 1.1rem; margin-right: 8px; min-width: 22px; text-align: center; color: #718096; }
-.dashboard-transaction-info { flex-grow: 1; overflow: hidden; }
-.dashboard-transaction-description { display: block; font-weight: 500; color: #4a5568; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dashboard-transaction-category { display: block; font-size: 0.7rem; color: #a0aec0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dashboard-transaction-details { text-align: right; min-width: 80px; margin-left: 8px; }
-.dashboard-transaction-amount { display: block; font-weight: 600; font-size: 0.9rem; }
-.dashboard-transaction-date { display: block; font-size: 0.7rem; color: #a0aec0; }
-
-.control-panel-widget .gauges-container {
-  display: flex;
+.balance-currency-item { 
+  display: flex; 
   justify-content: space-between; 
-  align-items: stretch; 
-  gap: 12px; 
-  flex-grow: 1;
-  padding: 10px 0;
-  width: 100%;
-  box-sizing: border-box;
+  align-items: baseline; 
+  font-size: 1rem; 
+  padding: 6px 0; 
 }
-
-.control-panel-item { 
-  border: 1px solid #e9ecef; 
-  padding: 12px; 
-  border-radius: 6px;
-  text-align: center;
-  flex: 1 1 0; 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between; 
-  background-color: #fff; 
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+.balance-currency-item span:first-child { 
+  font-weight: 500; 
+  color: #4a5568; 
+  font-size: 0.85em; 
 }
-
-.control-panel-item-title {
-  font-size: 0.7rem; 
-  color: #6c757d; 
-  font-weight: 600;
-  text-transform: uppercase;
-  margin-bottom: 8px; 
-}
-
-.control-panel-item-value {
-  font-size: 1.5rem; 
-  font-weight: 700;
+.balance-currency-item strong { 
+  font-weight: 600; 
+  font-size: 1.15em; 
   color: #2d3748; 
-  line-height: 1.1;
-  margin-bottom: 4px;
 }
-.control-panel-item-currency {
-  font-size: 0.7rem;
-  color: #718096;
-  margin-left: 4px;
-  font-weight: 500;
+.balance-overview-note { 
+  font-size: 0.75rem; 
+  color: #718096; 
+  margin-top: 8px; 
+  text-align: left; 
+  font-style: italic; 
+  line-height: 1.4; 
+  background-color: #f7fafc; 
+  padding: 8px; 
+  border-radius: 4px; 
+}
+.consolidated-total { 
+  border-top: 1px solid #e2e8f0; 
+  padding-top: 8px !important; 
+  margin-top: 8px; 
+}
+.consolidated-total span:first-child { 
+  font-weight: 600 !important; 
+  font-size: 0.9em !important; 
+}
+.consolidated-total strong { 
+  font-size: 1.25em !important; 
 }
 
-.control-panel-item-subvalue {
-  font-size: 0.7rem;
-  color: #a0aec0;
-  margin-bottom: 8px;
+.recent-transactions-widget .transactions-list { 
+  list-style: none; 
+  padding: 0; 
+  margin: 0; 
+}
+.dashboard-transaction-item { 
+  border-bottom: 1px solid #edf2f7; 
+}
+.dashboard-transaction-item:last-child { 
+  border-bottom: none; 
+}
+.dashboard-transaction-link { 
+  display: flex; 
+  align-items: center; 
+  padding: 8px 2px; 
+  text-decoration: none; 
+  color: inherit; 
+  transition: background-color 0.15s ease-in-out; 
+}
+.dashboard-transaction-link:hover { 
+  background-color: #f7fafc; 
+}
+.dashboard-transaction-icon { 
+  font-size: 1.1rem; 
+  margin-right: 8px; 
+  min-width: 22px; 
+  text-align: center; 
+  color: #718096; 
+}
+.dashboard-transaction-info { 
+  flex-grow: 1; 
+  overflow: hidden; 
+}
+.dashboard-transaction-description { 
+  display: block; 
+  font-weight: 500; 
+  color: #4a5568; 
+  font-size: 0.85rem; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}
+.dashboard-transaction-category { 
+  display: block; 
+  font-size: 0.7rem; 
+  color: #a0aec0; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}
+.dashboard-transaction-details { 
+  text-align: right; 
+  min-width: 80px; 
+  margin-left: 8px; 
+}
+.dashboard-transaction-amount { 
+  display: block; 
+  font-weight: 600; 
+  font-size: 0.9rem; 
+}
+.dashboard-transaction-date { 
+  display: block; 
+  font-size: 0.7rem; 
+  color: #a0aec0; 
 }
 
-.control-panel-progress-bar-container {
-  width: 80%; 
-  background-color: #e9ecef;
-  border-radius: 10px;
-  height: 10px; 
-  overflow: hidden;
-  margin-top: auto; 
-}
-
-.control-panel-progress-bar {
-  height: 100%;
-  color: white;
-  text-align: right;
-  font-size: 0.6rem; 
-  line-height: 10px;
-  font-weight: bold;
-  transition: width 0.4s ease-in-out;
-  border-radius: 10px; 
-  padding-right: 5px; 
-  box-sizing: border-box;
-}
 .balance-trend-widget .dashboard-widget-content {
     padding: 5px 10px 10px 0; 
 }
@@ -323,197 +441,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1050; /* Asegurar que esté por encima de otros elementos */
-}
-
-.dashboard-modal-content {
-  background-color: #fff;
-  padding: 25px 30px;
-  border-radius: var(--border-radius, 8px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.dashboard-modal-content h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: var(--dark-color);
-  font-size: 1.3rem;
-}
-.dashboard-modal-content p {
-  font-size: 0.9rem;
-  color: #555;
-  margin-bottom: 20px;
-}
-
-.account-selection-list {
-  overflow-y: auto;
-  margin-bottom: 20px;
-  padding-right: 10px; /* Espacio para la barra de scroll */
-  max-height: 50vh; /* Limitar altura de la lista */
-}
-
-.account-selection-item {
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-.account-selection-item:last-child {
-  border-bottom: none;
-}
-
-.account-selection-item label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-
-.account-selection-item input[type="checkbox"] {
-  margin-right: 12px;
-  transform: scale(1.2);
-  accent-color: var(--primary-color);
-}
-.account-selection-item .account-icon {
-  margin-right: 8px;
-  font-size: 1.1em;
-}
-
-.dashboard-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: auto; /* Empujar acciones al final si hay espacio */
-  padding-top: 15px;
-  border-top: 1px solid #eee;
-}
-.dashboard-modal-actions .button {
-  width: auto !important;
-  padding: 8px 18px !important;
-}
-
-.button-customize-accounts {
-  background-color: transparent !important;
-  color: var(--primary-color) !important;
-  border: 1px solid var(--primary-color) !important;
-  padding: 6px 10px !important;
-  font-size: 0.8rem !important;
-  margin-left: 10px; /* Espacio después de las tarjetas de cuenta */
-  height: 50px; /* Intentar alinear con la altura de las tarjetas */
-  align-self: center; /* Centrar verticalmente con las tarjetas */
-}
-.button-customize-accounts:hover {
-  background-color: rgba(var(--primary-rgb), 0.05) !important;
-}
-.accounts-summary-row {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-  padding-bottom: 10px;
-  overflow-x: auto;
-  flex-wrap: nowrap;
-  align-items: center; 
-}
-.account-summary-card {
-  background-color: #ffffff;
-  border-radius: 6px;
-  padding: 15px;
-  min-width: 200px;
-  max-width: 240px;
-  height: 100px;
-  flex: 0 0 auto;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
-  border-top: 4px solid #ccc;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  text-decoration: none;
-  color: inherit;
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-  box-sizing: border-box;
-  overflow: hidden;
-  position: relative; /* Para posicionar el botón de personalizar si es necesario */
-}
-.account-summary-card:hover { transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.09); }
-.account-summary-card.bg-efectivo { border-top-color: #2ecc71; }
-.account-summary-card.bg-icbc { border-top-color: #e74c3c; }
-.account-summary-card.bg-uala { border-top-color: #3498db; }
-.account-card-icon { font-size: 1.6rem; margin-right: 12px; color: #555; flex-shrink: 0; }
-.account-card-main-info { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; overflow: hidden; flex-grow: 1; height: 100%;}
-.account-card-name { font-size: 0.85rem; font-weight: 600; color: #4a5568; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; line-height: 1.2; }
-.account-card-balance { font-size: 1.25rem; font-weight: 700; color: #1a202c; line-height: 1.2; white-space: nowrap; }
-
-/* Estilos para el contenedor del placeholder de "Añadir Cuenta" y "Personalizar" */
-.add-account-card-container {
-  display: flex; /* Para alinear el link y el botón */
-  flex-direction: column; /* Apilarlos verticalmente si es necesario, o row */
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  background-color: #f8f9fa;
-  color: #007bff;
-  border: 2px dashed #007bff !important; /* Borde discontinuo */
-  border-top: 2px dashed #007bff !important; /* Sobrescribir el border-top */
-  cursor: default; /* El contenedor no es clickeable, los elementos internos sí */
-  min-width: 180px; /* Ancho mínimo */
-  height: 100px; /* Misma altura que las otras tarjetas */
-  padding: 10px; /* Padding interno */
-  box-sizing: border-box;
-  position: relative; /* Para el botón de personalizar si se posiciona absoluto */
-}
-
-.add-account-card-link {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  color: inherit;
-  width: 100%;
-  flex-grow: 1; /* Ocupa el espacio disponible */
-}
-
-.add-account-icon { 
-  font-size: 1.8rem; /* Un poco más pequeño */
-  margin-bottom: 5px; 
-  color: #007bff; 
-}
-.add-account-card-container div:not(.add-account-icon) { /* Para el texto "Añadir cuenta" */
-  font-weight: 500; 
-  font-size: 0.8rem; 
-}
-
-.button-customize-placeholder {
-  background-color: transparent !important;
-  color: var(--primary-color) !important;
-  border: 1px solid var(--primary-color) !important;
-  padding: 4px 8px !important;
-  font-size: 0.75rem !important;
-  margin-top: 8px; /* Espacio sobre el botón */
-  line-height: 1; /* Para que el emoji se vea bien */
-}
-.button-customize-placeholder:hover {
-  background-color: rgba(var(--primary-rgb), 0.05) !important;
-}
-
-
-/* ... (resto de los estilos de DashboardComponents.css) ... */
-
-/* Estilos para el Modal de Selección de Cuentas (ya los tenías, los mantengo) */
-.dashboard-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1050;
+  z-index: 1050; 
 }
 
 .dashboard-modal-content {
@@ -583,26 +511,28 @@
 .dashboard-modal-actions .button {
   width: auto !important;
   padding: 8px 18px !important;
-}/* Estilos para el contenedor del placeholder de "Añadir Cuenta" y "Personalizar" */
+}
+
+/* Estilos para el contenedor del placeholder de "Añadir Cuenta" y "Personalizar" */
 .add-account-card-container {
   display: flex; 
   flex-direction: column; 
   align-items: center;
-  justify-content: center; /* Centrar contenido verticalmente */
+  justify-content: center; 
   text-align: center;
   background-color: #f8f9fa;
   color: #007bff;
   border: 2px dashed #007bff !important; 
-  border-top: 2px dashed #007bff !important; 
+  /* border-top: 2px dashed #007bff !important; No es necesario si ya es dashed general */
   cursor: default; 
-  min-width: 180px; /* Ajustar si es necesario */
-  max-width: 240px; /* Consistente con otras tarjetas */
-  height: 100px; 
+  min-width: 180px; 
+  max-width: 240px; 
+  height: 100px; /* Ajustado para que coincida más con la altura de las tarjetas de cuenta reales si se reduce */
   padding: 10px; 
   box-sizing: border-box;
   position: relative; 
-  border-radius: 6px; /* Añadir borde redondeado */
-  flex: 0 0 auto; /* Para que se comporte como las otras tarjetas en la fila */
+  border-radius: 8px; /* Consistente con las tarjetas de cuenta */
+  flex: 0 0 auto; 
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
 }
 .add-account-card-container:hover { 
@@ -615,12 +545,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* Centrar el contenido del link */
+  justify-content: center; 
   text-decoration: none;
   color: inherit;
   width: 100%;
-  /* flex-grow: 1; No es necesario si el botón está debajo */
-  margin-bottom: 5px; /* Espacio antes del botón de personalizar */
+  margin-bottom: 5px; 
 }
 
 .add-account-icon { 
@@ -637,13 +566,13 @@
   background-color: transparent !important;
   color: var(--primary-color) !important;
   border: 1px solid var(--primary-color) !important;
-  padding: 5px 10px !important; /* Ajustar padding */
+  padding: 5px 10px !important; 
   font-size: 0.75rem !important;
-  margin-top: auto; /* Empujar al fondo si hay espacio */
+  margin-top: auto; 
   line-height: 1.2; 
   border-radius: var(--border-radius) !important;
-  width: auto !important; /* No ocupar todo el ancho */
-  white-space: nowrap; /* Evitar que el texto se parta */
+  width: auto !important; 
+  white-space: nowrap; 
 }
 .button-customize-placeholder:hover {
   background-color: rgba(var(--primary-rgb), 0.05) !important;
