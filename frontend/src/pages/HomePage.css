@@ -1,355 +1,68 @@
 /* Ruta: finanzas-app-pro/frontend/src/pages/HomePage.css */
 .homepage-layout {
   display: flex;
-  /* HomePage ocupará toda la altura del viewport porque Layout no añade padding cuando showChrome es false */
-  height: 100vh;
+  height: 100vh; /* Mantiene la altura completa del viewport */
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* Fuente más moderna */
-}
-
-.homepage-left-panel {
-  flex-basis: 50%; /* Darle un poco más de espacio al panel izquierdo (ahora 50%) */
-  /* OPCIÓN 1: Usar el degradado que me pasaste */
-  background-image: linear-gradient(0deg,#059b82,#16c98c 33.8542%,#16ca8c 52.6042%,#059b82);
-  /* OPCIÓN 2: Usar un color sólido (descomenta la línea de abajo y comenta la de arriba si prefieres un sólido) */
-  /* background-color: #16c98c; */ /* Ejemplo de color sólido, elije el que más te guste del degradado */
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center; /* Centrar el contenido */
-  padding: 50px 40px; /* Más padding */
-  text-align: center; /* Centrar el texto */
-  box-sizing: border-box;
-  position: relative; /* Para el branding absoluto si es necesario */
-}
-
-.hero-content {
-  max-width: 550px; /* Limitar el ancho del contenido para mejor lectura */
-}
-
-.hero-content h1 {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.5px;
-}
-
-.hero-subtitle {
-  font-size: 1.1rem;
-  margin-bottom: 25px;
-  line-height: 1.6;
-  opacity: 0.95;
-  max-width: 480px;
-}
-
-.learn-more-link {
-  color: white;
-  text-decoration: none;
-  font-weight: 600;
-  display: inline-block;
-  margin-bottom: 35px;
-  padding: 10px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 25px;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-.learn-more-link:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-color: white;
-}
-
-.hero-image-container {
-  margin-bottom: 35px;
-  max-width: 450px;
-  width: 80%;
-}
-
-.hero-image {
-  max-width: 100%;
-  height: auto;
-  border-radius: 12px;
-}
-
-.app-branding {
-  position: absolute;
-  bottom: 40px;
-  left: 40px;
-  display: flex;
-  align-items: center;
-}
-
-.app-brand-icon {
-  font-size: 2rem;
-  margin-right: 10px;
-}
-
-.app-brand-name {
-  font-size: 1.4rem;
-  font-weight: 600;
-}
-
-.homepage-right-panel {
-  flex-basis: 50%; /* Changed from 42% */
-  background-color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 50px 40px;
-  color: #333;
-  box-sizing: border-box;
-}
-
-.login-form-container-home {
-  width: 100%;
-  max-width: 360px;
-  text-align: left;
-}
-
-.login-form-container-home h2 {
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin-bottom: 30px;
-  color: #333;
-  text-align: center;
-}
-
-.login-form-container-home .button.button-primary {
-  /* El color de fondo debería coincidir con el color principal de tu app o un color de acción fuerte */
-  /* Si usaste el degradado en el panel izquierdo, elige un color sólido complementario aquí */
-  background-color: var(--primary-color, #007bff) !important; /* Ejemplo: azul primario */
-  border-color: var(--primary-color, #007bff) !important;
-  color: white !important;
-  font-weight: 600;
-  text-transform: none;
-  border-radius: 6px;
-  padding: 14px 20px !important;
-}
-.login-form-container-home .button.button-primary:hover {
-  background-color: #0056b3 !important; /* Un azul más oscuro para el hover */
-  border-color: #0056b3 !important;
-}
-
-
-.or-separator {
-  margin: 25px 0;
-  color: #c0c0c0;
-  display: flex;
-  align-items: center;
-  text-align: center;
-  font-size: 0.8rem;
-}
-.or-separator::before,
-.or-separator::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #e7e7e7;
-}
-.or-separator span {
-  padding: 0 15px;
-}
-
-.social-login-buttons {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-}
-
-.button-social {
-  flex-grow: 1;
-  padding: 12px 15px !important;
-  font-size: 0.95rem !important;
-  border: 1px solid #e0e0e0 !important;
-  background-color: #fff !important;
-  color: #444 !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border-radius: 6px !important;
-  font-weight: 500;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-.button-social:hover {
-  background-color: #f7f7f7 !important;
-  border-color: #d0d0d0 !important;
-}
-.button-social:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.signup-link-home {
-  font-size: 0.9rem;
-  color: #555;
-  text-align: center;
-}
-.signup-link-home a {
-  color: var(--primary-color, #007bff); /* O el color que uses para enlaces */
-  font-weight: 600;
-  text-decoration: none;
-}
-.signup-link-home a:hover {
-  text-decoration: underline;
-}
-
-.homepage-footer-text {
-  font-size: 0.8rem;
-  color: #999;
-  margin-top: auto;
-  padding-top: 30px;
-  max-width: 380px;
-  text-align: center;
-}
-.homepage-footer-text a {
-  color: #777;
-  text-decoration: none;
-}
-.homepage-footer-text a:hover {
-  text-decoration: underline;
-}
-
-/* Estilos para los campos de input si los añades directamente a HomePage.jsx */
-.login-form-container-home .form-group-home {
-  margin-bottom: 18px;
-}
-.login-form-container-home .form-group-home label {
-  display: block;
-  font-size: 0.85rem;
-  color: #555;
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-.login-form-container-home .form-group-home input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-sizing: border-box;
-  font-size: 0.95rem;
-}
-.login-form-container-home .form-group-home input:focus {
-  border-color: var(--primary-color, #007bff);
-  box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb, 0, 123, 255), 0.20);
-  outline: none;
-}
-.forgot-password-link {
-  display: block;
-  text-align: right;
-  font-size: 0.85rem;
-  color: var(--primary-color, #007bff);
-  text-decoration: none;
-  margin-top: -12px;
-  margin-bottom: 25px;
-}
-.forgot-password-link:hover {
-  text-decoration: underline;
-}
-
-.loading-auth-home {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-size: 1.2rem;
-  color: #777;
-}
-
-@media (max-width: 900px) {
-  .homepage-layout {
-    flex-direction: column;
-    height: auto;
-    min-height: 100vh;
-    overflow-y: auto;
-  }
-  .homepage-left-panel,
-  .homepage-right-panel {
-    flex-basis: auto; /* Panels stack, so flex-basis: auto is fine here */
-    padding: 40px 25px;
-    min-height: auto;
-  }
-  .hero-content h1 {
-    font-size: 2.2rem;
-  }
-  .app-branding {
-    position: static;
-    margin-top: 30px;
-    padding-top: 0;
-  }
-   .homepage-footer-text {
-     position: static;
-     margin-top: 30px;
-     padding-top: 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-content h1 {
-    font-size: 2rem;
-  }
-  .hero-subtitle {
-    font-size: 1rem;
-  }
-  .login-form-container-home .button.button-primary,
-  .button-social {
-    font-size: 0.9rem !important;
-    padding: 12px 15px !important;
-  }
-}
-.homepage-layout {
-  display: flex;
-  height: 100vh;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+  overflow: hidden; /* Evita el scroll en el layout principal */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 .homepage-left-panel, .homepage-right-panel {
-  display: flex; /* Habilitar flexbox para centrar contenido */
-  flex-direction: column; /* Apilar elementos internos verticalmente */
-  justify-content: center; /* Centrar contenido verticalmente */
-  align-items: center; /* Centrar contenido horizontalmente */
-  padding: 50px 40px;
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
+  padding: 40px; /* Reducir padding vertical si es necesario */
   box-sizing: border-box;
-  overflow-y: auto; /* Permitir scroll interno si el contenido es muy alto */
-  flex-basis: 50%; /* <<<--- Paneles al 50% (This sets both to 50% by default) */
+  overflow-y: auto; /* Permitir scroll SOLO si el contenido interno es realmente más alto que el panel */
+  flex-basis: 50%;
+  height: 100vh; /* Asegurar que los paneles ocupen la altura del viewport */
 }
 
 .homepage-left-panel {
-  flex-basis: 50%; /* Changed from 58% to ensure it's 50% */
   background-image: linear-gradient(0deg,#059b82,#16c98c 33.8542%,#16ca8c 52.6042%,#059b82);
   color: white;
   text-align: center;
   position: relative;
+  /* Quitar overflow-y: auto; de aquí si ya está en la regla de arriba o si no se quiere scroll NUNCA */
+  /* overflow-y: auto; */ /* <<< ELIMINAR o comentar esta línea si quieres evitar el scroll aquí específicamente */
 }
+
+.homepage-left-panel .panel-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; 
+  align-items: center;
+  flex-grow: 1; 
+  width: 100%;
+  max-height: 100%; /* Asegurar que el wrapper no exceda la altura del panel */
+  overflow-y: hidden; /* << AÑADIDO: Evitar que el wrapper interno genere su propio scroll si el panel ya lo tiene */
+  padding-bottom: 70px; /* Espacio para el branding si está absoluto abajo */
+}
+
 
 .hero-content {
   max-width: 550px;
-  width: 100%; /* Para que ocupe el ancho disponible y permita centrar */
+  width: 100%; 
 }
 
 .hero-content h1 {
-  font-size: 3rem;
-  margin-bottom: 20px;
+  font-size: 2.8rem; /* Ligeramente reducido para pantallas más pequeñas o contenido denso */
+  margin-bottom: 15px; /* Reducido */
   font-weight: 700;
   line-height: 1.2;
 }
 
 .hero-subtitle {
-  font-size: 1.1rem;
-  margin-bottom: 25px;
+  font-size: 1.05rem; /* Ligeramente reducido */
+  margin-bottom: 20px; /* Reducido */
   line-height: 1.6;
   opacity: 0.95;
   max-width: 480px;
-  margin-left: auto; /* Para centrar si el max-width es menor que el contenedor */
-  margin-right: auto; /* Para centrar si el max-width es menor que el contenedor */
+  margin-left: auto; 
+  margin-right: auto; 
 }
 
 .learn-more-link {
@@ -357,8 +70,8 @@
   text-decoration: none;
   font-weight: 600;
   display: inline-block;
-  margin-bottom: 35px;
-  padding: 10px 20px;
+  margin-bottom: 25px; /* Reducido */
+  padding: 8px 18px; /* Reducido */
   border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 25px;
   transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -369,10 +82,10 @@
 }
 
 .hero-image-container {
-  margin-top: 20px; /* Espacio sobre la imagen */
-  margin-bottom: 35px;
-  max-width: 450px;
-  width: 80%;
+  margin-top: 15px; 
+  margin-bottom: 25px; /* Reducido */
+  max-width: 400px; /* Ligeramente reducido */
+  width: 75%; /* Ligeramente reducido */
   margin-left: auto;
   margin-right: auto;
 }
@@ -383,50 +96,79 @@
   border-radius: 12px;
 }
 
+.hero-image-caption {
+  font-size: 0.85rem; /* Reducido */
+  color: rgba(255, 255, 255, 0.8); 
+  margin-top: 8px; 
+  font-style: italic;
+}
+
+.cafecito-button-container {
+  margin-top: 20px; 
+  margin-bottom: 15px; 
+}
+
+.cafecito-button-container img {
+  max-width: 180px; /* Reducido */
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease-out;
+}
+
+.cafecito-button-container img:hover {
+  transform: scale(1.03); 
+}
+
+
 .app-branding {
-  /* Se mantiene abajo y a la izquierda si position: absolute; está en .homepage-left-panel */
-  /* Si no, esto lo centraría si .homepage-left-panel es flex y align-items:center */
-   margin-top: auto; /* Esto empuja el branding hacia abajo si no es position:absolute */
-   padding-top: 20px;
+  /* Si está posicionado absolutamente, asegurarse que el padding del .panel-content-wrapper lo acomode */
+  position: absolute;
+  bottom: 20px; /* Reducir si es necesario */
+  left: 50%;
+  transform: translateX(-50%); /* Centrar el branding */
+  display: flex;
+  align-items: center;
+  padding-top: 10px; 
+  width: auto; /* Ajustar al contenido */
+  text-align: center;
 }
 
 .app-brand-icon {
-  font-size: 2rem;
-  margin-right: 10px;
+  font-size: 1.5rem; /* Reducido */
+  margin-right: 8px;
 }
 
 .app-brand-name {
-  font-size: 1.4rem;
+  font-size: 1.2rem; /* Reducido */
   font-weight: 600;
 }
 
 
 .homepage-right-panel {
-  flex-basis: 50%; /* Changed from 42% to ensure it's 50% */
   background-color: #ffffff;
   color: #333;
+  /* overflow-y: auto; ya está arriba */
 }
 
 .login-form-container-home {
   width: 100%;
-  max-width: 380px; /* Un poco más de ancho para el form */
-  padding: 20px; /* Padding interno si es necesario */
+  max-width: 380px; 
+  padding: 20px; 
   box-sizing: border-box;
-  /* El centrado vertical lo hará el flex del panel padre */
 }
 
 .login-form-container-home h2 {
   font-size: 1.8rem;
   font-weight: 600;
-  margin-bottom: 25px; /* Reducido un poco */
+  margin-bottom: 25px; 
   color: #333;
   text-align: center;
 }
 
-/* Estilos para los campos de input (form-group-home) */
 .login-form-container-home .form-group-home {
   margin-bottom: 18px;
-  text-align: left; /* Para que las labels estén a la izquierda */
+  text-align: left; 
 }
 .login-form-container-home .form-group-home label {
   display: block;
@@ -457,8 +199,8 @@
   text-transform: none;
   border-radius: 6px;
   padding: 14px 20px !important;
-  width: 100% !important; /* Asegurar ancho completo para el botón de login */
-  margin-top: 10px; /* Espacio sobre el botón de login */
+  width: 100% !important; 
+  margin-top: 10px; 
 }
 .login-form-container-home .button.button-primary:hover {
   background-color: #0056b3 !important;
@@ -467,7 +209,7 @@
 
 
 .or-separator {
-  margin: 20px 0; /* Reducido un poco */
+  margin: 20px 0; 
   color: #c0c0c0;
   display: flex;
   align-items: center;
@@ -518,7 +260,7 @@
   font-size: 0.9rem;
   color: #555;
   text-align: center;
-  margin-top: 15px; /* Espacio sobre este enlace */
+  margin-top: 15px; 
 }
 .signup-link-home a {
   color: var(--primary-color, #007bff);
@@ -532,8 +274,8 @@
 .homepage-footer-text {
   font-size: 0.8rem;
   color: #999;
-  margin-top: 30px; /* Espacio entre el form y el footer del panel derecho */
-  width: 100%; /* Para que ocupe el ancho del .login-form-container-home */
+  margin-top: 30px; 
+  width: 100%; 
   max-width: 380px;
   text-align: center;
 }
@@ -554,7 +296,7 @@
   color: #777;
 }
 
-.error-message.small-error { /* Para el error dentro del formulario de login */
+.error-message.small-error { 
     font-size: 0.85rem;
     padding: 8px;
     margin-bottom: 10px;
@@ -565,40 +307,48 @@
 @media (max-width: 900px) {
   .homepage-layout {
     flex-direction: column;
-    height: auto;
-    min-height: 100vh;
-    overflow-y: auto;
+    height: auto; /* Permitir que la altura se ajuste al contenido */
+    min-height: 100vh; /* Asegurar que al menos ocupe el viewport */
+    overflow-y: auto; /* Permitir scroll general si el contenido total es muy alto */
+    overflow-x: hidden;
   }
   .homepage-left-panel,
   .homepage-right-panel {
-    flex-basis: auto; /* Panels stack, so flex-basis: auto is fine here */
-    padding: 40px 25px;
-    min-height: auto; /* Ajustar min-height en móviles, el justify-content:center ayudará */
-    /* Quitar el overflow-y: auto; de los paneles hijos si el padre .homepage-layout ya lo tiene */
+    flex-basis: auto; 
+    height: auto; /* La altura se ajustará al contenido */
+    min-height: 50vh; /* Una altura mínima para cada panel en móvil */
+    padding: 30px 20px; /* Menos padding en móvil */
+    overflow-y: visible; /* Quitar scroll interno de los paneles, el general lo maneja */
+  }
+  .homepage-left-panel .panel-content-wrapper {
+     padding-bottom: 60px; /* Más espacio si el branding es absoluto y no fijo */
   }
   .hero-content h1 {
-    font-size: 2.2rem;
+    font-size: 2rem; /* Reducido para móvil */
   }
   .app-branding {
-    position: static;
-    margin-top: 30px;
-    padding-top: 0;
+    position: relative; /* Cambiar a relativo para que fluya con el contenido */
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin-top: 20px; /* Espacio sobre el branding */
+    width: 100%;
+    text-align: center;
   }
    .homepage-footer-text {
-     /* position: static; No es necesario, ya que .homepage-right-panel es flex direction column */
-     margin-top: 30px; /* Asegurar espacio si el contenido del form es corto */
+     margin-top: 20px; 
   }
   .login-form-container-home {
-    padding: 10px 0; /* Reducir padding del contenedor del form en móviles */
+    padding: 10px 0; 
   }
 }
 
 @media (max-width: 480px) {
   .hero-content h1 {
-    font-size: 2rem;
+    font-size: 1.8rem; /* Aún más pequeño */
   }
   .hero-subtitle {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
   .login-form-container-home .button.button-primary,
   .button-social {
@@ -606,88 +356,6 @@
     padding: 12px 15px !important;
   }
   .social-login-buttons {
-    flex-direction: column; /* Botones sociales uno debajo del otro */
-  }
-}/* Estilos para el texto "Finanzas App Pro en acción" debajo de la imagen */
-.hero-image-caption {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8); /* Color claro pero no totalmente blanco */
-  margin-top: 10px; /* Espacio entre la imagen y este texto */
-  font-style: italic;
-}
-
-/* Contenedor para el botón de Cafecito */
-.cafecito-button-container {
-  margin-top: 25px; /* Espacio sobre el botón de Cafecito */
-  margin-bottom: 20px; /* Espacio debajo del botón, antes del branding de la app si está al final */
-  text-align: center; /* Asegura que el botón (que es una imagen dentro de un 'a') se centre */
-}
-
-.cafecito-button-container img {
-  /* La imagen de Cafecito ya tiene un tamaño definido, 
-     pero podrías querer controlar su ancho máximo si es necesario */
-  max-width: 200px; /* o el ancho que consideres apropiado */
-  height: auto;
-  border-radius: 8px; /* Un pequeño redondeo para suavizar */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Sombra sutil */
-  transition: transform 0.2s ease-out;
-}
-
-.cafecito-button-container img:hover {
-  transform: scale(1.03); /* Ligero zoom al pasar el mouse */
-}
-
-/* Ajuste para el panel izquierdo si el contenido se vuelve muy largo */
-.homepage-left-panel .panel-content-wrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* Intenta centrar el contenido principal */
-  align-items: center;
-  flex-grow: 1; /* Permite que este wrapper crezca */
-  width: 100%;
-}
-
-/* Asegurar que el branding quede abajo */
-.homepage-left-panel {
-  /* ... (tus estilos existentes para .homepage-left-panel) ... */
-  display: flex; /* Asegurar que el panel izquierdo sea flex */
-  flex-direction: column; /* Para apilar .panel-content-wrapper y .app-branding */
-}
-
-.app-branding {
-  /* ... (tus estilos existentes para .app-branding) ... */
-  margin-top: auto; /* Empuja el branding hacia abajo */
-  padding-top: 20px; /* Un poco de espacio sobre el branding */
-  width: 100%; /* Para que el text-align:center funcione si lo usaras */
-  text-align: center; /* Centrar el branding si el panel es más ancho */
-}
-/* Si el branding debe estar a la izquierda inferior, descomenta y ajusta esto:
-.app-branding {
-  position: absolute;
-  bottom: 40px;
-  left: 40px;
-}
-*/
-
-
-/* Ajuste para la imagen del héroe y su caption */
-.hero-image-container {
-  margin-top: 20px; 
-  margin-bottom: 15px; /* Reducir el margen inferior si el botón de cafecito va después */
-  max-width: 450px;
-  width: 80%;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Modificaciones para la responsividad si es necesario */
-@media (max-width: 900px) {
-  .app-branding {
-    position: static; /* Quitar posicionamiento absoluto en pantallas pequeñas */
-    margin-top: 30px;
-    text-align: center; /* Centrarlo */
-  }
-  .cafecito-button-container {
-    margin-top: 20px;
+    flex-direction: column; 
   }
 }
