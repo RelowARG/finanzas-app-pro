@@ -1,67 +1,112 @@
 // Ruta: finanzas-app-pro/backend/services/dashboard.service.js
 const db = require('../models');
-const { Op, Sequelize } = require('sequelize');
+const { Op, Sequelize, literal } = require('sequelize');
 
-// Helper para obtener el rango de fechas de un mes
-const getMonthDateRange = (date = new Date()) => {
-  const year = date.getFullYear();
-  const month = date.getMonth(); // 0-11
-  const firstDay = new Date(Date.UTC(year, month, 1)); // Usar UTC para evitar problemas de timezone al construir
-  const lastDay = new Date(Date.UTC(year, month + 1, 0)); // Último día del mes también en UTC
-  
-  const formatDateString = (d) => {
-    // Formatear a YYYY-MM-DD sin depender de la zona horaria local del servidor para el string
+// --- HELPER FUNCTIONS ---
+
+const getMonthDateRange = (date = new Date(), monthsOffset = 0) => {
+  const d = new Date(date);
+  d.setUTCMonth(d.getUTCMonth() + monthsOffset); // Aplicar offset para meses anteriores/posteriores
+
+  const year = d.getUTCFullYear();
+  const month = d.getUTCMonth();
+  const firstDay = new Date(Date.UTC(year, month, 1));
+  const lastDay = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));
+
+  const formatDateString = (dt) => {
     const pad = (num) => (num < 10 ? '0' : '') + num;
-    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+    return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())}`;
   };
 
   return {
     dateFrom: formatDateString(firstDay),
     dateTo: formatDateString(lastDay),
     monthName: firstDay.toLocaleString('es-AR', { month: 'long', timeZone: 'UTC' }),
-    year: year, // Año de la fecha base
-    monthNumber: month + 1 // Mes (1-12) de la fecha base
+    year: year,
+    monthNumber: month + 1
   };
 };
 
-// Helper para obtener tasas de cambio para un conjunto de transacciones
-const getRatesForTransactions = async (userId, transactions) => {
-    if (!transactions || transactions.length === 0) return {};
-    const dateRateMap = {};
-    const uniqueMonthYears = new Set();
-    transactions.forEach(tx => {
-        if (tx.currency === 'USD') {
-            const dateParts = tx.date.split('-'); // Asumiendo formato YYYY-MM-DD
-            if (dateParts.length === 3) {
-                const year = parseInt(dateParts[0]);
-                const month = parseInt(dateParts[1]);
-                uniqueMonthYears.add(`${year}-${month}`);
-            }
-        }
+// Refinado para ser más genérico: items es un array de { date, currency }
+const getRatesForItems = async (userId, items, targetCurrency = 'ARS') => {
+  if (!items || items.length === 0) return { rates: {}, notes: [] };
+  
+  const rateMap = {}; // 'YYYY-M-CUR': rate
+  const uniqueRateLookups = new Set();
+  let notes = [];
+
+  items.forEach(item => {
+    if (item.currency && item.currency !== targetCurrency) {
+      try {
+        const itemDate = new Date(item.date + 'T00:00:00Z'); // Asegurar UTC para parseo de fecha
+        const year = itemDate.getUTCFullYear();
+        const month = itemDate.getUTCMonth() + 1;
+        uniqueRateLookups.add(`${year}-${month}-${item.currency}`);
+      } catch (e) {
+        console.warn(`[getRatesForItems] Invalid date for item: ${item.date}`);
+      }
+    }
+  });
+
+  if (uniqueRateLookups.size === 0) return { rates: {}, notes: [] };
+
+  const ratePromises = Array.from(uniqueRateLookups).map(async (lookupKey) => {
+    const [year, month, fromCurrency] = lookupKey.split('-');
+    const numYear = parseInt(year);
+    const numMonth = parseInt(month);
+
+    if (rateMap[lookupKey]) return; // Ya procesado o en proceso
+
+    const rateEntry = await db.ExchangeRate.findOne({
+      where: { userId, year: numYear, month: numMonth, fromCurrency, toCurrency: targetCurrency }
     });
 
-    if (uniqueMonthYears.size === 0) return {};
+    if (rateEntry) {
+      rateMap[lookupKey] = parseFloat(rateEntry.rate);
+    } else {
+      rateMap[lookupKey] = null; // Marcar como no encontrada
+      const noteMsg = `No se encontró tasa de cambio para ${fromCurrency} a ${targetCurrency} en ${numMonth}/${numYear}.`;
+      if (!notes.includes(noteMsg)) notes.push(noteMsg);
+    }
+  });
+  await Promise.all(ratePromises);
+  return { rates: rateMap, notes };
+};
 
-    const ratePromises = Array.from(uniqueMonthYears).map(async (yearMonth) => {
-        const [year, month] = yearMonth.split('-').map(Number);
-        if (dateRateMap[yearMonth]) return;
+// Refinado para usar el mapa de tasas y la fecha del item
+const convertItemAmount = (amount, currency, dateStr, ratesMap, targetCurrency = 'ARS', notesSet) => {
+  const originalAmount = parseFloat(amount);
+  if (currency === targetCurrency) return originalAmount;
+  if (isNaN(originalAmount)) return 0; // Si el monto no es válido, tratar como 0
 
-        const rateEntry = await db.ExchangeRate.findOne({
-            where: { userId, year, month, fromCurrency: 'USD', toCurrency: 'ARS' }
-        });
-        if (rateEntry) {
-            dateRateMap[yearMonth] = parseFloat(rateEntry.rate);
-        } else {
-            dateRateMap[yearMonth] = null;
-            console.warn(`[DashboardService Helpers] No exchange rate for USD to ARS for ${month}/${year} for user ${userId}`);
-        }
-    });
-    await Promise.all(ratePromises);
-    return dateRateMap;
+  try {
+    const itemDate = new Date(dateStr + 'T00:00:00Z');
+    const year = itemDate.getUTCFullYear();
+    const month = itemDate.getUTCMonth() + 1;
+    const rateKey = `${year}-${month}-${currency}`;
+    const rate = ratesMap[rateKey];
+
+    if (rate !== null && rate !== undefined) {
+      return originalAmount * rate;
+    } else {
+      // La nota ya se añadió en getRatesForItems
+      return null; // Indica que la conversión no fue posible
+    }
+  } catch (e) {
+    notesSet.add(`Error al procesar fecha '${dateStr}' para conversión de ${currency}.`);
+    return null;
+  }
 };
 
 
+// --- FUNCIONES EXISTENTES DEL DASHBOARD ---
+// (getDashboardSummary, getMonthlySpendingByCategory, etc., como estaban antes, 
+//  pero pueden ser actualizadas para usar los nuevos getRatesForItems y convertItemAmount si es necesario)
+// ... (Tu código existente para las otras funciones del dashboard service) ...
+// ... (Asegúrate de que las funciones existentes como getDashboardSummary, etc., estén aquí)
+
 const getDashboardSummary = async (userId) => {
+  // ... (código existente)
   console.log('[DEBUG] Backend Service: Entering getDashboardSummary for userId:', userId);
   try {
     const accounts = await db.Account.findAll({ 
@@ -89,7 +134,7 @@ const getDashboardSummary = async (userId) => {
       });
     }
 
-    const { year, monthNumber } = getMonthDateRange(new Date()); // Usar fecha actual para la tasa
+    const { year, monthNumber } = getMonthDateRange(new Date()); 
     const exchangeRateEntry = await db.ExchangeRate.findOne({
       where: { userId, year, month: monthNumber, fromCurrency: 'USD', toCurrency: 'ARS' }
     });
@@ -104,7 +149,7 @@ const getDashboardSummary = async (userId) => {
       console.warn(`[DashboardService Backend] No exchange rate found for USD to ARS for ${monthNumber}/${year} for user ${userId}. USD balance not converted for summary.`);
     }
     
-    const finalConsolidatedValue = (hasARS || (hasUSD && conversionRateUsed)) ? totalBalanceARSConverted : (hasARS ? totalBalanceARS : (hasUSD ? null : 0) ); // Ajuste para devolver 0 si no hay nada
+    const finalConsolidatedValue = (hasARS || (hasUSD && conversionRateUsed)) ? totalBalanceARSConverted : (hasARS ? totalBalanceARS : (hasUSD ? null : 0) ); 
         
     return {
       balances: { 
@@ -127,6 +172,7 @@ const getDashboardSummary = async (userId) => {
 };
 
 const getMonthlySpendingByCategory = async (userId, filters = {}) => {
+  // ... (código existente)
   console.log('[DashboardService Backend] Fetching MonthlySpendingByCategory for userId:', userId, 'Filters:', filters);
   try {
     const currentMonthRange = getMonthDateRange(filters.dateFrom ? new Date(filters.dateFrom + 'T00:00:00Z') : new Date()); 
@@ -155,35 +201,27 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
       };
     }
     
-    let rates = {};
-    let conversionNotes = [];
-    if (targetCurrency === 'ARS' && transactions.some(tx => tx.currency === 'USD')) {
-        rates = await getRatesForTransactions(userId, transactions);
-    }
+    const { rates: expenseRates, notes: expenseConversionNotes } = await getRatesForItems(userId, transactions, targetCurrency);
+    let conversionNotes = [...expenseConversionNotes];
 
     const expensesMap = new Map();
     for (const tx of transactions) {
-      let amountInTargetCurrency = parseFloat(tx.amount); // El monto ya es negativo para egresos
-      if (tx.currency !== targetCurrency && tx.currency === 'USD' && targetCurrency === 'ARS') {
-        const txDateParts = tx.date.split('-');
-        const yearMonthKey = `${parseInt(txDateParts[0])}-${parseInt(txDateParts[1])}`;
-        const rate = rates[yearMonthKey];
-        if (rate) {
-          amountInTargetCurrency = amountInTargetCurrency * rate;
-        } else {
-          conversionNotes.push(`Transacción ${tx.id} (${tx.description}) en USD no convertida a ARS por falta de tasa para ${parseInt(txDateParts[1])}/${parseInt(txDateParts[0])}.`);
-          continue; // Omitir esta transacción del total ARS si no hay tasa
-        }
-      } else if (tx.currency !== targetCurrency) {
-        // Si se quiere soportar otras conversiones, se añadiría lógica aquí
-        conversionNotes.push(`Conversión de ${tx.currency} a ${targetCurrency} no soportada para tx ${tx.id} (${tx.description}).`);
-        continue; // Omitir si no se puede convertir
+      let amountInTargetCurrency = convertItemAmount(tx.amount, tx.currency, tx.date, expenseRates, targetCurrency, new Set()); // Usar un Set temporal aquí para notas de esta conversión
+      
+      if (amountInTargetCurrency === null && tx.currency !== targetCurrency) {
+          // La nota ya se debería haber añadido en getRatesForItems o se podría añadir aquí si no.
+          // Por ahora, el flujo de getRatesForItems ya añade la nota si falta la tasa.
+          continue; 
       }
+      // Si es null pero ya está en targetCurrency, significa que el monto original era inválido o 0.
+      amountInTargetCurrency = amountInTargetCurrency === null ? parseFloat(tx.amount) : amountInTargetCurrency;
+
+
       const categoryKey = tx.category.id || 'sin_categoria';
       const currentCategoryData = expensesMap.get(categoryKey) || {
         totalAmount: 0, categoryName: tx.category.name || 'Sin Categoría', icon: tx.category.icon
       };
-      currentCategoryData.totalAmount += Math.abs(amountInTargetCurrency); // Sumar el valor absoluto para el gráfico
+      currentCategoryData.totalAmount += Math.abs(amountInTargetCurrency); 
       expensesMap.set(categoryKey, currentCategoryData);
     }
     
@@ -213,6 +251,7 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
 };
 
 const getInvestmentHighlights = async (userId, topN = 3) => {
+  // ... (código existente)
   console.log('[DashboardService Backend] getInvestmentHighlights for userId:', userId);
   try {
     const allInvestments = await db.Investment.findAll({ where: { userId }});
@@ -241,114 +280,93 @@ const getInvestmentHighlights = async (userId, topN = 3) => {
   }
 };
 
-const getCurrentMonthFinancialStatus = async (userId) => {
+const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') => {
+  // ... (código existente, adaptado para usar los nuevos helpers de conversión)
   console.log('\n[DashService-MonthlyStatus] =================================================');
   console.log('[DashService-MonthlyStatus] INICIO getCurrentMonthFinancialStatus para user:', userId);
-  // Usar la fecha actual del servidor para determinar el mes actual
   const currentServerDate = new Date();
   const currentMonthRange = getMonthDateRange(currentServerDate); 
-  const { dateFrom, dateTo, monthName, year, monthNumber } = currentMonthRange;
-  console.log(`[DashService-MonthlyStatus] Rango del mes actual (calculado por el servidor): ${dateFrom} a ${dateTo} (${monthName} ${year})`);
+  const { dateFrom, dateTo, monthName, year, monthNumber } = currentMonthRange; // monthNumber es 1-12
+  console.log(`[DashService-MonthlyStatus] Rango del mes actual (servidor): ${dateFrom} a ${dateTo} (${monthName} ${year})`);
   
   try {
-    const exchangeRateEntry = await db.ExchangeRate.findOne({
-      where: { userId, year, month: monthNumber, fromCurrency: 'USD', toCurrency: 'ARS' }
-    });
-    const usdToArsRate = exchangeRateEntry ? parseFloat(exchangeRateEntry.rate) : null;
-    if (!usdToArsRate) {
-        console.warn(`[DashService-MonthlyStatus] No se encontró tasa USD a ARS para ${monthNumber}/${year} para user ${userId}. Las transacciones en USD no se convertirán para el total ARS.`);
-    } else {
-        console.log(`[DashService-MonthlyStatus] Tasa USD a ARS para ${monthNumber}/${year} obtenida: ${usdToArsRate}`);
-    }
-
     const currentMonthTransactions = await db.Transaction.findAll({
         where: {
             userId,
-            date: { [Op.between]: [dateFrom, dateTo] } // Fechas en formato YYYY-MM-DD
-        }
+            date: { [Op.between]: [dateFrom, dateTo] } 
+        },
+        raw: true
     });
     console.log(`[DashService-MonthlyStatus] Transacciones encontradas para ${monthName} ${year}: ${currentMonthTransactions.length}`);
     
-    let totalIncomeARS = 0;
-    let totalExpensesARS = 0;
-    let originalIncomeUSD = 0;
-    let originalExpensesUSD = 0;
+    const { rates, notes: rateConversionNotes } = await getRatesForItems(userId, currentMonthTransactions, targetCurrency);
+    let conversionNotes = [...rateConversionNotes];
 
-    const allAccounts = await db.Account.findAll({ where: { userId }});
+    let totalIncomeTargetCurrency = 0;
+    let totalExpensesTargetCurrency = 0;
+    let originalIncomeOtherCurrency = {}; 
+    let originalExpensesOtherCurrency = {};
+
+
+    const allAccounts = await db.Account.findAll({ where: { userId }, raw:true });
     const accountsIncludedInSummaryIds = allAccounts
                                           .filter(acc => acc.includeInDashboardSummary)
                                           .map(acc => acc.id.toString());
-    console.log(`[DashService-MonthlyStatus] IDs de cuentas incluidas en el resumen del dashboard: [${accountsIncludedInSummaryIds.join(', ')}]`);
-
 
     if (Array.isArray(currentMonthTransactions) && currentMonthTransactions.length > 0) {
       currentMonthTransactions.forEach(tx => {
-        console.log(`[DashService-MonthlyStatus] Procesando Tx ID: ${tx.id}, Tipo: ${tx.type}, Monto: ${tx.amount}, Moneda: ${tx.currency}, CuentaID: ${tx.accountId}, Fecha: ${tx.date}`);
-
         if (accountsIncludedInSummaryIds.includes(tx.accountId.toString())) {
-            console.log(`  [DashService-MonthlyStatus] Tx ID: ${tx.id} PERTENECE a una cuenta incluida en el resumen.`);
-            const amount = parseFloat(tx.amount) || 0; // El monto ya tiene signo desde la BD
-            let amountInARS = amount;
+            let amountInTarget = convertItemAmount(tx.amount, tx.currency, tx.date, rates, targetCurrency, new Set());
 
-            if (tx.currency === 'USD') {
-                console.log(`    [DashService-MonthlyStatus] Tx ID: ${tx.id} es en USD.`);
-                if (usdToArsRate) {
-                    amountInARS = amount * usdToArsRate;
-                    console.log(`    [DashService-MonthlyStatus] Tx ID: ${tx.id} (USD) convertido a ARS: ${amountInARS.toFixed(2)} (Monto original USD: ${amount}, Tasa: ${usdToArsRate})`);
-                } else {
-                    console.warn(`    [DashService-MonthlyStatus] Tx ID: ${tx.id} (USD) NO CONVERTIDO por falta de tasa. Se acumulará en USD_UNCONVERTED.`);
-                    if (tx.type === 'ingreso') { 
-                        originalIncomeUSD += amount; // El monto de ingreso es positivo
-                    } else if (tx.type === 'egreso') { 
-                        originalExpensesUSD += Math.abs(amount); // El monto de egreso es negativo
-                    }
-                    return; // Saltar esta transacción para los totales consolidados en ARS
-                }
-            } else if (tx.currency !== 'ARS') {
-                // Si no es USD y no es ARS, actualmente se suma tal cual.
-                console.warn(`    [DashService-MonthlyStatus] Tx ID: ${tx.id} en moneda ${tx.currency} (no USD, no ARS). Se sumará como si fuera ARS para el consolidado.`);
+            if (amountInTarget === null && tx.currency !== targetCurrency) {
+                // Nota ya manejada por getRatesForItems
+                originalIncomeOtherCurrency[tx.currency] = originalIncomeOtherCurrency[tx.currency] || 0;
+                originalExpensesOtherCurrency[tx.currency] = originalExpensesOtherCurrency[tx.currency] || 0;
+                if (tx.type === 'ingreso') originalIncomeOtherCurrency[tx.currency] += parseFloat(tx.amount);
+                else originalExpensesOtherCurrency[tx.currency] += Math.abs(parseFloat(tx.amount));
+                return; 
             }
+            amountInTarget = amountInTarget === null ? parseFloat(tx.amount) : amountInTarget;
 
-            // El 'amount' de la transacción ya viene con el signo correcto: positivo para ingreso, negativo para egreso.
             if (tx.type === 'ingreso') {
-                totalIncomeARS += amountInARS; // amountInARS será positivo si es ingreso
-                console.log(`    [DashService-MonthlyStatus] Tx ID: ${tx.id} es INGRESO. Sumando ${amountInARS.toFixed(2)}. totalIncomeARS ahora: ${totalIncomeARS.toFixed(2)}`);
+                totalIncomeTargetCurrency += amountInTarget;
             } else if (tx.type === 'egreso') {
-                totalExpensesARS += Math.abs(amountInARS); // Los egresos se suman como absolutos para el total de gastos
-                                                            // amountInARS será negativo si es egreso.
-                console.log(`    [DashService-MonthlyStatus] Tx ID: ${tx.id} es EGRESO. Sumando ${Math.abs(amountInARS).toFixed(2)}. totalExpensesARS ahora: ${totalExpensesARS.toFixed(2)}`);
+                totalExpensesTargetCurrency += Math.abs(amountInTarget);
             }
-        } else {
-            console.log(`  [DashService-MonthlyStatus] Tx ID: ${tx.id} NO PERTENECE a una cuenta incluida en el resumen (Cuenta ID: ${tx.accountId}). Se omite del cálculo de Ingresos/Egresos del mes.`);
         }
       });
-    } else {
-        console.log(`[DashService-MonthlyStatus] No se encontraron transacciones en el rango de fechas o el array está vacío para el usuario ${userId}.`);
     }
     
-    const netSavingsARS = totalIncomeARS - totalExpensesARS;
-    console.log(`[DashService-MonthlyStatus] FINAL CALC: totalIncomeARS=${totalIncomeARS.toFixed(2)}, totalExpensesARS=${totalExpensesARS.toFixed(2)}, netSavingsARS=${netSavingsARS.toFixed(2)}, originalIncomeUSD=${originalIncomeUSD.toFixed(2)}, originalExpensesUSD=${originalExpensesUSD.toFixed(2)}`);
+    const netSavingsTargetCurrency = totalIncomeTargetCurrency - totalExpensesTargetCurrency;
+    
+    const statusByCurrency = {
+        [targetCurrency]: {
+            income: totalIncomeTargetCurrency,
+            expenses: totalExpensesTargetCurrency,
+            savings: netSavingsTargetCurrency,
+        }
+    };
+
+    Object.keys(originalIncomeOtherCurrency).forEach(curr => {
+        statusByCurrency[`${curr}_UNCONVERTED`] = {
+            income: originalIncomeOtherCurrency[curr],
+            expenses: originalExpensesOtherCurrency[curr] || 0,
+            savings: (originalIncomeOtherCurrency[curr] || 0) - (originalExpensesOtherCurrency[curr] || 0),
+            note: `Estos montos en ${curr} no se incluyeron en el total ${targetCurrency} por falta de tasa.`
+        };
+    });
+    
+    const usdRateForMonthKey = `${year}-${monthNumber}-USD`;
+    const rateUsedForUSD = (targetCurrency === 'ARS' && rates[usdRateForMonthKey]) ? rates[usdRateForMonthKey] : null;
+
     console.log('[DashService-MonthlyStatus] FIN getCurrentMonthFinancialStatus ======================================');
 
     return {
-      statusByCurrency: {
-          ARS: {
-              income: totalIncomeARS,
-              expenses: totalExpensesARS,
-              savings: netSavingsARS,
-          },
-          ...( (originalIncomeUSD > 0 || originalExpensesUSD > 0) && {
-              USD_UNCONVERTED: {
-                  income: originalIncomeUSD,
-                  expenses: originalExpensesUSD,
-                  savings: originalIncomeUSD - originalExpensesUSD,
-                  note: "Estos montos en USD no se incluyeron en el total ARS por falta de tasa de cambio para el mes."
-              }
-          })
-      },
+      statusByCurrency,
       monthName,
       year,
-      rateUsed: usdToArsRate
+      rateUsed: rateUsedForUSD,
+      conversionNotes: [...new Set(conversionNotes)]
     };
   } catch (error) {
     console.error("[DashService-MonthlyStatus] EXCEPCIÓN calculando estado financiero del mes:", error);
@@ -358,13 +376,15 @@ const getCurrentMonthFinancialStatus = async (userId) => {
         monthName: fallbackMonthRange.monthName, 
         year: fallbackMonthRange.year,
         rateUsed: null,
-        error: error.message 
+        error: error.message,
+        conversionNotes: ['Error al procesar datos.']
     };
   }
 };
 
 
-const getGlobalBudgetStatus = async (userId) => {
+const getGlobalBudgetStatus = async (userId, targetCurrency = 'ARS') => {
+  // ... (código existente, adaptado para conversión)
   console.log('[DashboardService Backend] Calculating Global Budget Status for user:', userId);
   const currentServerDate = new Date();
   const { dateFrom, dateTo, monthName, year } = getMonthDateRange(currentServerDate);
@@ -379,177 +399,152 @@ const getGlobalBudgetStatus = async (userId) => {
       raw: true,
     });
 
-    let totalBudgetedARS = 0;
+    let totalBudgetedTargetCurrency = 0;
     const budgetCategoryIds = [];
-    const budgetCurrencies = new Set(); // Para rastrear si hay presupuestos en USD
+    
+    const { rates: budgetRates, notes: budgetConversionNotes } = await getRatesForItems(userId, activeBudgets.map(b => ({ date: b.startDate, currency: b.currency })), targetCurrency);
+    let conversionNotes = [...budgetConversionNotes];
+
 
     activeBudgets.forEach(budget => {
-        // Por ahora, asumimos que el reporte global es en ARS y convertimos presupuestos USD si hay tasa
-        budgetCurrencies.add(budget.currency);
-        totalBudgetedARS += parseFloat(budget.amount); // Sumar directamente; la conversión se hará si es necesario después
+        let budgetAmountInTarget = convertItemAmount(budget.amount, budget.currency, budget.startDate, budgetRates, targetCurrency, new Set());
+        if (budgetAmountInTarget === null && budget.currency !== targetCurrency) {
+            // Nota ya manejada
+        } else if (budgetAmountInTarget !== null) {
+            totalBudgetedTargetCurrency += budgetAmountInTarget;
+        } else if (budget.currency === targetCurrency) { 
+            totalBudgetedTargetCurrency += parseFloat(budget.amount);
+        }
+
         if (budget.categoryId) {
             budgetCategoryIds.push(budget.categoryId);
         }
     });
     
-    // Si hay presupuestos en USD y queremos un total ARS, necesitaríamos una tasa.
-    // Esta lógica se complica si los presupuestos pueden ser en diferentes monedas y el target es ARS.
-    // Por simplicidad actual, si hay mezcla, el "totalBudgetedARS" puede ser una mezcla.
-    // Una mejora sería convertir todo a ARS si hay tasa disponible.
-
-
-    let totalSpentInBudgetedCategoriesARS = 0;
+    let totalSpentInBudgetedCategoriesTargetCurrency = 0;
     if (budgetCategoryIds.length > 0) {
       const transactionsInBudgetedCategories = await db.Transaction.findAll({
         where: {
           userId,
           type: 'egreso',
-          date: { [Op.between]: [dateFrom, dateTo] },
+          date: { [Op.between]: [dateFrom, dateTo] }, 
           categoryId: { [Op.in]: budgetCategoryIds },
         },
         raw: true,
       });
       
-      const rates = await getRatesForTransactions(userId, transactionsInBudgetedCategories.filter(tx => tx.currency === 'USD'));
+      const { rates: expenseRates, notes: expenseConvNotes } = await getRatesForItems(userId, transactionsInBudgetedCategories, targetCurrency);
+      conversionNotes = [...new Set([...conversionNotes, ...expenseConvNotes])]; // Combinar notas únicas
 
       transactionsInBudgetedCategories.forEach(tx => {
-        let amount = parseFloat(tx.amount); 
-        if (tx.currency === 'USD') {
-          const txDateParts = tx.date.split('-');
-          const yearMonthKey = `${parseInt(txDateParts[0])}-${parseInt(txDateParts[1])}`;
-          const rate = rates[yearMonthKey];
-          if (rate) {
-            amount = amount * rate;
-          } else {
-            console.warn(`[GlobalBudgetStatus] No rate for USD tx ${tx.id}, not included in spent for budget report.`);
+        let amountInTarget = convertItemAmount(tx.amount, tx.currency, tx.date, expenseRates, targetCurrency, new Set());
+        if (amountInTarget === null && tx.currency !== targetCurrency) {
             return; 
-          }
-        } else if (tx.currency !== 'ARS') {
-             console.warn(`[GlobalBudgetStatus] Transaction ${tx.id} in ${tx.currency} not converted for ARS budget summary.`);
-             // Decidir si omitir o sumar tal cual. Por ahora, omitimos si no es ARS o USD convertible.
-             return;
         }
-        totalSpentInBudgetedCategoriesARS += Math.abs(amount);
+        amountInTarget = amountInTarget === null ? parseFloat(tx.amount) : amountInTarget;
+        totalSpentInBudgetedCategoriesTargetCurrency += Math.abs(amountInTarget);
       });
     }
     
-    const progressPercent = totalBudgetedARS > 0 ? (totalSpentInBudgetedCategoriesARS / totalBudgetedARS) * 100 : 0;
+    const progressPercent = totalBudgetedTargetCurrency > 0 ? (totalSpentInBudgetedCategoriesTargetCurrency / totalBudgetedTargetCurrency) * 100 : 0;
 
     return {
-      totalBudgeted: totalBudgetedARS,
-      totalSpent: totalSpentInBudgetedCategoriesARS,
-      currency: budgetCurrencies.size > 1 ? 'MIXED' : (budgetCurrencies.values().next().value || 'ARS'), // Indicar si hay mezcla
+      totalBudgeted: totalBudgetedTargetCurrency,
+      totalSpent: totalSpentInBudgetedCategoriesTargetCurrency,
+      currency: targetCurrency,
       progressPercent: parseFloat(progressPercent.toFixed(2)),
       month: monthName,
       year: year,
+      conversionNotes
     };
 
   } catch (error) {
     console.error("[DashboardService Backend] Error calculating global budget status:", error);
-    return { totalBudgeted: 0, totalSpent: 0, currency: 'ARS', progressPercent: 0 };
+    return { totalBudgeted: 0, totalSpent: 0, currency: targetCurrency, progressPercent: 0, conversionNotes: ['Error al calcular.'] };
   }
 };
 
-const getBalanceTrend = async (userId, numberOfMonths = 6) => {
+const getBalanceTrend = async (userId, numberOfMonths = 6, targetCurrency = 'ARS') => {
+  // ... (código existente, adaptado para conversión)
   console.log(`[DashboardService Backend] Calculating Balance Trend for ${numberOfMonths} months for user:`, userId);
   try {
-    const accounts = await db.Account.findAll({ where: { userId } });
-    const exchangeRatesCache = {}; // { "YYYY-M": rate }
+    const accounts = await db.Account.findAll({ where: { userId }, raw: true }); // raw:true
+    const itemsForRateLookup = [];
+    const todayForRate = getMonthDateRange(new Date()).dateFrom;
 
-    const calculateTotalBalanceInARS = async (targetDate) => {
-        let currentTotalBalanceARS = 0;
-        const { year: targetYear, monthNumber: targetMonth } = getMonthDateRange(targetDate);
+    accounts.forEach(acc => {
+        if(acc.currency !== targetCurrency) itemsForRateLookup.push({date: todayForRate, currency: acc.currency});
+    });
+    // También necesitaremos tasas para el flujo de transacciones de cada mes
+    for (let i = 0; i < numberOfMonths; i++) {
+        const monthRange = getMonthDateRange(new Date(), -i);
+        // Suponemos que necesitaremos tasas para USD a ARS para las transacciones
+        if ('USD' !== targetCurrency) itemsForRateLookup.push({ date: monthRange.dateFrom, currency: 'USD'});
+        if ('ARS' !== targetCurrency && 'ARS' !== 'USD') itemsForRateLookup.push({date: monthRange.dateFrom, currency: 'ARS'});
+        // Añadir otras monedas comunes si es necesario
+    }
+    
+    const { rates: exchangeRatesMap, notes: trendConvNotes } = await getRatesForItems(userId, itemsForRateLookup, targetCurrency);
+    let conversionNotes = [...trendConvNotes];
 
+    const calculateTotalBalanceInTarget = async (targetDateForBalance) => {
+        let currentTotalBalanceTarget = 0;
         for (const account of accounts) {
             if (account.includeInDashboardSummary) {
-                let balanceInARS = parseFloat(account.balance);
-                if (account.currency === 'USD') {
-                    const rateKey = `${targetYear}-${targetMonth}`;
-                    if (exchangeRatesCache[rateKey] === undefined) {
-                        const rateEntry = await db.ExchangeRate.findOne({
-                            where: { userId, year: targetYear, month: targetMonth, fromCurrency: 'USD', toCurrency: 'ARS' }
-                        });
-                        exchangeRatesCache[rateKey] = rateEntry ? parseFloat(rateEntry.rate) : null;
-                    }
-                    if (exchangeRatesCache[rateKey]) {
-                        balanceInARS *= exchangeRatesCache[rateKey];
-                    } else {
-                        // Si no hay tasa para el mes del saldo que se está calculando, no sumar este balance USD
-                        balanceInARS = 0; 
-                        console.warn(`[BalanceTrend] No exchange rate for ${targetMonth}/${targetYear} for USD account ${account.name}. Its balance won't be part of ARS total for this period.`);
-                    }
-                } else if (account.currency !== 'ARS') {
-                    balanceInARS = 0; // No sumar otras monedas si no son ARS o USD (convertible)
-                     console.warn(`[BalanceTrend] Account ${account.name} in ${account.currency} not included in ARS total for trend.`);
+                let balanceInTarget = convertItemAmount(account.balance, account.currency, getMonthDateRange(targetDateForBalance).dateFrom, exchangeRatesMap, targetCurrency, new Set());
+                if (balanceInTarget !== null) {
+                    currentTotalBalanceTarget += balanceInTarget;
                 }
-                currentTotalBalanceARS += balanceInARS;
             }
         }
-        return currentTotalBalanceARS;
+        return currentTotalBalanceTarget;
     };
     
-    // Saldo actual (al final del día de hoy)
     const today = new Date();
-    let currentOverallBalanceARS = await calculateTotalBalanceInARS(today);
+    let currentOverallBalanceTarget = await calculateTotalBalanceInTarget(today);
 
     const trendData = [];
     const labels = [];
-    let rollingBalanceARS = currentOverallBalanceARS;
+    let rollingBalanceTarget = currentOverallBalanceTarget;
 
     for (let i = 0; i < numberOfMonths; i++) {
-      const dateForMonthEnd = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - i + 1, 0)); // Fin del mes i-ésimo hacia atrás
-      const { monthName: labelMonth, year: labelYear } = getMonthDateRange(dateForMonthEnd);
+      const monthEndDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - i + 1, 0)); 
+      const { monthName: labelMonth, year: labelYear } = getMonthDateRange(monthEndDate);
       labels.unshift(labelMonth.substring(0,3) + '.' + labelYear.toString().slice(-2) ); 
       
-      if (i === 0) { // Para el mes actual, usamos el saldo calculado al día de hoy
-        trendData.unshift(rollingBalanceARS);
-      } else { // Para meses anteriores, calculamos el saldo al final de ese mes
-        // Necesitamos el flujo neto del mes *posterior* al que queremos calcular el saldo final.
-        // Ej: para saldo de fin de Mayo, necesitamos flujo de Junio y restarlo del saldo de fin de Junio.
-        const monthToCalculateNetFlow = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - i + 1, 1)); // Inicio del mes (i-1)
-        const { dateFrom: netFlowDateFrom, dateTo: netFlowDateTo, year: netFlowYear, monthNumber: netFlowMonth } = getMonthDateRange(monthToCalculateNetFlow);
+      if (i === 0) { 
+        trendData.unshift(rollingBalanceTarget);
+      } else { 
+        const flowMonthRange = getMonthDateRange(new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - i + 1, 1)));
 
         const transactionsThisFlowMonth = await db.Transaction.findAll({
-          where: { userId, date: { [Op.between]: [netFlowDateFrom, netFlowDateTo] } },
+          where: { userId, date: { [Op.between]: [flowMonthRange.dateFrom, flowMonthRange.dateTo] } },
           raw: true,
         });
         
-        let netFlowThisMonthConvertedARS = 0;
+        let netFlowThisMonthConvertedTarget = 0;
+
         for (const tx of transactionsThisFlowMonth) {
           const txAccount = accounts.find(acc => acc.id === tx.accountId && acc.includeInDashboardSummary);
           if (!txAccount) continue;
 
-          let amountInARS = parseFloat(tx.amount);
-          if (tx.currency === 'USD') {
-            const rateKey = `${netFlowYear}-${netFlowMonth}`;
-            if (exchangeRatesCache[rateKey] === undefined) { 
-              const rateEntry = await db.ExchangeRate.findOne({
-                where: { userId, year: netFlowYear, month: netFlowMonth, fromCurrency: 'USD', toCurrency: 'ARS' }
-              });
-              exchangeRatesCache[rateKey] = rateEntry ? parseFloat(rateEntry.rate) : null;
-            }
-            if (exchangeRatesCache[rateKey]) {
-              amountInARS *= exchangeRatesCache[rateKey];
-            } else {
-              amountInARS = 0;
-            }
-          } else if (tx.currency !== 'ARS') {
-            amountInARS = 0;
-          }
-          netFlowThisMonthConvertedARS += amountInARS;
+          let amountInTarget = convertItemAmount(tx.amount, tx.currency, tx.date, exchangeRatesMap, targetCurrency, new Set());
+          if (amountInTarget === null ) amountInTarget = (tx.currency === targetCurrency ? parseFloat(tx.amount) : 0);
+          
+          netFlowThisMonthConvertedTarget += amountInTarget;
         }
-        rollingBalanceARS -= netFlowThisMonthConvertedARS; // Restar el flujo del mes "siguiente" para obtener el saldo al final del mes "actual" del bucle
-        trendData.unshift(rollingBalanceARS);
+        rollingBalanceTarget -= netFlowThisMonthConvertedTarget; 
+        trendData.unshift(rollingBalanceTarget);
       }
     }
 
     let changeVsPreviousPeriodPercent = 0;
     if (trendData.length >= 2) {
-      const latestBalance = trendData[trendData.length - 1]; // Saldo del mes más reciente en el gráfico (que es el actual)
-      const previousBalance = trendData[trendData.length - 2]; // Saldo del mes anterior
+      const latestBalance = trendData[trendData.length - 1]; 
+      const previousBalance = trendData[trendData.length - 2]; 
       if (previousBalance !== 0) {
         changeVsPreviousPeriodPercent = ((latestBalance - previousBalance) / Math.abs(previousBalance)) * 100;
-      } else if (latestBalance !== 0) { // Si el anterior es 0 y el actual no, es 100% de cambio o -100%
+      } else if (latestBalance !== 0) { 
         changeVsPreviousPeriodPercent = latestBalance > 0 ? 100 : -100;
       }
     }
@@ -557,25 +552,171 @@ const getBalanceTrend = async (userId, numberOfMonths = 6) => {
     return {
       labels,
       datasets: [{
-        label: 'Saldo Total (ARS Aprox.)',
+        label: `Saldo Total (${targetCurrency} Aprox.)`,
         data: trendData.map(val => parseFloat(val.toFixed(2))),
         backgroundColor: 'rgba(52, 152, 219, 0.6)',
         borderColor: 'rgba(52, 152, 219, 1)',
         borderWidth: 1,
       }],
       summary: {
-        currentBalance: parseFloat(currentOverallBalanceARS.toFixed(2)), // El saldo más actual calculado
-        currency: 'ARS',
+        currentBalance: parseFloat(currentOverallBalanceTarget.toFixed(2)), 
+        currency: targetCurrency,
         changeVsPreviousPeriodPercent: parseFloat(changeVsPreviousPeriodPercent.toFixed(2)),
-      }
+      },
+      conversionNotes: [...new Set(conversionNotes)]
     };
 
   } catch (error) {
     console.error("[DashboardService Backend] Error calculating balance trend:", error);
-    return { labels: [], datasets: [], summary: { currentBalance: 0, currency: 'ARS', changeVsPreviousPeriodPercent: 0 } };
+    return { labels: [], datasets: [], summary: { currentBalance: 0, currency: targetCurrency, changeVsPreviousPeriodPercent: 0 }, conversionNotes: ['Error al calcular tendencia.'] };
   }
 };
 
+
+// --- NUEVA FUNCIÓN PARA SALUD FINANCIERA ---
+const calculateFinancialHealth = async (userId, targetCurrency = 'ARS') => {
+  console.log(`[DashboardService] Calculating Financial Health for userId: ${userId} in ${targetCurrency}`);
+  const today = new Date(); // Usar la fecha actual del servidor
+  const currentMonthRange = getMonthDateRange(today);
+  let conversionNotesSet = new Set();
+
+  // --- 1. Obtener Datos Base ---
+  const userAccountsRaw = await db.Account.findAll({ where: { userId }, raw: true });
+  
+  // Para promedios, tomar transacciones de los últimos 3 meses + mes actual (hasta 4 meses de datos)
+  const dateForAveragesStart = getMonthDateRange(today, -2).dateFrom; // Inicio del mes de hace 2 meses
+  
+  const recentTransactionsRaw = await db.Transaction.findAll({
+      where: { userId, date: { [Op.gte]: dateForAveragesStart } },
+      raw: true
+  });
+  
+  const activeDebtsAndLoansRaw = await db.DebtAndLoan.findAll({
+      where: { userId, status: { [Op.notIn]: ['completed', 'cancelled'] } },
+      raw: true
+  });
+
+  // Recopilar todos los items que necesitan tasas de cambio
+  let itemsToGetRatesFor = [];
+  userAccountsRaw.forEach(a => itemsToGetRatesFor.push({ date: currentMonthRange.dateFrom, currency: a.currency }));
+  recentTransactionsRaw.forEach(t => itemsToGetRatesFor.push({ date: t.date, currency: t.currency }));
+  activeDebtsAndLoansRaw.forEach(d => itemsToGetRatesFor.push({ date: d.initialDate, currency: d.currency }));
+  
+  const { rates: ratesMap, notes: rateNotes } = await getRatesForItems(userId, itemsToGetRatesFor, targetCurrency);
+  rateNotes.forEach(note => conversionNotesSet.add(note));
+
+  // --- 2. Procesar Transacciones para Ingresos/Egresos y Promedios ---
+  let currentMonthIncomeConverted = 0;
+  let currentMonthExpensesConverted = 0;
+  const monthlyExpensesAggregated = {}; // { 'YYYY-MM': totalExpensesConverted }
+
+  recentTransactionsRaw.forEach(tx => {
+      const account = userAccountsRaw.find(a => a.id === tx.accountId);
+      if (!account || !account.includeInDashboardSummary) return;
+
+      let amountInTarget = convertItemAmount(tx.amount, tx.currency, tx.date, ratesMap, targetCurrency, conversionNotesSet);
+      if (amountInTarget === null) return; // No se pudo convertir, nota ya añadida
+
+      const txDate = new Date(tx.date + 'T00:00:00Z');
+      const txYearMonth = `${txDate.getUTCFullYear()}-${String(txDate.getUTCMonth() + 1).padStart(2, '0')}`;
+
+      if (tx.type === 'ingreso') {
+          if (txYearMonth === `${currentMonthRange.year}-${String(currentMonthRange.monthNumber).padStart(2, '0')}`) {
+              currentMonthIncomeConverted += amountInTarget;
+          }
+      } else if (tx.type === 'egreso') {
+          const absAmountInTarget = Math.abs(amountInTarget);
+          if (txYearMonth === `${currentMonthRange.year}-${String(currentMonthRange.monthNumber).padStart(2, '0')}`) {
+              currentMonthExpensesConverted += absAmountInTarget;
+          }
+          // Acumular para promedio de gastos (últimos 3 meses completos + lo que va del actual si no hay 3 completos)
+          if (txDate >= new Date(dateForAveragesStart + 'T00:00:00Z') && txDate <= new Date(currentMonthRange.dateTo + 'T23:59:59Z')) {
+            monthlyExpensesAggregated[txYearMonth] = (monthlyExpensesAggregated[txYearMonth] || 0) + absAmountInTarget;
+          }
+      }
+  });
+
+  const expenseMonthsValues = Object.values(monthlyExpensesAggregated);
+  const averageMonthlyExpenses = expenseMonthsValues.length > 0
+      ? expenseMonthsValues.reduce((sum, val) => sum + val, 0) / expenseMonthsValues.length
+      : (currentMonthExpensesConverted > 0 ? currentMonthExpensesConverted : 1); // Evitar división por cero
+
+  // --- 3. Tasa de Ahorro ---
+  const savingsRateValue = currentMonthIncomeConverted > 0 ? ((currentMonthIncomeConverted - currentMonthExpensesConverted) / currentMonthIncomeConverted) * 100 : 0;
+  let savingsRateStatus = 'low', savingsRateRecommendation = 'Intenta aumentar tu tasa de ahorro.';
+  if (savingsRateValue >= 20) { savingsRateStatus = 'excellent'; savingsRateRecommendation = '¡Excelente tasa de ahorro! Sigue así.'; }
+  else if (savingsRateValue >= 10) { savingsRateStatus = 'good'; savingsRateRecommendation = 'Buena tasa de ahorro, ¡vas bien!'; }
+  else if (savingsRateValue > 0) { savingsRateStatus = 'medium'; savingsRateRecommendation = 'Estás ahorrando, pero hay espacio para mejorar.'; }
+
+
+  // --- 4. Fondo de Emergencia ---
+  let totalLiquidAssetsConverted = 0;
+  userAccountsRaw.filter(acc => acc.includeInDashboardSummary && (acc.type === 'efectivo' || acc.type === 'bancaria'))
+    .forEach(acc => {
+      let balanceInTarget = convertItemAmount(acc.balance, acc.currency, currentMonthRange.dateFrom, ratesMap, targetCurrency, conversionNotesSet);
+      if (balanceInTarget !== null) totalLiquidAssetsConverted += balanceInTarget;
+    });
+  const emergencyFundMonths = averageMonthlyExpenses > 0 ? totalLiquidAssetsConverted / averageMonthlyExpenses : 0;
+  const emergencyFundTargetMonths = 3;
+  let emergencyFundStatus = 'low', emergencyFundRecommendation = `Tu fondo de emergencia es bajo. Apunta a ${emergencyFundTargetMonths} meses.`;
+  if (emergencyFundMonths >= emergencyFundTargetMonths) { emergencyFundStatus = 'good'; emergencyFundRecommendation = `¡Excelente! Tienes ${emergencyFundMonths.toFixed(1)} meses de gastos cubiertos.`; }
+  else if (emergencyFundMonths >= emergencyFundTargetMonths * 0.66) { emergencyFundStatus = 'medium'; emergencyFundRecommendation = `Estás cerca de tu objetivo de ${emergencyFundTargetMonths} meses.`;}
+  
+
+  // --- 5. Ratio Deuda / Ingreso (No Hipotecario) ---
+  let totalNonMortgageDebtConverted = 0;
+  userAccountsRaw.filter(acc => acc.includeInDashboardSummary && acc.type === 'tarjeta_credito' && parseFloat(acc.balance) < 0)
+    .forEach(acc => {
+      let debtInTarget = convertItemAmount(acc.balance, acc.currency, currentMonthRange.dateFrom, ratesMap, targetCurrency, conversionNotesSet);
+      if (debtInTarget !== null) totalNonMortgageDebtConverted += Math.abs(debtInTarget);
+    });
+  activeDebtsAndLoansRaw.filter(d => d.type === 'debt').forEach(debt => {
+      let remainingDebt = parseFloat(debt.totalAmount) - parseFloat(debt.paidAmount);
+      let debtInTarget = convertItemAmount(remainingDebt, debt.currency, debt.initialDate, ratesMap, targetCurrency, conversionNotesSet);
+      if (debtInTarget !== null) totalNonMortgageDebtConverted += debtInTarget;
+    });
+  const debtToIncomeRatioValue = currentMonthIncomeConverted > 0 ? (totalNonMortgageDebtConverted / currentMonthIncomeConverted) * 100 : (totalNonMortgageDebtConverted > 0 ? Infinity : 0);
+  let debtToIncomeRatioStatus = 'good', debtToIncomeRatioRecommendation = 'Nivel de deuda saludable.';
+  if (debtToIncomeRatioValue === Infinity) { debtToIncomeRatioStatus = 'very_high'; debtToIncomeRatioRecommendation = 'Ingresos cero este mes con deudas pendientes.';}
+  else if (debtToIncomeRatioValue > 43) { debtToIncomeRatioStatus = 'very_high'; debtToIncomeRatioRecommendation = 'Nivel de deuda muy alto. Prioriza reducirla.'; }
+  else if (debtToIncomeRatioValue > 30) { debtToIncomeRatioStatus = 'high'; debtToIncomeRatioRecommendation = 'Nivel de deuda alto. Considera planes de pago.'; }
+  else if (debtToIncomeRatioValue > 15) { debtToIncomeRatioStatus = 'medium'; debtToIncomeRatioRecommendation = 'Nivel de deuda moderado. Vigílalo.'; }
+
+
+  // --- 6. Cobertura de Deudas (Resumen de Tarjetas) ---
+  let totalStatementBalancesConverted = 0;
+  userAccountsRaw.filter(acc => acc.type === 'tarjeta_credito' && parseFloat(acc.statementBalance) > 0)
+    .forEach(card => {
+      let statementInTarget = convertItemAmount(card.statementBalance, card.currency, card.statementCloseDate || currentMonthRange.dateFrom, ratesMap, targetCurrency, conversionNotesSet);
+      if (statementInTarget !== null) totalStatementBalancesConverted += statementInTarget;
+    });
+  const debtCoverageValue = totalStatementBalancesConverted > 0 ? totalLiquidAssetsConverted / totalStatementBalancesConverted : Infinity; // Infinity si no hay saldos de resumen
+  let debtCoverageStatus = 'low', debtCoverageRecommendation = 'Aumenta tu liquidez para cubrir resúmenes.';
+  if (debtCoverageValue === Infinity) { debtCoverageStatus = 'excellent'; debtCoverageRecommendation = '¡No tienes saldos de resumen pendientes!'; }
+  else if (debtCoverageValue >= 1.5) { debtCoverageStatus = 'good'; debtCoverageRecommendation = 'Buena capacidad para cubrir tus resúmenes.'; }
+  else if (debtCoverageValue >= 1) { debtCoverageStatus = 'medium'; debtCoverageRecommendation = 'Puedes cubrir tus resúmenes, pero ajustado.'; }
+
+
+  // --- 7. Puntaje General (Ejemplo Ponderado) ---
+  const normalize = (val, min, max) => Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+  const savingsScore = normalize(savingsRateValue, -20, 25); // ej: -20% = 0pts, 25% = 100pts
+  const emergencyScore = normalize(emergencyFundMonths, 0, emergencyFundTargetMonths + 1); // ej: 0 meses=0pts, 4 meses=100pts
+  const debtRatioScore = 100 - normalize(debtToIncomeRatioValue === Infinity ? 100 : debtToIncomeRatioValue, 10, 50); // ej: 10% deuda=100pts, 50% deuda=0pts
+  const coverageScore = normalize(debtCoverageValue === Infinity ? 3 : debtCoverageValue, 0.5, 2); // ej: 0.5x=0pts, 2x=100pts
+
+  let overallScore = (savingsScore * 0.30) + (emergencyScore * 0.30) + (debtRatioScore * 0.25) + (coverageScore * 0.15);
+  overallScore = Math.round(Math.max(0, Math.min(overallScore, 100)));
+
+  return {
+    overallScore,
+    savingsRate: { value: parseFloat(savingsRateValue.toFixed(1)), status: savingsRateStatus, recommendation: savingsRateRecommendation },
+    emergencyFund: { value: parseFloat(emergencyFundMonths.toFixed(1)), targetMonths: emergencyFundTargetMonths, status: emergencyFundStatus, recommendation: emergencyFundRecommendation },
+    debtToIncomeRatio: { value: parseFloat(debtToIncomeRatioValue.toFixed(1)), status: debtToIncomeRatioStatus, recommendation: debtToIncomeRatioRecommendation },
+    debtCoverage: { value: parseFloat(debtCoverageValue.toFixed(1)), status: debtCoverageStatus, recommendation: debtCoverageRecommendation },
+    summaryDate: currentMonthRange.dateTo,
+    conversionNotes: Array.from(conversionNotesSet)
+  };
+};
 
 const dashboardService = {
   getDashboardSummary,
@@ -584,6 +725,7 @@ const dashboardService = {
   getCurrentMonthFinancialStatus,
   getGlobalBudgetStatus,
   getBalanceTrend,
+  calculateFinancialHealth,
 };
 
 module.exports = dashboardService;

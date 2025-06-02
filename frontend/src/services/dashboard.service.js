@@ -1,5 +1,5 @@
 // Ruta: finanzas-app-pro/frontend/src/services/dashboard.service.js
-import apiClient from './api'; // [cite: finanzas-app-pro/frontend/src/services/api.js]
+import apiClient from './api';
 
 const getMonthlySpendingByCategory = async (filters = {}) => {
   console.log('[F-DashboardService] Fetching Dashboard SpendingChart data from backend endpoint: /dashboard/spending-chart. Filters:', filters);
@@ -50,7 +50,7 @@ const getInvestmentHighlights = async (topN = 3) => {
 const getCurrentMonthFinancialStatus = async () => {
   console.log('[F-DashboardService] Getting current month financial status from backend endpoint: /dashboard/monthly-financial-status');
   try {
-    const response = await apiClient.get('/dashboard/monthly-financial-status');
+    const response = await apiClient.get('/dashboard/monthly-financial-status'); // El backend ahora puede tomar targetCurrency
     console.log('[F-DashboardService] Current month financial status received:', response.data);
     return response.data;
   } catch (error) {
@@ -60,7 +60,8 @@ const getCurrentMonthFinancialStatus = async () => {
         statusByCurrency: {}, 
         monthName, 
         year,
-        rateUsed: null
+        rateUsed: null,
+        conversionNotes: ['Error al cargar datos.']
     };
   }
 };
@@ -68,26 +69,50 @@ const getCurrentMonthFinancialStatus = async () => {
 const getGlobalBudgetStatus = async () => {
   console.log('[F-DashboardService] Getting global budget status from backend endpoint: /dashboard/global-budget-status');
   try {
-    const response = await apiClient.get('/dashboard/global-budget-status');
+    const response = await apiClient.get('/dashboard/global-budget-status'); // El backend ahora puede tomar targetCurrency
     console.log('[F-DashboardService] Global budget status received:', response.data);
     return response.data;
   } catch (error) {
     console.error("[F-DashboardService] Error fetching global budget status:", error.response?.data || error.message);
-    return { totalBudgeted: 0, totalSpent: 0, currency: 'ARS', progressPercent: 0 };
+    return { totalBudgeted: 0, totalSpent: 0, currency: 'ARS', progressPercent: 0, conversionNotes: ['Error al calcular.'] };
   }
 };
 
 const getBalanceTrendData = async ({ months = 6 } = {}) => {
   console.log(`[F-DashboardService] Getting balance trend data from backend (months: ${months})`);
   try {
-    const response = await apiClient.get(`/dashboard/balance-trend?months=${months}`);
+    const response = await apiClient.get(`/dashboard/balance-trend?months=${months}`); // El backend ahora puede tomar targetCurrency
     console.log('[F-DashboardService] Balance trend data received:', response.data);
     return response.data;
   } catch (error) {
     console.error("[F-DashboardService] Error fetching balance trend data:", error.response?.data || error.message);
-    return { labels: [], datasets: [], summary: { currentBalance: 0, currency: 'ARS', changeVsPreviousPeriodPercent: 0 } };
+    return { labels: [], datasets: [], summary: { currentBalance: 0, currency: 'ARS', changeVsPreviousPeriodPercent: 0 }, conversionNotes: ['Error al calcular.'] };
   }
 };
+
+// LLAMADA REAL AL BACKEND
+const getSaludFinancieraData = async () => {
+  console.log('[F-DashboardService] Getting Salud Financiera data from backend endpoint: /dashboard/financial-health');
+  try {
+    // Podrías pasar targetCurrency como parámetro si quisieras que el usuario elija
+    // const response = await apiClient.get('/dashboard/financial-health?currency=USD');
+    const response = await apiClient.get('/dashboard/financial-health');
+    console.log('[F-DashboardService] Salud Financiera data received:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error("[F-DashboardService] Error fetching Salud Financiera data:", error.response?.data || error.message);
+    return {
+      overallScore: 0,
+      savingsRate: { value: 0, status: 'low', recommendation: 'No se pudo calcular.' },
+      emergencyFund: { value: 0, status: 'low', recommendation: 'No se pudo calcular.' },
+      debtToIncomeRatio: { value: 0, status: 'low', recommendation: 'No se pudo calcular.' },
+      debtCoverage: { value: 0, status: 'low', recommendation: 'No se pudo calcular.' },
+      error: 'No se pudieron cargar los datos de salud financiera.',
+      conversionNotes: ['Error al cargar datos.']
+    };
+  }
+};
+
 
 const dashboardService = {
   getDashboardSummary,
@@ -96,6 +121,7 @@ const dashboardService = {
   getCurrentMonthFinancialStatus,
   getGlobalBudgetStatus,
   getBalanceTrendData,
+  getSaludFinancieraData,
 };
 
 export default dashboardService;

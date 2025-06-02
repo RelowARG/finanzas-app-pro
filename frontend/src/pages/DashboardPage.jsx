@@ -31,7 +31,10 @@ import WidgetSelectionModal from '../components/dashboard/WidgetSelectionModal';
 import AddWidgetPlaceholder from '../components/dashboard/AddWidgetPlaceholder';
 import SortableWidget from '../components/dashboard/SortableWidget';
 
-// Importar los nuevos componentes de previsualización
+// Importar los nuevos componentes de widget y previsualización
+import SaludFinancieraWidget from '../components/dashboard/SaludFinancieraWidget';
+import SaludFinancieraPreview from '../components/dashboard/previews/SaludFinancieraPreview';
+
 import SpendingChartPreview from '../components/dashboard/previews/SpendingChartPreview';
 import BalanceOverviewPreview from '../components/dashboard/previews/BalanceOverviewPreview';
 import ControlPanelPreview from '../components/dashboard/previews/ControlPanelPreview';
@@ -49,6 +52,7 @@ import './DashboardPage.css';
 import '../components/dashboard/DashboardComponents.css';
 
 const ALL_AVAILABLE_WIDGETS = {
+  saludFinanciera: { Component: SaludFinancieraWidget, name: 'Salud Financiera General', description: 'Puntuación y métricas clave de tu bienestar financiero.', defaultProps: {}, PreviewComponent: SaludFinancieraPreview },
   controlPanel: { Component: ControlPanelWidget, name: 'Panel de Control Rápido', description: 'Vista rápida de saldo, flujo y presupuesto.', defaultProps: {}, PreviewComponent: ControlPanelPreview },
   spendingChart: { Component: SpendingChart, name: 'Gastos del Mes por Categoría', description: 'Gráfico de torta mostrando la distribución de tus gastos mensuales.', defaultProps: {}, PreviewComponent: SpendingChartPreview },
   balanceOverview: { Component: BalanceOverview, name: 'Resumen de Balance Total', description: 'Saldo total en ARS, USD y consolidado.', defaultProps: {}, PreviewComponent: BalanceOverviewPreview },
@@ -58,10 +62,8 @@ const ALL_AVAILABLE_WIDGETS = {
   recentTransactions: { Component: RecentTransactions, name: 'Últimos Movimientos Registrados', description: 'Lista de tus transacciones más recientes.', defaultProps: {}, PreviewComponent: RecentTransactionsPreview },
 };
 
-// (El resto de DashboardPage.jsx permanece igual que en la respuesta anterior)
-// ... (copia el resto del código de DashboardPage.jsx de la respuesta anterior aquí)
-// Función para inicializar la lista de widgets con sus componentes y props
 const getDefaultWidgetOrder = () => [
+  'saludFinanciera', 
   'controlPanel',
   'balanceTrend',
   'monthlySavings',
@@ -115,12 +117,14 @@ const DashboardPage = () => {
     allUserAccounts: [],
     globalBudgetStatus: null,
     balanceTrendData: null,
+    saludFinancieraData: null, 
     loadingAccounts: true,
     loadingInvestments: true,
     loadingMonthlyStatus: true,
     loadingBalanceSummary: true,
     loadingGlobalBudget: true,
     loadingBalanceTrend: true,
+    loadingSaludFinanciera: true, 
   });
 
   const [orderedWidgetsList, setOrderedWidgetsList] = useState([]);
@@ -238,6 +242,7 @@ const DashboardPage = () => {
             loadingInvestments: true, loadingMonthlyStatus: true, 
             loadingAccounts: true, loadingBalanceSummary: true,
             loadingGlobalBudget: true, loadingBalanceTrend: true,
+            loadingSaludFinanciera: true, 
         }));
     }
     setError('');
@@ -249,6 +254,7 @@ const DashboardPage = () => {
         dashboardService.getDashboardSummary(),
         dashboardService.getGlobalBudgetStatus(),
         dashboardService.getBalanceTrendData({ months: 6 }),
+        dashboardService.getSaludFinancieraData(), // Usar la función del servicio (simulada o real)
       ]);
 
       const allAccountsData = results[2].status === 'fulfilled' ? (results[2].value || []) : apiData.allUserAccounts; 
@@ -261,6 +267,7 @@ const DashboardPage = () => {
         balanceSummary: results[3].status === 'fulfilled' ? results[3].value : prev.balanceSummary,
         globalBudgetStatus: results[4].status === 'fulfilled' ? results[4].value : prev.globalBudgetStatus,
         balanceTrendData: results[5].status === 'fulfilled' ? results[5].value : prev.balanceTrendData,
+        saludFinancieraData: results[6].status === 'fulfilled' ? results[6].value : prev.saludFinancieraData, 
       }));
     } catch (err) { 
       setError('Error general al cargar datos del dashboard.');
@@ -271,6 +278,7 @@ const DashboardPage = () => {
         loadingInvestments: false, loadingMonthlyStatus: false, 
         loadingAccounts: false, loadingBalanceSummary: false,
         loadingGlobalBudget: false, loadingBalanceTrend: false,
+        loadingSaludFinanciera: false, 
       }));
     }
   }, [user]);
@@ -284,6 +292,9 @@ const DashboardPage = () => {
       prevWidgets.map(widget => {
         let newProps = { ...widget.props, key: widget.id }; 
         switch (widget.id) {
+          case 'saludFinanciera': 
+            newProps = { ...newProps, data: apiData.saludFinancieraData, loading: apiData.loadingSaludFinanciera };
+            break;
           case 'balanceOverview':
             newProps = { ...newProps, summary: apiData.balanceSummary, loading: apiData.loadingBalanceSummary };
             break;
@@ -319,9 +330,10 @@ const DashboardPage = () => {
     );
   }, [
       apiData.balanceSummary, apiData.investmentHighlights, apiData.monthlyFinancialStatus, 
-      apiData.globalBudgetStatus, apiData.balanceTrendData,
+      apiData.globalBudgetStatus, apiData.balanceTrendData, apiData.saludFinancieraData, 
       apiData.loadingBalanceSummary, apiData.loadingInvestments, apiData.loadingMonthlyStatus,
-      apiData.loadingGlobalBudget, apiData.loadingBalanceTrend, apiData.loadingAccounts
+      apiData.loadingGlobalBudget, apiData.loadingBalanceTrend, apiData.loadingAccounts,
+      apiData.loadingSaludFinanciera, 
     ]);
 
   useEffect(() => {
