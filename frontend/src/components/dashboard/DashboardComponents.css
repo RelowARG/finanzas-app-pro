@@ -577,3 +577,34 @@
 .button-customize-placeholder:hover {
   background-color: rgba(var(--primary-rgb), 0.05) !important;
 }
+.dashboard-widget.add-card-placeholder { 
+  background-color: #f7fafc; 
+  border: 2px dashed #d3dce6; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  color: #6c757d; 
+  text-align: center; 
+  flex-grow: 0; /* Para que no intente crecer más de lo necesario */
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.dashboard-widget.add-card-placeholder:hover { 
+  border-color: var(--primary-color); 
+  background-color: #eef2f7; /* Un hover un poco más oscuro */
+}
+
+/* Estilo específico para el placeholder de añadir widget si es necesario diferenciarlo del de añadir cuenta */
+.add-widget-placeholder {
+  /* Puedes añadir estilos específicos aquí si el .add-card-placeholder no es suficiente */
+  /* Por ejemplo, si quieres un color de borde diferente por defecto */
+  border-color: var(--primary-color-light, #a0cff9); /* Un borde más suave por defecto */
+}
+
+.add-widget-placeholder:hover {
+  border-color: var(--primary-color);
+  background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+.add-widget-placeholder div[style*="font-size: 3rem"] { /* Icono grande */
+  line-height: 1;
+}
