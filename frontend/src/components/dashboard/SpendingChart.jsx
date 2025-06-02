@@ -8,56 +8,34 @@ import {
   Legend,
   Title,
 } from 'chart.js';
-import dashboardService from '../../services/dashboard.service';
-import './DashboardComponents.css'; 
+import WidgetLoader from './WidgetLoader';
+import WidgetInfoIcon from './WidgetInfoIcon';
+import './DashboardComponents.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
-const SpendingChart = () => {
-  const [chartData, setChartData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+const SpendingChart = ({ chartData: chartDataFromHook, loading, error, widgetDescription }) => { 
+  const [chartData, setChartData] = useState(null); 
   const [currencyReported, setCurrencyReported] = useState('ARS');
+  
+  // El título ahora se construye dinámicamente basado en currencyReported
+  const widgetTitle = `Gastos del Mes (${currencyReported})`;
 
   useEffect(() => {
-    const fetchChartData = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const data = await dashboardService.getMonthlySpendingByCategory(); 
-        if (data && data.labels && data.datasets && data.summary) {
-          setChartData(data);
-          setCurrencyReported(data.summary.currencyReported || 'ARS');
-        } else {
-          setError('No hay datos suficientes para mostrar el gráfico de gastos.');
-          setChartData(null);
-        }
-      } catch (err) {
-        console.error("Error fetching spending chart data:", err);
-        setError('Error al cargar datos del gráfico de gastos.');
-        setChartData(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchChartData();
-  }, []);
+    if (chartDataFromHook && chartDataFromHook.datasets && chartDataFromHook.summary) {
+      setChartData(chartDataFromHook);
+      setCurrencyReported(chartDataFromHook.summary.currencyReported || 'ARS');
+    } else if (!loading && !error) {
+      setChartData(null); 
+    }
+  }, [chartDataFromHook, loading, error]);
 
   const options = {
     responsive: true,
     maintainAspectRatio: false, 
     plugins: {
-      legend: {
-        position: 'bottom', 
-        labels: { 
-          boxWidth: 15, 
-          padding: 10, 
-          font: { size: 9 } 
-        }
-      },
-      title: { 
-        display: false, 
-      },
+      legend: { position: 'bottom', labels: { boxWidth: 15, padding: 10, font: { size: 9 } } },
+      title: { display: false }, 
       tooltip: {
         callbacks: {
           label: function(context) {
@@ -75,33 +53,38 @@ const SpendingChart = () => {
       }
     },
     cutout: '60%', 
-    animation: {
-      duration: 800, // *** CORRECCIÓN AQUÍ: Duración reducida a 800ms (0.8 segundos) ***
-      easing: 'easeOutQuart' 
-    }
+    animation: { duration: 800, easing: 'easeOutQuart' }
   };
 
   const renderContent = () => {
     if (loading) {
-      return <p className="loading-text-widget">Cargando gráfico...</p>;
+      return <WidgetLoader message="Cargando gráfico de gastos..." />;
     }
     if (error) {
-      return <p className="error-message" style={{textAlign: 'center'}}>{error}</p>;
+      return <p className="error-message" style={{textAlign: 'center'}}>
+        {typeof error === 'string' ? error : 'Error al cargar gráfico de gastos.'}
+      </p>;
     }
-    const noDataAvailable = !chartData || !chartData.datasets || chartData.datasets.length === 0 || chartData.datasets[0].data.length === 0 || chartData.datasets[0].data.every(item => item === 0);
+    
+    const dataToRender = chartData; 
+    const noDataAvailable = !dataToRender || !dataToRender.datasets || dataToRender.datasets.length === 0 || dataToRender.datasets[0].data.length === 0 || dataToRender.datasets[0].data.every(item => item === 0);
+    
     if (noDataAvailable) {
-       return <p className="no-data-widget">No hay datos de gastos para mostrar este mes en {currencyReported}.</p>;
+       return <p className="no-data-widget">No hay gastos para mostrar este mes en {currencyReported}.</p>;
     }
     return (
       <div className="chart-container">
-        <Doughnut data={chartData} options={options} />
+        <Doughnut data={dataToRender} options={options} />
       </div>
     );
   };
   
   return (
     <div className="dashboard-widget spending-chart-widget"> 
-      <h3>Gastos del Mes ({currencyReported})</h3>
+      <div className="widget-header-container">
+        <h3>{widgetTitle}</h3>
+        <WidgetInfoIcon description={widgetDescription} />
+      </div>
       <div className="dashboard-widget-content">
         {renderContent()}
       </div>

@@ -1,12 +1,12 @@
 // finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import WidgetLoader from './WidgetLoader'; // *** IMPORTAR WidgetLoader ***
-import './DashboardComponents.css'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css]
-import './UpcomingPaymentsWidget.css'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css]
+import WidgetLoader from './WidgetLoader';
+import WidgetInfoIcon from './WidgetInfoIcon';
+import './DashboardComponents.css';
+import './UpcomingPaymentsWidget.css';
 
 const formatCurrencyWidget = (amount, currency = 'ARS') => {
-  // ... (tu función formatCurrencyWidget existente)
   if (amount === null || amount === undefined) return '-';
   const symbol = currency === 'USD' ? 'U$S' : '$';
   const value = Number(amount);
@@ -15,7 +15,6 @@ const formatCurrencyWidget = (amount, currency = 'ARS') => {
 };
 
 const formatDateWidget = (dateString) => {
-  // ... (tu función formatDateWidget existente)
   if (!dateString) return 'N/A';
   const date = new Date(dateString + 'T00:00:00Z'); 
   const today = new Date();
@@ -30,7 +29,6 @@ const formatDateWidget = (dateString) => {
 };
 
 const getEventTypeDetails = (event) => {
-    // ... (tu función getEventTypeDetails existente)
     switch(event.type) {
         case 'recurrente':
             return { label: 'Recurrente', link: '/settings/recurring-transactions', icon: event.icon || '🔁' };
@@ -47,12 +45,16 @@ const getEventTypeDetails = (event) => {
     }
 };
 
-// Aceptar events, loading y error como props
-const UpcomingPaymentsWidget = ({ events, loading, error }) => {
+const UpcomingPaymentsWidget = ({ events, loading, error, widgetDescription }) => {
+  const widgetTitle = "Próximos Vencimientos";
+
   if (loading) {
     return (
       <div className="dashboard-widget upcoming-payments-widget">
-        <h3>Próximos Vencimientos</h3>
+        <div className="widget-header-container">
+          <h3>{widgetTitle}</h3>
+          <WidgetInfoIcon description={widgetDescription} />
+        </div>
         <div className="dashboard-widget-content">
           <WidgetLoader message="Cargando vencimientos..." />
         </div>
@@ -63,7 +65,10 @@ const UpcomingPaymentsWidget = ({ events, loading, error }) => {
   if (error) {
     return (
       <div className="dashboard-widget upcoming-payments-widget">
-        <h3>Próximos Vencimientos</h3>
+         <div className="widget-header-container">
+          <h3>{widgetTitle}</h3>
+          <WidgetInfoIcon description={widgetDescription} />
+        </div>
          <div className="dashboard-widget-content">
             <p className="error-message" style={{ textAlign: 'center', fontSize:'0.9em', padding:'10px' }}>
                 {typeof error === 'string' ? error : 'Error cargando vencimientos.'}
@@ -76,9 +81,12 @@ const UpcomingPaymentsWidget = ({ events, loading, error }) => {
   if (!events || events.length === 0) {
     return (
       <div className="dashboard-widget upcoming-payments-widget">
-        <h3>Próximos Vencimientos</h3>
+        <div className="widget-header-container">
+          <h3>{widgetTitle}</h3>
+          <WidgetInfoIcon description={widgetDescription} />
+        </div>
         <div className="dashboard-widget-content">
-          <p className="no-data-widget" style={{textAlign: 'center'}}>No hay vencimientos próximos.</p> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+          <p className="no-data-widget" style={{textAlign: 'center'}}>No hay vencimientos próximos.</p>
         </div>
       </div>
     );
@@ -86,35 +94,38 @@ const UpcomingPaymentsWidget = ({ events, loading, error }) => {
 
   return (
     <div className="dashboard-widget upcoming-payments-widget">
-      <h3>Próximos Vencimientos</h3>
+      <div className="widget-header-container">
+        <h3>{widgetTitle}</h3>
+        <WidgetInfoIcon description={widgetDescription} />
+      </div>
       <div className="dashboard-widget-content">
-        <ul className="upcoming-events-list"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css] */}
+        <ul className="upcoming-events-list">
           {events.slice(0, 7).map((event, index) => {
             const { label: typeLabel, link: typeLink, icon: typeIcon } = getEventTypeDetails(event);
             const amountColorClass = event.eventType === 'ingreso' ? 'text-positive' : (event.eventType === 'egreso' ? 'text-negative' : '');
 
             return (
-                <li key={`${event.date}-${event.description}-${index}`} className={`upcoming-event-item item-type-${event.type} item-event-${event.eventType}`}> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css] */}
-                  <Link to={typeLink} className="upcoming-event-link" title={`${typeLabel}: ${event.source || event.description}`}> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css] */}
-                    <span className="event-icon">{typeIcon}</span> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css] */}
-                    <div className="event-info"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css] */}
-                      <span className="event-description"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css] */}
+                <li key={`${event.date}-${event.description}-${index}`} className={`upcoming-event-item item-type-${event.type} item-event-${event.eventType}`}>
+                  <Link to={typeLink} className="upcoming-event-link" title={`${typeLabel}: ${event.source || event.description}`}>
+                    <span className="event-icon">{typeIcon}</span>
+                    <div className="event-info">
+                      <span className="event-description">
                         {event.description.length > 30 ? event.description.substring(0, 27) + '...' : event.description}
                       </span>
-                      <span className="event-source"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css] */}
+                      <span className="event-source">
                         {typeLabel}
                       </span>
                     </div>
-                    <div className="event-details"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css] */}
+                    <div className="event-details">
                       {(event.amount !== null && event.amount !== undefined && event.eventType !== 'info') && (
-                        <span className={`event-amount ${amountColorClass}`}> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css] */}
+                        <span className={`event-amount ${amountColorClass}`}>
                           {formatCurrencyWidget(event.amount, event.currency)}
                         </span>
                       )}
                        {event.eventType === 'info' && (
-                         <span className="event-amount info-event">{formatCurrencyWidget(event.amount, event.currency)}</span>  /* [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css] */
+                         <span className="event-amount info-event">{formatCurrencyWidget(event.amount, event.currency)}</span>
                        )}
-                      <span className="event-date">{formatDateWidget(event.date)}</span> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css] */}
+                      <span className="event-date">{formatDateWidget(event.date)}</span>
                     </div>
                   </Link>
                 </li>

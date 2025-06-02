@@ -1,0 +1,90 @@
+/* Ruta: src/components/dashboard/WidgetInfoIcon.css o añadir a DashboardComponents.css */
+
+/* Contenedor del ícono de información */
+.widget-info-icon-container {
+  position: relative; /* Para que el tooltip se posicione relativo a este contenedor */
+  display: inline-block; 
+  cursor: help;
+  z-index: 20; /* z-index para el contenedor del ícono en sí, si es necesario */
+}
+
+/* Estilo del símbolo de pregunta */
+.widget-info-icon-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #ced4da;
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 20px;
+  text-align: center;
+  user-select: none;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.widget-info-icon-container:hover .widget-info-icon-symbol,
+.widget-info-icon-container:focus .widget-info-icon-symbol {
+  background-color: var(--primary-color, #3498db);
+  transform: scale(1.1);
+}
+
+/* Estilo del tooltip emergente */
+.widget-info-tooltip {
+  position: absolute;
+  /* Posicionarlo debajo y ligeramente a la derecha/izquierda del ícono */
+  top: calc(100% + 5px); /* 5px de espacio debajo del ícono */
+  right: 0; /* Alineado a la derecha del ícono por defecto */
+  /* Si se prefiere a la izquierda (si el ícono está muy a la derecha del widget): */
+  /* left: 0; */
+  /* right: auto; */
+  
+  background-color: rgba(45, 55, 72, 0.97);
+  color: #f8f9fa;
+  padding: 10px 15px;
+  border-radius: var(--border-radius, 6px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  width: 280px; /* Ancho fijo o max-width */
+  /* max-width: calc(100vw - 40px); */ /* Evitar que se salga de la pantalla */
+  text-align: left;
+  z-index: 1001; /* MUY IMPORTANTE: Debe ser mayor que otros elementos del widget */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(5px); /* Pequeña animación de entrada desde abajo */
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s linear 0.2s;
+  pointer-events: none; /* Para que no interfiera con el hover del ícono */
+}
+
+.widget-info-icon-container:hover .widget-info-tooltip,
+.widget-info-icon-container:focus-within .widget-info-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition-delay: 0.1s, 0.1s, 0s; 
+}
+
+/* Flecha del tooltip (ajustada para cuando el tooltip está ABAJO) */
+.widget-info-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%; /* Se posiciona en el borde superior del tooltip */
+  right: 10px;  /* Alineado con el ícono (asumiendo que el ícono tiene ~20px de ancho) */
+  /* Si el tooltip se alinea a la izquierda del ícono, usar left: 10px; */
+  /* margin-left: -6px; */ /* No es necesario si se usa right */
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent rgba(45, 55, 72, 0.97) transparent; /* Flecha apunta hacia arriba */
+}
+
+/* Si el tooltip se alinea a la izquierda del ícono (cuando se usa left: 0; en .widget-info-tooltip) */
+/*
+.widget-info-tooltip.align-left::before {
+  left: 10px;
+  right: auto;
+}
+*/

@@ -1,5 +1,5 @@
 // Ruta: src/components/dashboard/BalanceTrendWidget.jsx
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -10,9 +10,9 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import WidgetLoader from './WidgetLoader'; // *** IMPORTAR WidgetLoader ***
-import './DashboardComponents.css'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css]
-import dashboardService from '../../services/dashboard.service'; // [cite: finanzas-app-pro/frontend/src/services/dashboard.service.js]
+import WidgetLoader from './WidgetLoader';
+import WidgetInfoIcon from './WidgetInfoIcon';
+import './DashboardComponents.css';
 
 ChartJS.register(
   CategoryScale,
@@ -23,24 +23,18 @@ ChartJS.register(
   Legend
 );
 
-// Aceptar chartData, loading y error como props
-const BalanceTrendWidget = ({ chartData, loading, error }) => {
+const BalanceTrendWidget = ({ chartData, loading, error, widgetDescription }) => {
+  const widgetTitle = "Tendencia del Saldo";
 
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: chartData?.datasets?.length > 1, 
-      },
-      title: {
-        display: false, 
-      },
+      legend: { display: chartData?.datasets?.length > 1 },
+      title: { display: false },
       tooltip: {
         enabled: true, 
-        animation: { 
-          duration: 150, 
-        },
+        animation: { duration: 150 },
         callbacks: {
           label: function(context) {
             let label = context.dataset.label || '';
@@ -67,16 +61,9 @@ const BalanceTrendWidget = ({ chartData, loading, error }) => {
           }
         }
       },
-      x: {
-        grid: {
-          display: false, 
-        }
-      }
+      x: { grid: { display: false } }
     },
-    animation: { 
-        duration: 800, 
-        easing: 'easeOutQuart'
-    }
+    animation: { duration: 800, easing: 'easeOutQuart' }
   };
 
   const renderContent = () => {
@@ -87,21 +74,21 @@ const BalanceTrendWidget = ({ chartData, loading, error }) => {
       return <p className="error-message" style={{ textAlign: 'center' }}>{typeof error === 'string' ? error : 'Error al cargar tendencia.'}</p>;
     }
     if (!chartData || !chartData.datasets || chartData.datasets.length === 0 || chartData.datasets[0].data.length === 0) {
-      return <p className="no-data-widget">No hay datos suficientes para mostrar la tendencia.</p>; {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+      return <p className="no-data-widget">No hay datos suficientes para mostrar la tendencia.</p>;
     }
     return (
       <>
         {chartData.summary && (
-            <div className="balance-trend-summary"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
-                <div className="current-balance-value"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+            <div className="balance-trend-summary">
+                <div className="current-balance-value">
                     {new Intl.NumberFormat('es-AR', { style: 'currency', currency: chartData.summary.currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(chartData.summary.currentBalance)}
                 </div>
-                <div className={`period-change ${chartData.summary.changeVsPreviousPeriodPercent >= 0 ? 'text-positive' : 'text-negative'}`}> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+                <div className={`period-change ${chartData.summary.changeVsPreviousPeriodPercent >= 0 ? 'text-positive' : 'text-negative'}`}>
                     {chartData.summary.changeVsPreviousPeriodPercent >= 0 ? '▲' : '▼'} {Math.abs(chartData.summary.changeVsPreviousPeriodPercent)}% vs mes anterior
                 </div>
             </div>
         )}
-        <div className="chart-container" style={{height: chartData.summary ? 'calc(100% - 70px)' : '100%' }}>  {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+        <div className="chart-container" style={{height: chartData.summary ? 'calc(100% - 70px)' : '100%' }}> 
           <Bar data={chartData} options={options} />
         </div>
       </>
@@ -110,7 +97,10 @@ const BalanceTrendWidget = ({ chartData, loading, error }) => {
 
   return (
     <div className="dashboard-widget balance-trend-widget">
-      <h3>Tendencia del Saldo</h3>
+      <div className="widget-header-container">
+        <h3>{widgetTitle}</h3>
+        <WidgetInfoIcon description={widgetDescription} />
+      </div>
       <div className="dashboard-widget-content">
         {renderContent()}
       </div>

@@ -14,23 +14,31 @@
   width: 100%; 
   max-width: 420px; /* Ancho máximo para los widgets en el grid */
   margin: 0; /* Los widgets no deben tener margen para que el grid los maneje */
+  position: relative; /* Para el posicionamiento absoluto del ícono de info si no está en el header flex */
 }
 
-/* Estilos específicos para el widget Panel de Control si son necesarios */
-.control-panel-widget {
-  /* Podrías añadir un borde o color de fondo distintivo si quisieras */
+/* Contenedor para el encabezado del widget (título + ícono de info) */
+.widget-header-container {
+  display: flex;
+  justify-content: space-between; /* Título a la izquierda, ícono a la derecha */
+  align-items: center;          /* Centrados verticalmente */
+  width: 100%;
+  margin-bottom: 8px;           /* Espacio antes del borde inferior */
+  padding-bottom: 8px;          /* Espacio después del borde inferior */
+  border-bottom: 1px solid #e5e7eb; /* Línea divisoria sutil */
+  box-sizing: border-box;
+  position: relative; /* Para que el tooltip del ícono se posicione bien si el ícono está dentro */
 }
 
 /* Título dentro de cada widget */
 .dashboard-widget h3 {
   font-size: 0.95rem; /* Tamaño de fuente para el título del widget */
   color: #374151; /* Color oscuro para el texto del título */
-  margin-top: 0; /* Sin margen superior */
-  margin-bottom: 8px; /* Espacio debajo del título */
+  margin: 0; /* Quitar márgenes si está dentro del flex container .widget-header-container */
   font-weight: 600; /* Semi-negrita */
-  flex-shrink: 0; /* Para que el título no se encoja si el contenido es grande */
-  padding-bottom: 8px; /* Espacio antes del borde inferior */
-  border-bottom: 1px solid #e5e7eb; /* Línea divisoria sutil */
+  flex-grow: 1; /* Para que el título ocupe el espacio disponible */
+  padding-right: 5px; /* Pequeño espacio para que no se pegue al ícono si el título es largo */
+  /* El border-bottom y padding-bottom ahora están en .widget-header-container */
 }
 
 /* Contenedor del contenido principal del widget (después del título) */
@@ -38,19 +46,29 @@
   flex-grow: 1; /* Permite que esta área ocupe el espacio restante */
   overflow-y: auto; /* Scroll vertical si el contenido excede la altura */
   min-height: 0; /* Necesario para que flex-grow funcione correctamente en algunos navegadores */
-  display: flex;
+  display: flex; /* Para centrar el WidgetLoader si es el único hijo */
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
+  /* padding: 0; Si el contenido interno ya tiene su propio padding, sino añadirlo aquí */
 }
+
+/* Ajustes para WidgetInfoIcon cuando está dentro de .widget-header-container */
+.widget-header-container .widget-info-icon-container {
+  position: static; /* Ya no necesita ser absoluto si es un ítem flex */
+  margin-left: 8px; /* Espacio entre el título y el ícono */
+  flex-shrink: 0; /* Para que el ícono no se encoja */
+  /* Los estilos de top/right del CSS de WidgetInfoIcon no aplicarán si es static */
+}
+
 
 /* Contenedor de los "medidores" en el Panel de Control */
 .control-panel-widget .gauges-container {
   display: flex;
-  justify-content: space-between; /* Espacio entre los items del panel */
-  align-items: stretch; /* Estirar items para igualar altura si es necesario */
-  gap: 12px; /* Espacio entre items */
-  flex-grow: 1; /* Ocupar espacio vertical */
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 12px;
+  flex-grow: 1;
   padding: 10px 0; 
   width: 100%;
   box-sizing: border-box;
@@ -58,114 +76,109 @@
 
 /* Cada item individual dentro del Panel de Control */
 .control-panel-item {
-  border: 1px solid #e9ecef; /* Borde sutil */
+  border: 1px solid #e9ecef;
   padding: 12px;  
   border-radius: 6px;
   text-align: center;
-  flex: 1 1 0; /* Permitir que crezcan y se encojan por igual */
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between; /* Distribuir espacio verticalmente */
-  background-color: #fff; /* Fondo blanco para los items */
+  justify-content: space-between;
+  background-color: #fff;
   box-shadow: 0 1px 2px rgba(0,0,0,0.03);
   box-sizing: border-box; 
-  min-width: 0; /* Para que flex funcione correctamente */
+  min-width: 0;
 }
 
 .control-panel-item-title {
   font-size: 0.7rem;
-  color: #6c757d; /* Color gris para el título del item */
+  color: #6c757d;
   font-weight: 600;
-  text-transform: uppercase; /* Títulos en mayúsculas */
+  text-transform: uppercase;
   margin-bottom: 8px;
   line-height: 1.2; 
-  word-break: break-word; /* Para evitar desbordamiento de títulos largos */
+  word-break: break-word;
 }
 
 .control-panel-item-value {
   font-size: 1.5rem; 
   font-weight: 700;
-  color: #2d3748; /* Color oscuro para el valor principal */
+  color: #2d3748;
   line-height: 1.1;
   margin-bottom: 4px;
-  word-break: break-all; /* Para valores muy largos */
+  word-break: break-all;
 }
 .control-panel-item-currency {
   font-size: 0.7rem; 
-  color: #718096; /* Color más suave para la moneda */
+  color: #718096;
   margin-left: 4px;
   font-weight: 500;
 }
 
 .control-panel-item-subvalue {
   font-size: 0.7rem;
-  color: #a0aec0; /* Color muy suave para subvalores o notas */
+  color: #a0aec0;
   margin-bottom: 8px;
 }
 
-/* Contenedor de la barra de progreso en el Panel de Control */
 .control-panel-progress-bar-container {
   width: 80%; 
-  background-color: #e9ecef; /* Fondo de la barra */
+  background-color: #e9ecef;
   border-radius: 10px;
   height: 10px; 
-  overflow: hidden; /* Para que el progreso no se salga del redondeo */
-  margin-top: auto; /* Empujar la barra hacia abajo si hay espacio */
+  overflow: hidden;
+  margin-top: auto;
 }
 
-/* Barra de progreso actual */
 .control-panel-progress-bar {
   height: 100%;
-  color: white; /* Color del texto dentro de la barra (si lo hay) */
+  color: white;
   text-align: right;
   font-size: 0.6rem; 
-  line-height: 10px; /* Alinear texto verticalmente */
+  line-height: 10px;
   font-weight: bold;
-  transition: width 0.4s ease-in-out; /* Animación suave al cambiar el ancho */
+  transition: width 0.4s ease-in-out;
   border-radius: 10px; 
   padding-right: 5px; 
   box-sizing: border-box;
 }
 
-/* Contenedor para gráficos (Chart.js) */
 .chart-container {
-  position: relative; /* Necesario para Chart.js */
-  flex-grow: 1; /* Ocupar espacio disponible */
+  position: relative;
+  flex-grow: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 0; /* Para que flex funcione bien */
-  min-width: 0; /* Para que flex funcione bien */
-  overflow: hidden; /* Evitar que el canvas se desborde */
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 .chart-container canvas {
-  max-width: 100% !important; /* Asegurar que el canvas no exceda el contenedor */
+  max-width: 100% !important;
   max-height: 100% !important;
-  object-fit: contain; /* Para que se ajuste manteniendo la proporción */
+  object-fit: contain;
 }
 
-/* --- Estilos para AccountSummaryCard --- */
 .accounts-summary-row {
   display: flex;
-  gap: 15px; /* Espacio entre tarjetas de resumen */
-  margin-bottom: 25px; /* Espacio debajo de la fila de resúmenes */
-  padding-bottom: 10px; /* Espacio para la barra de scroll si es necesaria */
-  overflow-x: auto; /* Scroll horizontal si hay muchas tarjetas */
-  flex-wrap: nowrap; /* Evitar que las tarjetas se envuelvan a la siguiente línea */
-  align-items: center; /* Alinear verticalmente todas las tarjetas y placeholders */
+  gap: 15px;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  align-items: center;
   justify-content: center; 
 }
 
-/* Estilo base para cada tarjeta de resumen de cuenta */
 .account-summary-card {
   border-radius: 8px; 
   padding: 15px;
-  min-width: 250px; /* Ancho mínimo para cada tarjeta */
-  max-width: 280px; /* Ancho máximo */
-  height: 85px; /* Altura fija para las tarjetas */    
-  flex: 0 0 auto; /* Evitar que se estiren o encojan en la fila flex */
+  min-width: 250px;
+  max-width: 280px;
+  height: 85px;    
+  flex: 0 0 auto;
   box-shadow: 0 2px 5px rgba(0,0,0,0.12); 
   border: none; 
   background-color: #6c757d; 
@@ -226,22 +239,11 @@
   white-space: nowrap; 
 }
 
-.account-summary-card.bg-efectivo {
-  background-color: #4DB6AC; 
-}
-.account-summary-card.bg-icbc {
-  background-color: #E57373; 
-}
-.account-summary-card.bg-uala {
-  background-color: #64B5F6; 
-}
-.account-summary-card.bg-mercadopago {
-  background-color: #00AEEF; 
-}
-/* --- Fin Estilos para AccountSummaryCard --- */
+.account-summary-card.bg-efectivo { background-color: #4DB6AC; }
+.account-summary-card.bg-icbc { background-color: #E57373; }
+.account-summary-card.bg-uala { background-color: #64B5F6; }
+.account-summary-card.bg-mercadopago { background-color: #00AEEF; }
 
-
-/* Placeholder para "Añadir Widget" (que es un .dashboard-widget) */
 .dashboard-widget.add-card-placeholder { 
   background-color: #f7fafc; 
   border: 2px dashed #d3dce6; 
@@ -289,12 +291,9 @@
   text-align: center;
 }
 
-
-/* Clases de utilidad para colores de texto */
 .text-positive { color: var(--secondary-color, #2ecc71) !important; }
 .text-negative { color: var(--danger-color, #e74c3c) !important; }
 
-/* Mensajes de carga o sin datos dentro de los widgets */
 .loading-text-widget, .no-data-widget { 
   font-size: 0.85rem; 
   color: #718096; 
@@ -308,8 +307,6 @@
   flex-grow: 1; 
 }
 
-/* Estilos específicos para BalanceOverviewWidget */
-.balance-overview-widget {} 
 .balance-overview-widget .balance-total-multi-currency { margin-bottom: 12px; }
 .balance-currency-item { 
   display: flex; 
@@ -352,7 +349,6 @@
   font-size: 1.25em !important; 
 }
 
-/* Estilos para RecentTransactionsWidget */
 .recent-transactions-widget .transactions-list { 
   list-style: none; 
   padding: 0; 
@@ -419,7 +415,6 @@
   color: #a0aec0; 
 }
 
-/* Estilos para BalanceTrendWidget */
 .balance-trend-widget .dashboard-widget-content {
     padding: 5px 10px 10px 0; 
 }
@@ -445,7 +440,6 @@
     color: #e74c3c; 
 }
 
-/* Estilos para el Modal de Selección de Cuentas */
 .dashboard-modal-overlay {
   position: fixed;
   top: 0;
@@ -528,12 +522,11 @@
   padding: 8px 18px !important;
 }
 
-/* Estilos para el contenedor del placeholder de "Añadir Cuenta" y "Personalizar" */
 .add-account-card-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* Centra verticalmente el contenido */
+  justify-content: center;
   text-align: center;
   background-color: #f7fafc;  
   color: var(--primary-color); 
@@ -541,8 +534,8 @@
   cursor: default;
   min-width: 180px; 
   max-width: 240px; 
-  height: 85px; /* IGUALAR ALTURA a .account-summary-card */
-  padding: 8px; /* Reducir padding para dar más espacio al contenido */
+  height: 85px;
+  padding: 8px;
   box-sizing: border-box;
   position: relative;
   border-radius: var(--border-radius, 8px); 
@@ -563,19 +556,19 @@
   text-decoration: none;
   color: inherit; 
   width: 100%;
-  margin-bottom: 4px; /* Aún más pequeño para el botón */
+  margin-bottom: 4px;
   cursor: pointer; 
 }
 
 .add-account-icon { 
-  font-size: 1.5rem; /* Más pequeño */
-  margin-bottom: 3px; /* Más pequeño */
+  font-size: 1.5rem;
+  margin-bottom: 3px;
   color: var(--primary-color); 
-  line-height: 1; /* Para que el emoji no tenga espacio extra */
+  line-height: 1;
 }
 .add-account-card-container div:not(.add-account-icon) { 
   font-weight: 500;
-  font-size: 0.75rem; /* Más pequeño */
+  font-size: 0.75rem;
   line-height: 1.2;
 }
 
@@ -583,9 +576,9 @@
   background-color: transparent !important;
   color: #555 !important; 
   border: 1px solid #ccc !important;
-  padding: 2px 5px !important;  /* Muy pequeño */
-  font-size: 0.6rem !important; /* Muy pequeño */
-  margin-top: 3px; /* Ajuste fino del margen superior */
+  padding: 2px 5px !important;
+  font-size: 0.6rem !important;
+  margin-top: 3px;
   line-height: 1.1;
   border-radius: 3px !important; 
   width: auto !important;
@@ -599,9 +592,7 @@
   border-color: var(--primary-color) !important;
 }
 
-/* Estilo específico para el placeholder de añadir widget (el grande en el grid principal) */
 .add-widget-placeholder { 
-  /* Hereda de .dashboard-widget y .dashboard-widget.add-card-placeholder */
   border-color: var(--primary-color-light, #a0cff9) !important; 
 }
 

@@ -2,8 +2,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import WidgetLoader from './WidgetLoader';
-import './DashboardComponents.css'; //
-import './InvestmentHighlights.css'; //
+import WidgetInfoIcon from './WidgetInfoIcon';
+import './DashboardComponents.css';
+import './InvestmentHighlights.css';
 
 const formatCurrency = (amount, currency = 'ARS') => {
   const symbol = currency === 'USD' ? 'U$S' : '$';
@@ -23,11 +24,16 @@ const getInvestmentTypeLabel = (type) => {
     return labels[type] || type;
   };
 
-const InvestmentHighlights = ({ highlights, loading, error }) => {
+const InvestmentHighlights = ({ highlights, loading, error, widgetDescription }) => {
+  const widgetTitle = `Resumen de Inversiones${highlights ? ` (${highlights.totalNumberOfInvestments || 0})` : ''}`;
+
   if (loading) {
     return (
       <div className="dashboard-widget investment-highlights-widget">
-        <h3>Resumen de Inversiones</h3>
+        <div className="widget-header-container">
+          <h3>Resumen de Inversiones</h3>
+          <WidgetInfoIcon description={widgetDescription} />
+        </div>
         <div className="dashboard-widget-content">
           <WidgetLoader message="Cargando inversiones..." />
         </div>
@@ -38,7 +44,10 @@ const InvestmentHighlights = ({ highlights, loading, error }) => {
   if (error) {
     return (
       <div className="dashboard-widget investment-highlights-widget">
-        <h3>Resumen de Inversiones</h3>
+        <div className="widget-header-container">
+          <h3>Resumen de Inversiones</h3>
+          <WidgetInfoIcon description={widgetDescription} />
+        </div>
         <div className="dashboard-widget-content">
           <p className="error-message" style={{textAlign: 'center'}}>
             {typeof error === 'string' ? error : 'Error al cargar resumen de inversiones.'}
@@ -51,9 +60,12 @@ const InvestmentHighlights = ({ highlights, loading, error }) => {
   if (!highlights || highlights.totalNumberOfInvestments === 0) {
     return (
       <div className="dashboard-widget investment-highlights-widget">
-        <h3>Resumen de Inversiones</h3>
+        <div className="widget-header-container">
+          <h3>Resumen de Inversiones</h3>
+          <WidgetInfoIcon description={widgetDescription} />
+        </div>
         <div className="dashboard-widget-content">
-          <p className="no-data-widget">No hay inversiones registradas.</p> {/* */}
+          <p className="no-data-widget">No hay inversiones registradas.</p>
           <Link to="/investments/add" className="button button-small" style={{marginTop: '10px'}}>
             Registrar Inversión
           </Link>
@@ -64,13 +76,16 @@ const InvestmentHighlights = ({ highlights, loading, error }) => {
 
   return (
     <div className="dashboard-widget investment-highlights-widget">
-      <h3>Resumen de Inversiones ({highlights.totalNumberOfInvestments})</h3>
+      <div className="widget-header-container">
+        <h3>{widgetTitle}</h3>
+        <WidgetInfoIcon description={widgetDescription} />
+      </div>
       <div className="dashboard-widget-content">
-        <div className="total-investments-value"> {/* */}
+        <div className="total-investments-value">
           <span>Valor Total Estimado:</span>
-          <div className="currency-values"> {/* */}
+          <div className="currency-values">
             {Object.entries(highlights.totalValueByCurrency).map(([currency, value]) => (
-              <strong key={currency} className="total-value-currency-item"> {/* */}
+              <strong key={currency} className="total-value-currency-item">
                 {formatCurrency(value, currency)}
               </strong>
             ))}
@@ -79,22 +94,22 @@ const InvestmentHighlights = ({ highlights, loading, error }) => {
         </div>
 
         {highlights.topInvestments && highlights.topInvestments.length > 0 && (
-          <div className="top-investments-list"> {/* */}
+          <div className="top-investments-list">
             <h4>Inversiones Destacadas:</h4>
             <ul>
               {highlights.topInvestments.map(inv => (
                 <li key={inv.id}>
                   <Link to={`/investments#investment-${inv.id}`}>
-                    <span className="inv-icon">{inv.icon || '⭐'}</span> {/* */}
-                    <span className="inv-name">{inv.name} ({getInvestmentTypeLabel(inv.type)})</span> {/* */}
-                    <span className="inv-value">{formatCurrency(inv.currentValue, inv.currency)}</span> {/* */}
+                    <span className="inv-icon">{inv.icon || '⭐'}</span>
+                    <span className="inv-name">{inv.name} ({getInvestmentTypeLabel(inv.type)})</span>
+                    <span className="inv-value">{formatCurrency(inv.currentValue, inv.currency)}</span>
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
         )}
-        <Link to="/investments" className="button button-small button-view-all"> {/* */}
+        <Link to="/investments" className="button button-small button-view-all">
           Ver Todas las Inversiones
         </Link>
       </div>

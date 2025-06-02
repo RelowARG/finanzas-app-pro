@@ -1,7 +1,8 @@
 // Ruta: src/components/dashboard/ControlPanelWidget.jsx
 import React from 'react';
-import WidgetLoader from './WidgetLoader'; // *** IMPORTAR WidgetLoader ***
-import './DashboardComponents.css'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css]
+import WidgetLoader from './WidgetLoader';
+import WidgetInfoIcon from './WidgetInfoIcon';
+import './DashboardComponents.css';
 
 const formatCurrencyBare = (amount, currency = 'ARS') => {
   const value = Number(amount) || 0;
@@ -13,17 +14,17 @@ const formatCurrencyBare = (amount, currency = 'ARS') => {
 
 const ControlPanelItem = ({ title, value, currency, subValue, progressPercent, progressColor }) => {
   return (
-    <div className="control-panel-item"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
-      <div className="control-panel-item-title">{title}</div> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
-      <div className="control-panel-item-value"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+    <div className="control-panel-item">
+      <div className="control-panel-item-title">{title}</div>
+      <div className="control-panel-item-value">
         {value}
-        <span className="control-panel-item-currency">{currency}</span> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+        <span className="control-panel-item-currency">{currency}</span>
       </div>
-      {subValue && <div className="control-panel-item-subvalue">{subValue}</div>} {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+      {subValue && <div className="control-panel-item-subvalue">{subValue}</div>}
       {progressPercent !== undefined && (
-        <div className="control-panel-progress-bar-container"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+        <div className="control-panel-progress-bar-container">
           <div
-            className="control-panel-progress-bar" /* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */
+            className="control-panel-progress-bar"
             style={{ width: `${Math.min(progressPercent, 100)}%`, backgroundColor: progressColor || '#3498db' }}
           >
             {progressPercent > 10 ? `${progressPercent.toFixed(0)}%` : ''}
@@ -34,12 +35,16 @@ const ControlPanelItem = ({ title, value, currency, subValue, progressPercent, p
   );
 };
 
-// Aceptar loading y error como props
-const ControlPanelWidget = ({ saldoData, flujoData, gastadoData, loading, error }) => {
+const ControlPanelWidget = ({ saldoData, flujoData, gastadoData, loading, error, widgetDescription }) => {
+  const widgetTitle = "Panel de Control";
+
   if (loading) {
     return (
       <div className="dashboard-widget control-panel-widget">
-        <h3>Panel de Control</h3>
+        <div className="widget-header-container">
+          <h3>{widgetTitle}</h3>
+          <WidgetInfoIcon description={widgetDescription} />
+        </div>
         <div className="dashboard-widget-content">
           <WidgetLoader message="Cargando panel..." />
         </div>
@@ -50,7 +55,10 @@ const ControlPanelWidget = ({ saldoData, flujoData, gastadoData, loading, error 
   if (error) {
     return (
       <div className="dashboard-widget control-panel-widget">
-        <h3>Panel de Control</h3>
+        <div className="widget-header-container">
+          <h3>{widgetTitle}</h3>
+          <WidgetInfoIcon description={widgetDescription} />
+        </div>
         <div className="dashboard-widget-content">
           <p className="error-message" style={{textAlign: 'center'}}>
             {typeof error === 'string' ? error : 'Error al cargar datos del panel.'}
@@ -60,11 +68,9 @@ const ControlPanelWidget = ({ saldoData, flujoData, gastadoData, loading, error 
     );
   }
   
-  // Usar valores por defecto si los datos no están completamente cargados o son nulos
   const saldo = saldoData || { value: 0, currency: 'ARS' };
   const flujo = flujoData || { value: 0, currency: 'ARS', type: 'ingreso' };
   const gastado = gastadoData || { spent: 0, total: 0, currency: 'ARS' };
-
 
   const gastadoPercent = gastado.total > 0 ? (gastado.spent / gastado.total) * 100 : 0;
   let gastadoColor = '#3498db'; 
@@ -73,9 +79,12 @@ const ControlPanelWidget = ({ saldoData, flujoData, gastadoData, loading, error 
 
   return (
   <div className="dashboard-widget control-panel-widget">
-    <h3>Panel de Control</h3>
+    <div className="widget-header-container">
+      <h3>{widgetTitle}</h3>
+      <WidgetInfoIcon description={widgetDescription} />
+    </div>
     <div className="dashboard-widget-content">
-      <div className="gauges-container"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+      <div className="gauges-container">
         <ControlPanelItem
             title="SALDO ACTUAL"
             value={formatCurrencyBare(saldo.value, saldo.currency)}

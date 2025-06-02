@@ -1,21 +1,26 @@
 // Ruta: src/components/dashboard/BalanceOverview.jsx
 import React from 'react';
-import WidgetLoader from './WidgetLoader'; // *** NUEVA IMPORTACIÓN ***
-import './DashboardComponents.css'; //
+import WidgetLoader from './WidgetLoader';
+import WidgetInfoIcon from './WidgetInfoIcon';
+import './DashboardComponents.css'; // Asegúrate que los estilos del widget-header-container estén aquí
 
 const formatCurrency = (amount, currency) => {
-  // ... (tu función formatCurrency existente)
   const value = Number(amount) || 0;
   const symbol = currency === 'USD' ? 'U$S' : '$';
   return `${symbol} ${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-const BalanceOverview = ({ summary, loading }) => {
-  // *** USAR WidgetLoader CUANDO loading ES TRUE ***
+const BalanceOverview = ({ summary, loading, error, widgetDescription }) => {
+  const widgetTitle = "Resumen de Balance";
+
   if (loading) {
     return (
       <div className="dashboard-widget balance-overview-widget">
-        <h3>Resumen de Balance</h3>
+        {/* Contenedor del encabezado del widget */}
+        <div className="widget-header-container">
+          <h3>{widgetTitle}</h3>
+          <WidgetInfoIcon description={widgetDescription} />
+        </div>
         <div className="dashboard-widget-content">
           <WidgetLoader message="Cargando balance..." />
         </div>
@@ -23,12 +28,17 @@ const BalanceOverview = ({ summary, loading }) => {
     );
   }
   
-  if (!summary || !summary.balances) {
+  if (error || !summary || !summary.balances) {
     return (
         <div className="dashboard-widget balance-overview-widget">
-            <h3>Resumen de Balance</h3>
+            <div className="widget-header-container">
+              <h3>{widgetTitle}</h3>
+              <WidgetInfoIcon description={widgetDescription} />
+            </div>
             <div className="dashboard-widget-content">
-              <p className="no-data-widget">No hay datos de balance. ¡Agrega una cuenta!</p> {/* */}
+              <p className="no-data-widget">
+                {error ? (typeof error === 'string' ? error : 'Error al cargar balance.') : 'No hay datos de balance. ¡Agrega una cuenta!'}
+              </p>
             </div>
         </div>
     );
@@ -40,9 +50,12 @@ const BalanceOverview = ({ summary, loading }) => {
   if (noBalancesAvailable) {
      return (
         <div className="dashboard-widget balance-overview-widget">
-            <h3>Resumen de Balance</h3>
+            <div className="widget-header-container">
+              <h3>{widgetTitle}</h3>
+              <WidgetInfoIcon description={widgetDescription} />
+            </div>
             <div className="dashboard-widget-content">
-              <p className="no-data-widget">Saldos no disponibles para el resumen.</p> {/* */}
+              <p className="no-data-widget">Saldos no disponibles para el resumen.</p>
             </div>
         </div>
     );
@@ -50,8 +63,13 @@ const BalanceOverview = ({ summary, loading }) => {
 
   return (
     <div className="dashboard-widget balance-overview-widget">
-      <h3>Resumen de Balance</h3>
-      <div className="dashboard-widget-content"> {/* Asegúrate que esta clase permita que WidgetLoader se centre */}
+      {/* Contenedor del encabezado del widget */}
+      <div className="widget-header-container">
+        <h3>{widgetTitle}</h3>
+        <WidgetInfoIcon description={widgetDescription} />
+      </div>
+      
+      <div className="dashboard-widget-content">
         <div className="balance-total-multi-currency">
           {balances.ARS !== null && (
             <div className="balance-currency-item">
@@ -69,7 +87,6 @@ const BalanceOverview = ({ summary, loading }) => {
               </strong>
             </div>
           )}
-
           {totalBalanceARSConverted !== null && (
             <div className="balance-currency-item consolidated-total">
               <span>Saldo Total Consolidado (ARS Aprox.):</span>
@@ -79,9 +96,8 @@ const BalanceOverview = ({ summary, loading }) => {
             </div>
           )}
         </div>
-        
         {(conversionRateUsed || (balances.USD !== null && !conversionRateUsed)) && (
-          <p className="balance-overview-note"> {/* */}
+          <p className="balance-overview-note">
             {conversionRateUsed && rateMonthYear && (
               `Conversión USD a ARS usando tasa de ${rateMonthYear}: ${parseFloat(conversionRateUsed).toFixed(2)}. `
             )}
@@ -92,7 +108,7 @@ const BalanceOverview = ({ summary, loading }) => {
           </p>
         )}
         {balances.USD === null && totalBalanceARSConverted !== null && (
-           <p className="balance-overview-note"> {/* */}
+           <p className="balance-overview-note">
               Este es el saldo de tus cuentas marcadas para incluir en el resumen.
           </p>
         )}
