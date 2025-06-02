@@ -1,7 +1,8 @@
 // Ruta: src/components/dashboard/SaludFinancieraWidget.jsx
 import React, { useState } from 'react';
-import './DashboardComponents.css'; 
-import './SaludFinancieraWidget.css'; 
+import WidgetLoader from './WidgetLoader'; // *** IMPORTAR WidgetLoader ***
+import './DashboardComponents.css'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css]
+import './SaludFinancieraWidget.css'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css]
 
 const getScoreColor = (score) => {
   if (score >= 75) return 'score-high'; 
@@ -13,25 +14,21 @@ const SubMetricItem = ({ label, value, unit = '', recommendation, status = 'neut
   let displayValue = value;
   if (typeof value === 'number') {
     if (value === Infinity || value === -Infinity) {
-      displayValue = "N/A"; // O un símbolo como '∞' si prefieres
+      displayValue = "N/A";
     } else if (Number.isFinite(value)) {
-      // Formatear a 1 decimal si no es entero, o sin decimales si es entero.
-      // Para el ratio de deuda, siempre es bueno ver un decimal.
-      // Para la cobertura, también.
       displayValue = value.toLocaleString('es-AR', { minimumFractionDigits: (label.toLowerCase().includes("ratio") || label.toLowerCase().includes("cobertura") || !Number.isInteger(value)) ? 1 : 0, maximumFractionDigits: 1 });
     }
   }
-  // Si 'value' ya es un string (ej. "N/A" o un mensaje), se usa tal cual.
-
   return (
-    <div className={`sfw-submetric-item sfw-status-${status}`}>
-      <span className="sfw-submetric-label">{label}:</span>
-      <span className="sfw-submetric-value">{displayValue}{unit}</span>
-      {recommendation && <p className="sfw-submetric-recommendation">{recommendation}</p>}
+    <div className={`sfw-submetric-item sfw-status-${status}`}> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css] */}
+      <span className="sfw-submetric-label">{label}:</span> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css] */}
+      <span className="sfw-submetric-value">{displayValue}{unit}</span> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css] */}
+      {recommendation && <p className="sfw-submetric-recommendation">{recommendation}</p>} {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css] */}
     </div>
   );
 };
 
+// Aceptar data, loading y error como props
 const SaludFinancieraWidget = ({ data, loading, error }) => {
   const [showDetails, setShowDetails] = useState(false); 
 
@@ -40,7 +37,7 @@ const SaludFinancieraWidget = ({ data, loading, error }) => {
       <div className="dashboard-widget salud-financiera-widget">
         <h3>Salud Financiera General</h3>
         <div className="dashboard-widget-content">
-          <p className="loading-text-widget">Calculando salud financiera...</p>
+          <WidgetLoader message="Calculando salud financiera..." />
         </div>
       </div>
     );
@@ -52,7 +49,7 @@ const SaludFinancieraWidget = ({ data, loading, error }) => {
         <h3>Salud Financiera General</h3>
         <div className="dashboard-widget-content">
           <p className="error-message" style={{ textAlign: 'center' }}>
-            {error || 'No se pudieron cargar los datos de salud financiera.'}
+            {typeof error === 'string' ? error : 'No se pudo cargar la salud financiera.'}
           </p>
         </div>
       </div>
@@ -78,19 +75,19 @@ const SaludFinancieraWidget = ({ data, loading, error }) => {
     >
       <h3>Salud Financiera General</h3>
       <div className="dashboard-widget-content"> 
-        <div className="sfw-main-score-container">
-          <div className={`sfw-score-circle ${scoreColorClass}`}>
-            <span className="sfw-score-value">{overallScore}</span>
-            <span className="sfw-score-label">/ 100</span>
+        <div className="sfw-main-score-container"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css] */}
+          <div className={`sfw-score-circle ${scoreColorClass}`}> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css] */}
+            <span className="sfw-score-value">{overallScore}</span> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css] */}
+            <span className="sfw-score-label">/ 100</span> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css] */}
           </div>
-          <p className={`sfw-score-assessment ${scoreColorClass}`}>
+          <p className={`sfw-score-assessment ${scoreColorClass}`}> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css] */}
             {assessmentText}
           </p>
         </div>
 
-        <div className={`sfw-details-panel ${showDetails ? 'visible' : ''}`}>
+        <div className={`sfw-details-panel ${showDetails ? 'visible' : ''}`}> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css] */}
           <h4>Detalle de Métricas:</h4>
-          <div className="sfw-submetrics-grid">
+          <div className="sfw-submetrics-grid"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/SaludFinancieraWidget.css] */}
             {savingsRate && (
               <SubMetricItem
                 label="Tasa de Ahorro Mensual"
@@ -112,7 +109,7 @@ const SaludFinancieraWidget = ({ data, loading, error }) => {
             {debtToIncomeRatio && (
               <SubMetricItem
                 label="Ratio Deuda/Ingreso (No Hip.)"
-                value={debtToIncomeRatio.value} // El backend ya debería enviar un número
+                value={debtToIncomeRatio.value} 
                 unit="%"
                 recommendation={debtToIncomeRatio.recommendation}
                 status={debtToIncomeRatio.status}
@@ -121,7 +118,7 @@ const SaludFinancieraWidget = ({ data, loading, error }) => {
             {debtCoverage && (
               <SubMetricItem
                 label="Cobertura de Deudas Corto Plazo"
-                value={debtCoverage.value} // El backend ya debería enviar un número o manejar Infinity
+                value={debtCoverage.value} 
                 unit="x"
                 recommendation={debtCoverage.recommendation}
                 status={debtCoverage.status}

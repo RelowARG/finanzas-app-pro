@@ -10,8 +10,9 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import './DashboardComponents.css';
-import dashboardService from '../../services/dashboard.service'; 
+import WidgetLoader from './WidgetLoader'; // *** IMPORTAR WidgetLoader ***
+import './DashboardComponents.css'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css]
+import dashboardService from '../../services/dashboard.service'; // [cite: finanzas-app-pro/frontend/src/services/dashboard.service.js]
 
 ChartJS.register(
   CategoryScale,
@@ -22,33 +23,8 @@ ChartJS.register(
   Legend
 );
 
-const BalanceTrendWidget = () => {
-  const [chartData, setChartData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const fetchBalanceTrend = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const dataFromApi = await dashboardService.getBalanceTrendData({ months: 6 });
-        setChartData(dataFromApi);
-
-      } catch (err) {
-        console.error("Error fetching balance trend data:", err);
-        setError('Error al cargar la tendencia del saldo.');
-        setChartData({ 
-          labels: [],
-          datasets: [],
-          summary: { currentBalance: 0, currency: 'ARS', changeVsPreviousPeriodPercent: 0 }
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBalanceTrend();
-  }, []);
+// Aceptar chartData, loading y error como props
+const BalanceTrendWidget = ({ chartData, loading, error }) => {
 
   const options = {
     responsive: true,
@@ -61,10 +37,9 @@ const BalanceTrendWidget = () => {
         display: false, 
       },
       tooltip: {
-        // *** AJUSTE SUGERIDO PARA EL TOOLTIP ***
-        enabled: true, // Asegurarse que esté habilitado
-        animation: { // Controlar animación del tooltip
-          duration: 150, // Duración rápida (0.15 segundos)
+        enabled: true, 
+        animation: { 
+          duration: 150, 
         },
         callbacks: {
           label: function(context) {
@@ -98,35 +73,35 @@ const BalanceTrendWidget = () => {
         }
       }
     },
-    animation: { // Animación general del gráfico al cargar/actualizar
-        duration: 800, // Duración de 0.8 segundos para la animación del gráfico
+    animation: { 
+        duration: 800, 
         easing: 'easeOutQuart'
     }
   };
 
   const renderContent = () => {
     if (loading) {
-      return <p className="loading-text-widget">Cargando tendencia...</p>;
+      return <WidgetLoader message="Cargando tendencia..." />;
     }
     if (error) {
-      return <p className="error-message" style={{ textAlign: 'center' }}>{error}</p>;
+      return <p className="error-message" style={{ textAlign: 'center' }}>{typeof error === 'string' ? error : 'Error al cargar tendencia.'}</p>;
     }
     if (!chartData || !chartData.datasets || chartData.datasets.length === 0 || chartData.datasets[0].data.length === 0) {
-      return <p className="no-data-widget">No hay datos suficientes para mostrar la tendencia.</p>;
+      return <p className="no-data-widget">No hay datos suficientes para mostrar la tendencia.</p>; {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
     }
     return (
       <>
         {chartData.summary && (
-            <div className="balance-trend-summary">
-                <div className="current-balance-value">
+            <div className="balance-trend-summary"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
+                <div className="current-balance-value"> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
                     {new Intl.NumberFormat('es-AR', { style: 'currency', currency: chartData.summary.currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(chartData.summary.currentBalance)}
                 </div>
-                <div className={`period-change ${chartData.summary.changeVsPreviousPeriodPercent >= 0 ? 'text-positive' : 'text-negative'}`}>
+                <div className={`period-change ${chartData.summary.changeVsPreviousPeriodPercent >= 0 ? 'text-positive' : 'text-negative'}`}> {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
                     {chartData.summary.changeVsPreviousPeriodPercent >= 0 ? '▲' : '▼'} {Math.abs(chartData.summary.changeVsPreviousPeriodPercent)}% vs mes anterior
                 </div>
             </div>
         )}
-        <div className="chart-container" style={{height: chartData.summary ? 'calc(100% - 70px)' : '100%' }}> 
+        <div className="chart-container" style={{height: chartData.summary ? 'calc(100% - 70px)' : '100%' }}>  {/* [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css] */}
           <Bar data={chartData} options={options} />
         </div>
       </>
