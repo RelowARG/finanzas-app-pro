@@ -98,7 +98,7 @@ const EditRecurringTransactionPage = () => {
       setError('');
       try {
         const [recurringTxData, accData] = await Promise.all([
-          recurringTransactionsService.getRecurringTransactionById(recurringId),
+          recurringTransactionsService.getById(recurringId),
           accountService.getAllAccounts()
         ]);
         
