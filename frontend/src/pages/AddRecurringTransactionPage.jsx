@@ -1,11 +1,10 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/AddRecurringTransactionPage.jsx
-// ARCHIVO NUEVO
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import recurringTransactionsService from '../services/recurringTransactions.service';
 import accountService from '../services/accounts.service';
 import categoriesService from '../services/categories.service';
-import './AddRecurringTransactionPage.css'; // Crearemos este CSS
+import './AddRecurringTransactionPage.css';
 
 const AddRecurringTransactionPage = () => {
   const navigate = useNavigate();
@@ -15,10 +14,10 @@ const AddRecurringTransactionPage = () => {
   const [currency, setCurrency] = useState('ARS');
   const [type, setType] = useState('egreso');
   const [frequency, setFrequency] = useState('mensual');
-  const [dayOfWeek, setDayOfWeek] = useState(''); // 0-6 (Domingo-Sábado)
-  const [dayOfMonth, setDayOfMonth] = useState('1'); // 1-31 o 'ultimo'
+  const [dayOfWeek, setDayOfWeek] = useState('');
+  const [dayOfMonth, setDayOfMonth] = useState('1');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(''); // Opcional
+  const [endDate, setEndDate] = useState('');
   const [accountId, setAccountId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [notes, setNotes] = useState('');
@@ -51,20 +50,27 @@ const AddRecurringTransactionPage = () => {
     { value: '0', label: 'Domingo' },
   ];
   const daysOfMonthOptions = Array.from({ length: 31 }, (_, i) => ({ value: (i + 1).toString(), label: (i + 1).toString() }));
-  // daysOfMonthOptions.push({ value: 'ultimo', label: 'Último día del mes'}); // Lógica más compleja para 'ultimo'
 
   useEffect(() => {
     const loadData = async () => {
       setLoadingInitialData(true);
       try {
+        const initialTransactionType = 'egreso'; // Default type
         const [accData, catData] = await Promise.all([
           accountService.getAllAccounts(),
-          categoriesService.getCategoriesByType(type) // Cargar según tipo inicial
+          categoriesService.getCategoriesByType(initialTransactionType)
         ]);
+        
         setAccounts(accData || []);
+        if (accData && accData.length > 0 && !accountId) {
+          setAccountId(accData[0].id.toString());
+        }
+        
         setCategories(catData || []);
-        if (accData && accData.length > 0 && !accountId) setAccountId(accData[0].id);
-        if (catData && catData.length > 0 && !categoryId) setCategoryId(catData[0].id);
+        if (catData && catData.length > 0 && !categoryId) {
+          setCategoryId(catData[0].id.toString());
+        }
+
       } catch (err) {
         setError('Error al cargar datos iniciales (cuentas/categorías).');
         console.error(err);
@@ -72,29 +78,49 @@ const AddRecurringTransactionPage = () => {
       setLoadingInitialData(false);
     };
     loadData();
-  }, []); // Solo al montar
+  }, []); // Este efecto se ejecuta solo una vez al montar el componente.
 
   useEffect(() => {
-    // Recargar categorías si cambia el tipo
+    // Este efecto se ejecuta cuando 'type' cambia (ej. de egreso a ingreso)
+    // o cuando 'loadingInitialData' cambia (después de la carga inicial).
+    // NO debe depender de 'categoryId'.
     if (!loadingInitialData && type) {
       categoriesService.getCategoriesByType(type)
         .then(data => {
-          setCategories(data || []);
-          // Si la categoría seleccionada no es válida para el nuevo tipo, resetearla
-          const currentCatIsValid = data && data.some(cat => cat.id === categoryId);
-          if (!currentCatIsValid && data && data.length > 0) {
-            setCategoryId(data[0].id);
-          } else if (!currentCatIsValid) {
-            setCategoryId('');
+          const fetchedCategories = data || [];
+          setCategories(fetchedCategories);
+
+          // Comprobar si la categoría actualmente seleccionada (categoryId)
+          // es válida para el nuevo 'type'.
+          const currentCategoryIsStillValid = fetchedCategories.some(
+            cat => cat.id.toString() === categoryId.toString()
+          );
+
+          if (!currentCategoryIsStillValid) {
+            // Si no es válida (o si categoryId estaba vacío),
+            // seleccionar la primera categoría de la nueva lista o limpiar.
+            if (fetchedCategories.length > 0) {
+              setCategoryId(fetchedCategories[0].id.toString());
+            } else {
+              setCategoryId(''); // No hay categorías para este tipo
+            }
           }
+          // Si 'currentCategoryIsStillValid' es true, no se hace nada aquí,
+          // lo que significa que la categoría seleccionada es válida para el 'type' actual,
+          // y la selección del usuario (o el default inicial) se mantiene.
         })
         .catch(err => {
           setError('Error al cargar categorías para el tipo seleccionado.');
-          console.error(err);
+          console.error("[CategoryLoadEffect] Error:", err);
+          setCategories([]);
+          setCategoryId('');
         });
+    } else if (!type && !loadingInitialData) {
+      // Si el tipo se borra por alguna razón
+      setCategories([]);
+      setCategoryId('');
     }
-  }, [type, loadingInitialData, categoryId]);
-
+  }, [type, loadingInitialData]); // Dependencias correctas
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,7 +128,6 @@ const AddRecurringTransactionPage = () => {
       setError('Por favor, completa todos los campos requeridos (*).');
       return;
     }
-    // Validaciones adicionales según frecuencia
     if (frequency === 'semanal' && dayOfWeek === '') {
         setError('Por favor, selecciona un día de la semana para la frecuencia semanal.');
         return;
@@ -124,15 +149,15 @@ const AddRecurringTransactionPage = () => {
       dayOfWeek: frequency === 'semanal' ? parseInt(dayOfWeek) : null,
       dayOfMonth: (frequency !== 'diaria' && frequency !== 'semanal') ? parseInt(dayOfMonth) : null,
       startDate,
-      endDate: endDate || null, // Enviar null si está vacío
-      accountId,
-      categoryId,
+      endDate: endDate || null,
+      accountId: parseInt(accountId),
+      categoryId: parseInt(categoryId),
       notes,
       isActive,
     };
 
     try {
-      await recurringTransactionsService.createRecurringTransaction(recurringTxData);
+      await recurringTransactionsService.create(recurringTxData);
       navigate('/settings/recurring-transactions');
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Error al crear el movimiento recurrente.');
@@ -183,14 +208,14 @@ const AddRecurringTransactionPage = () => {
               <label htmlFor="accountId">Cuenta Origen/Destino (*):</label>
               <select id="accountId" value={accountId} onChange={(e) => setAccountId(e.target.value)} required disabled={accounts.length === 0}>
                 <option value="">{accounts.length === 0 ? 'No hay cuentas' : 'Seleccionar cuenta'}</option>
-                {accounts.map(acc => (<option key={acc.id} value={acc.id}>{acc.icon} {acc.name} ({acc.currency})</option>))}
+                {accounts.map(acc => (<option key={acc.id} value={acc.id.toString()}>{acc.icon} {acc.name} ({acc.currency})</option>))}
               </select>
             </div>
             <div className="form-group">
               <label htmlFor="categoryId">Categoría (*):</label>
               <select id="categoryId" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required disabled={categories.length === 0}>
                 <option value="">{categories.length === 0 ? `No hay categorías de ${type}` : 'Seleccionar categoría'}</option>
-                {categories.map(cat => (<option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>))}
+                {categories.map(cat => (<option key={cat.id} value={cat.id.toString()}>{cat.icon} {cat.name}</option>))}
               </select>
             </div>
              <div className="form-group">
@@ -227,7 +252,6 @@ const AddRecurringTransactionPage = () => {
                 <select id="dayOfMonth" value={dayOfMonth} onChange={(e) => setDayOfMonth(e.target.value)} required={frequency !== 'diaria' && frequency !== 'semanal'}>
                   <option value="">Seleccionar día</option>
                   {daysOfMonthOptions.map(opt => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-                  {/* <option value="ultimo">Último día del mes</option> */}
                 </select>
               </div>
             )}
