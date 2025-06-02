@@ -1,5 +1,5 @@
 /* Ruta: src/pages/DashboardPage.css */
-/* CSS ajustado para igualar las columnas principales y mejorar la distribución de espacios */
+/* CSS para optimizar la distribución de widgets */
 
 .dashboard-page {
   /* Estilos generales para la página del dashboard */
@@ -25,38 +25,36 @@
 
 .dashboard-widgets-grid-target {
   display: grid;
-  /* MODIFICADO: Las columnas principales ahora tendrán el mismo ancho (50%/50%) */
-  grid-template-columns: 1fr 1fr;
-  /* Alternativa (funcionalmente similar para este caso): grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); */
+  grid-template-columns: 1fr 1fr; /* Dos columnas principales de igual ancho */
   gap: 20px;
   margin-top: 25px;
   width: 100%;
   box-sizing: border-box;
-  align-items: start; /* Mantiene la alineación al inicio verticalmente */
+  align-items: start;
 }
 
 .dashboard-main-column-target,
 .dashboard-sidebar-column-target {
   display: grid;
-  /* Se mantiene la lógica para que los widgets formen columnas si hay espacio,
-     o se centren si solo cabe una columna de widgets. */
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  /* Crea tantas columnas de widgets de 420px como quepan.
+     'auto-fill' reserva espacio para las columnas aunque no haya suficientes widgets. */
+  grid-template-columns: repeat(auto-fill, 420px);
   gap: 20px; 
   min-width: 0; 
-  align-content: start;
-  /* Ya no se necesita justify-content: center aquí si los widgets se centran
-     con margin: auto dentro de una pista 1fr, y las pistas en sí mismas
-     se distribuyen por el repeat(auto-fit) */
+  align-content: start; 
+  /* Centra el bloque de columnas de widgets si no ocupan todo el ancho de esta columna principal. */
+  justify-content: center;
 }
 
-/* Media query para cuando la pantalla es más pequeña y las dos áreas principales se apilan */
+/* Media query para apilar las columnas principales */
 @media (max-width: 1024px) {
   .dashboard-widgets-grid-target {
-    grid-template-columns: 1fr; /* Las dos áreas principales se apilan verticalmente */
+    grid-template-columns: 1fr; /* Columnas principales se apilan */
+    /* justify-content: initial; No es necesario aquí, afecta a los items 1fr, no al grid en sí */
   }
-  /* En este caso, cada columna (.dashboard-main-column-target y .dashboard-sidebar-column-target)
-     ocupará el 100% del ancho, y su contenido de widgets se organizará internamente
-     según su propia regla de grid-template-columns. */
+  /* .dashboard-main-column-target y .dashboard-sidebar-column-target 
+     (ahora apilados y con width 1fr) seguirán usando su propia lógica interna
+     de repeat(auto-fill, 420px) y justify-content: center para su contenido. */
 }
 
 @media (max-width: 768px) {
@@ -69,13 +67,14 @@
   .dashboard-widgets-grid-target,
   .dashboard-main-column-target,
   .dashboard-sidebar-column-target {
-    gap: 15px; /* Reducir gaps en pantallas más pequeñas */
+    gap: 15px;
   }
-  
-  /* En pantallas muy pequeñas, las columnas de widgets (ahora apiladas)
-     ocupan el ancho completo y los widgets se centran internamente. */
+
   .dashboard-main-column-target,
   .dashboard-sidebar-column-target {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Una sola pista para los widgets */
+    justify-content: initial; /* El track 1fr ocupa todo, no necesita justificación de bloque */
+                               /* Los widgets dentro se centrarán por su propio margin:auto si se reintroduce,
+                                  o llenarán el track si margin:0. */
   }
 }
