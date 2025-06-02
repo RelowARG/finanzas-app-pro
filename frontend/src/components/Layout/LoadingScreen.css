@@ -1,0 +1,60 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/Layout/LoadingScreen.css */
+.loading-screen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #059b82; /* Mismo verde que tu panel izquierdo de HomePage */
+  /* O un degradado si lo prefieres:
+  background-image: linear-gradient(0deg,#059b82,#16c98c 33.8542%,#16ca8c 52.6042%,#059b82);
+  */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000; /* Muy alto para estar sobre todo */
+  color: white;
+  text-align: center;
+}
+
+.loading-screen-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading-logo-placeholder {
+  font-size: 4rem; /* Ajusta según tu logo */
+  margin-bottom: 20px;
+  /* Si usas una imagen:
+  img { max-width: 150px; margin-bottom: 20px; }
+  */
+}
+
+.loading-screen-content h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.loading-screen-content p {
+  font-size: 1rem;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
