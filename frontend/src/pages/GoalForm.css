@@ -1,0 +1,98 @@
+/* finanzas-app-pro/frontend/src/pages/GoalForm.css */
+.goal-form-page .form-container {
+  /* Estilos generales del form-container ya definidos en App.css, aquí se pueden sobreescribir o añadir especificidades */
+}
+
+.goal-form-page h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: var(--dark-color);
+}
+
+.goal-form-page .form-group {
+  margin-bottom: 1.2rem;
+}
+
+.goal-form-page .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.goal-form-page .form-group input[type="text"],
+.goal-form-page .form-group input[type="number"],
+.goal-form-page .form-group input[type="date"],
+.goal-form-page .form-group select,
+.goal-form-page .form-group textarea {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid #ced4da;
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.goal-form-page .form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.goal-form-page .form-group input:focus,
+.goal-form-page .form-group select:focus,
+.goal-form-page .form-group textarea:focus {
+  border-color: var(--primary-color); /* O un color temático para metas */
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.25); /* Usar el color temático para el shadow */
+}
+
+.goal-form-page .form-grid-halves,
+.goal-form-page .form-grid-thirds {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 1.2rem;
+}
+
+.goal-form-page .form-grid-halves {
+  grid-template-columns: 1fr 1fr;
+}
+.goal-form-page .form-grid-thirds {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+
+.goal-form-page .form-actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
+
+.goal-form-page .form-actions .button-primary {
+  background-color: var(--secondary-color) !important; /* Usar un color distintivo para metas */
+  border-color: var(--secondary-color) !important;
+}
+.goal-form-page .form-actions .button-primary:hover {
+  background-color: #27ae60 !important;
+}
+
+.goal-form-page .form-actions .button-secondary {
+  background-color: #6c757d !important;
+}
+.goal-form-page .form-actions .button-secondary:hover {
+  background-color: #5a6268 !important;
+}
+
+@media (max-width: 600px) {
+  .goal-form-page .form-grid-halves,
+  .goal-form-page .form-grid-thirds {
+    grid-template-columns: 1fr;
+    gap: 0; /* Resetear gap si es una columna */
+  }
+   .goal-form-page .form-grid-halves .form-group,
+   .goal-form-page .form-grid-thirds .form-group {
+    margin-bottom: 1.2rem; /* Mantener margen si se apilan */
+  }
+}

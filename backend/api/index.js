@@ -16,7 +16,9 @@ const debtAndLoanRoutes = require('./debtAndLoan/debtAndLoan.routes');
 const exchangeRateRoutes = require('./exchangeRates/exchangeRates.routes');
 const dashboardRoutes = require('./dashboard/dashboard.routes');
 const adminRoutes = require('./admin/admin.routes');
-const permissionRoutes = require('./permissions/permissions.routes'); // *** NUEVO ***
+const permissionRoutes = require('./permissions/permissions.routes');
+// *** NUEVO: Importar rutas de Goals ***
+const goalRoutes = require('./goals/goals.routes');
 
 
 // Montar rutas de los módulos
@@ -33,8 +35,9 @@ router.use('/debts-loans', debtAndLoanRoutes);
 router.use('/exchange-rates', exchangeRateRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/admin', adminRoutes); 
-// Montar las rutas de configuración de permisos bajo /admin/config/permissions para mayor seguridad y organización
-router.use('/admin/config/permissions', permissionRoutes); // *** NUEVO ***
+router.use('/admin/config/permissions', permissionRoutes);
+// *** NUEVO: Montar rutas de Goals ***
+router.use('/goals', goalRoutes);
 
 
 router.get('/test', (req, res) => {

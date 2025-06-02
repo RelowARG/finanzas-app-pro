@@ -1,0 +1,76 @@
+/* finanzas-app-pro/frontend/src/pages/GoalsPage.css */
+.goals-page .goals-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--primary-color); /* O un color temático para metas, ej. un verde claro */
+}
+
+.goals-page .goals-page-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.goals-page .goals-page-header .button-primary {
+  background-color: var(--secondary-color) !important; /* Un color como el de presupuestos o informes */
+  border-color: var(--secondary-color) !important;
+}
+.goals-page .goals-page-header .button-primary:hover {
+  background-color: #27ae60 !important;
+}
+
+.goals-page .filter-controls {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.goals-page .filter-controls label {
+  font-weight: 500;
+}
+
+.goals-page .filter-select { /* Asumiendo que la clase .filter-select se usa en el select */
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccc;
+  min-width: 180px;
+}
+
+.goals-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.goals-page .loading-text,
+.goals-page .no-data-message {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+/* Estilos para el placeholder de GoalItem (puedes moverlos a GoalItem.css luego) */
+.goals-page .goal-item-placeholder {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: var(--border-radius);
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.goals-page .goal-item-placeholder h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+}
+.goals-page .goal-item-placeholder p {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}

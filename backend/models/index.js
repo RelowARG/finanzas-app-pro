@@ -68,16 +68,17 @@ db.Budget = require("./budget.model.js")(sequelize, Sequelize, DataTypes);
 db.RecurringTransaction = require("./recurringTransaction.model.js")(sequelize, Sequelize, DataTypes);
 db.DebtAndLoan = require("./debtAndLoan.model.js")(sequelize, Sequelize, DataTypes);
 db.ExchangeRate = require("./exchangeRate.model.js")(sequelize, Sequelize, DataTypes);
-
-// *** NUEVO: Cargar nuevos modelos ***
 db.Permission = require("./permission.model.js")(sequelize, Sequelize, DataTypes);
 db.RolePermission = require("./rolePermission.model.js")(sequelize, Sequelize, DataTypes);
+
+// *** NUEVO: Cargar modelo Goal ***
+db.Goal = require("./goal.model.js")(sequelize, DataTypes);
 
 
 // --- Definir Relaciones Existentes ---
 db.User.hasMany(db.Account, { foreignKey: { name: 'userId', allowNull: false }, as: 'accounts' });
 db.Account.belongsTo(db.User, { foreignKey: { name: 'userId', allowNull: false }, as: 'user' });
-// ... (todas las demás relaciones existentes que tenías) ...
+
 db.User.hasMany(db.Category, { foreignKey: { name: 'userId', allowNull: true }, as: 'customCategories' });
 db.Category.belongsTo(db.User, { foreignKey: { name: 'userId', allowNull: true }, as: 'user' });
 
@@ -114,14 +115,11 @@ db.DebtAndLoan.belongsTo(db.User, { foreignKey: { name: 'userId', allowNull: fal
 db.User.hasMany(db.ExchangeRate, { foreignKey: { name: 'userId', allowNull: false }, as: 'exchangeRates' });
 db.ExchangeRate.belongsTo(db.User, { foreignKey: { name: 'userId', allowNull: false }, as: 'user' });
 
-
-// *** NUEVO: Definir Relaciones para Permisos ***
-// Un Permiso puede estar asociado a muchos RolePermissions (un permiso puede estar en muchos roles)
 db.Permission.hasMany(db.RolePermission, { foreignKey: 'permissionId', as: 'rolePermissions' });
-// Un RolePermission pertenece a un solo Permiso
 db.RolePermission.belongsTo(db.Permission, { foreignKey: 'permissionId', as: 'permissionDetail' });
 
-// No creamos un modelo Role explícito, así que no hay una asociación directa User -> RolePermission
-// o Role -> RolePermission. La lógica se basará en el campo User.role (string).
+// *** NUEVO: Definir Relación para Goals ***
+db.User.hasMany(db.Goal, { foreignKey: { name: 'userId', allowNull: false }, as: 'goals' });
+db.Goal.belongsTo(db.User, { foreignKey: { name: 'userId', allowNull: false }, as: 'user' });
 
 module.exports = db;
