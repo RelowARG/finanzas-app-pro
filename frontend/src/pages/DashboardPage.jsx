@@ -1,6 +1,6 @@
 // Ruta: src/pages/DashboardPage.jsx
-import React, { useState, useEffect, useMemo, useCallback } from 'react'; // useCallback añadido
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useAuth } from '../contexts/AuthContext'; //
 import {
   DndContext,
   closestCenter,
@@ -18,43 +18,46 @@ import {
 } from '@dnd-kit/sortable';
 
 // Hooks personalizados
-import { useDashboardData } from '../hooks/useDashboardData';
-import { useDashboardConfig } from '../hooks/useDashboardConfig'; 
+import { useDashboardData } from '../hooks/useDashboardData'; //
+import { useDashboardConfig } from '../hooks/useDashboardConfig'; //
 
 // Componentes del Dashboard
-import AccountSummaryCard from '../components/dashboard/AccountSummaryCard';
-import BalanceOverview from '../components/dashboard/BalanceOverview';
-import RecentTransactions from '../components/dashboard/RecentTransactions';
-import SpendingChart from '../components/dashboard/SpendingChart';
-import InvestmentHighlights from '../components/dashboard/InvestmentHighlights';
-import MonthlySavingsWidget from '../components/dashboard/MonthlySavingsWidget';
-import ControlPanelWidget from '../components/dashboard/ControlPanelWidget';
-import BalanceTrendWidget from '../components/dashboard/BalanceTrendWidget';
-import SaludFinancieraWidget from '../components/dashboard/SaludFinancieraWidget';
-import UpcomingPaymentsWidget from '../components/dashboard/UpcomingPaymentsWidget'; // <--- NUEVO: Importar el widget
+import AccountSummaryCard from '../components/dashboard/AccountSummaryCard'; //
+import BalanceOverview from '../components/dashboard/BalanceOverview'; //
+import RecentTransactions from '../components/dashboard/RecentTransactions'; //
+import SpendingChart from '../components/dashboard/SpendingChart'; //
+import InvestmentHighlights from '../components/dashboard/InvestmentHighlights'; //
+import MonthlySavingsWidget from '../components/dashboard/MonthlySavingsWidget'; //
+import ControlPanelWidget from '../components/dashboard/ControlPanelWidget'; //
+import BalanceTrendWidget from '../components/dashboard/BalanceTrendWidget'; //
+import SaludFinancieraWidget from '../components/dashboard/SaludFinancieraWidget'; //
+import UpcomingPaymentsWidget from '../components/dashboard/UpcomingPaymentsWidget'; //
+import SavingsGoalsWidget from '../components/dashboard/SavingsGoalsWidget'; // *** NUEVO: Importar el widget de Metas ***
 
-import AccountDashboardSelectionModal from '../components/dashboard/AccountDashboardSelectionModal';
-import WidgetSelectionModal from '../components/dashboard/WidgetSelectionModal';
-import AddWidgetPlaceholder from '../components/dashboard/AddWidgetPlaceholder';
-import SortableWidget from '../components/dashboard/SortableWidget';
+import AccountDashboardSelectionModal from '../components/dashboard/AccountDashboardSelectionModal'; //
+import WidgetSelectionModal from '../components/dashboard/WidgetSelectionModal'; //
+import AddWidgetPlaceholder from '../components/dashboard/AddWidgetPlaceholder'; //
+import SortableWidget from '../components/dashboard/SortableWidget'; //
 
 // Previews para el modal
-import SaludFinancieraPreview from '../components/dashboard/previews/SaludFinancieraPreview';
-import SpendingChartPreview from '../components/dashboard/previews/SpendingChartPreview';
-import BalanceOverviewPreview from '../components/dashboard/previews/BalanceOverviewPreview';
-import ControlPanelPreview from '../components/dashboard/previews/ControlPanelPreview';
-import InvestmentHighlightsPreview from '../components/dashboard/previews/InvestmentHighlightsPreview';
-import MonthlySavingsPreview from '../components/dashboard/previews/MonthlySavingsPreview';
-import RecentTransactionsPreview from '../components/dashboard/previews/RecentTransactionsPreview';
-import BalanceTrendPreview from '../components/dashboard/previews/BalanceTrendPreview';
-import UpcomingPaymentsPreview from '../components/dashboard/previews/UpcomingPaymentsPreview'; // <--- NUEVO: Importar la preview
+import SaludFinancieraPreview from '../components/dashboard/previews/SaludFinancieraPreview'; //
+import SpendingChartPreview from '../components/dashboard/previews/SpendingChartPreview'; //
+import BalanceOverviewPreview from '../components/dashboard/previews/BalanceOverviewPreview'; //
+import ControlPanelPreview from '../components/dashboard/previews/ControlPanelPreview'; //
+import InvestmentHighlightsPreview from '../components/dashboard/previews/InvestmentHighlightsPreview'; //
+import MonthlySavingsPreview from '../components/dashboard/previews/MonthlySavingsPreview'; //
+import RecentTransactionsPreview from '../components/dashboard/previews/RecentTransactionsPreview'; //
+import BalanceTrendPreview from '../components/dashboard/previews/BalanceTrendPreview'; //
+import UpcomingPaymentsPreview from '../components/dashboard/previews/UpcomingPaymentsPreview'; //
+import SavingsGoalsPreview from '../components/dashboard/previews/SavingsGoalsPreview'; // *** NUEVO: Importar la preview de Metas ***
 
-import './DashboardPage.css';
-import '../components/dashboard/DashboardComponents.css';
+import './DashboardPage.css'; //
+import '../components/dashboard/DashboardComponents.css'; //
 
 const ALL_AVAILABLE_WIDGETS = {
   saludFinanciera: { Component: SaludFinancieraWidget, name: 'Salud Financiera General', description: 'Puntuación y métricas clave de tu bienestar financiero.', defaultProps: {}, PreviewComponent: SaludFinancieraPreview },
-  upcomingPayments: { Component: UpcomingPaymentsWidget, name: 'Próximos Vencimientos', description: 'Vencimientos de tarjetas, pagos recurrentes, deudas y más.', defaultProps: {}, PreviewComponent: UpcomingPaymentsPreview }, // <--- NUEVO: Widget añadido
+  upcomingPayments: { Component: UpcomingPaymentsWidget, name: 'Próximos Vencimientos', description: 'Vencimientos de tarjetas, pagos recurrentes, deudas y más.', defaultProps: {}, PreviewComponent: UpcomingPaymentsPreview },
+  savingsGoals: { Component: SavingsGoalsWidget, name: 'Metas de Ahorro', description: 'Progreso de tus metas de ahorro activas.', defaultProps: {}, PreviewComponent: SavingsGoalsPreview }, // *** NUEVO WIDGET DEFINIDO ***
   controlPanel: { Component: ControlPanelWidget, name: 'Panel de Control Rápido', description: 'Vista rápida de saldo, flujo y presupuesto.', defaultProps: {}, PreviewComponent: ControlPanelPreview },
   spendingChart: { Component: SpendingChart, name: 'Gastos del Mes por Categoría', description: 'Gráfico de torta mostrando la distribución de tus gastos mensuales.', defaultProps: {}, PreviewComponent: SpendingChartPreview },
   balanceOverview: { Component: BalanceOverview, name: 'Resumen de Balance Total', description: 'Saldo total en ARS, USD y consolidado.', defaultProps: {}, PreviewComponent: BalanceOverviewPreview },
@@ -66,7 +69,8 @@ const ALL_AVAILABLE_WIDGETS = {
 
 const getDefaultWidgetOrder = () => [
   'saludFinanciera', 
-  'upcomingPayments', // <--- NUEVO: Widget añadido al orden
+  'upcomingPayments',
+  'savingsGoals', // *** AÑADIDO AL ORDEN POR DEFECTO ***
   'controlPanel',
   'balanceTrend',
   'monthlySavings',
@@ -79,8 +83,8 @@ const getDefaultWidgetOrder = () => [
 const MAX_SUMMARY_CARDS_DISPLAY = 5;
 
 const DashboardPage = () => {
-  const { user } = useAuth(); 
-  const { apiData, loadingStates, error: dataApiError, fetchDashboardData } = useDashboardData(); // fetchDashboardData ya estaba, se mantiene
+  const { user } = useAuth(); //
+  const { apiData, loadingStates, error: dataApiError, fetchDashboardData } = useDashboardData(); //
 
   const {
     masterWidgetOrder, 
@@ -92,7 +96,7 @@ const DashboardPage = () => {
     handleDragEndDnd,
     handleSaveWidgetSelections,
     handleSaveAccountSelections,
-  } = useDashboardConfig(ALL_AVAILABLE_WIDGETS, getDefaultWidgetOrder, apiData.allUserAccounts);
+  } = useDashboardConfig(ALL_AVAILABLE_WIDGETS, getDefaultWidgetOrder, apiData.allUserAccounts); //
   
   const [activeDragId, setActiveDragId] = useState(null); 
   const [showAccountSelectionModal, setShowAccountSelectionModal] = useState(false);
@@ -112,8 +116,12 @@ const DashboardPage = () => {
         case 'saludFinanciera': 
           componentSpecificProps = { data: apiData.saludFinancieraData, loading: loadingStates.saludFinanciera, error: dataApiError?.saludFinanciera };
           break;
-        case 'upcomingPayments': // <--- NUEVO: Caso para el widget
+        case 'upcomingPayments': 
           componentSpecificProps = { events: apiData.upcomingEvents, loading: loadingStates.upcomingEvents, error: dataApiError?.upcomingEvents };
+          break;
+        // *** NUEVO CASO PARA METAS DE AHORRO ***
+        case 'savingsGoals':
+          componentSpecificProps = { goals: apiData.savingsGoals, loading: loadingStates.savingsGoals, error: dataApiError?.savingsGoals };
           break;
         case 'balanceOverview':
           componentSpecificProps = { summary: apiData.balanceSummary, loading: loadingStates.balanceSummary, error: dataApiError?.balanceSummary };
@@ -201,14 +209,13 @@ const DashboardPage = () => {
       onDragEnd={handleDragEndDnd} 
     >
       <div className="page-container dashboard-page">
-        {/* Se mantiene la estructura original sin el div.dashboard-header que había eliminado previamente por tu indicación */}
-        <div className="accounts-summary-row">
+        <div className="accounts-summary-row"> {/* */}
           {loadingStates.accounts && summaryAccountsToDisplay.length === 0 ? ( 
             <p className="loading-text-widget" style={{flexGrow: 1, textAlign:'center'}}>Cargando resumen de cuentas...</p> 
           ) : (
             <>
               {summaryAccountsToDisplay.map(acc => ( 
-                <AccountSummaryCard 
+                <AccountSummaryCard //
                   key={acc.id} 
                   account={acc} 
                   bgColorClass={getAccountCardStyle(acc.name)} 
@@ -231,27 +238,27 @@ const DashboardPage = () => {
         {configError && <p className="error-message" style={{marginBottom: '20px'}}>{configError}</p>}
         
         <SortableContext items={finalWidgetPropsList.map(w => w.id)} strategy={rectSwappingStrategy}>
-          <div className="dashboard-widgets-grid-target">
+          <div className="dashboard-widgets-grid-target"> {/* */}
             {finalWidgetPropsList.map(widgetItem => (
-              <SortableWidget key={widgetItem.id} id={widgetItem.id}>
+              <SortableWidget key={widgetItem.id} id={widgetItem.id}> {/* */}
                 <widgetItem.Component {...widgetItem.props} />
               </SortableWidget>
             ))}
-            <AddWidgetPlaceholder onClick={() => setShowWidgetSelectionModal(true)} />
+            <AddWidgetPlaceholder onClick={() => setShowWidgetSelectionModal(true)} /> {/* */}
           </div>
         </SortableContext>
       </div>
 
       <DragOverlay dropAnimation={null}>
         {activeDragId && activeDraggedWidgetObject ? (
-          <div className="dashboard-widget" style={{height: '300px', opacity: 0.95, boxShadow: '0 10px 25px rgba(0,0,0,0.2)'}}>
+          <div className="dashboard-widget" style={{height: '300px', opacity: 0.95, boxShadow: '0 10px 25px rgba(0,0,0,0.2)'}}> {/* */}
              {React.createElement(activeDraggedWidgetObject.Component, activeDraggedWidgetObject.props)}
           </div>
         ) : null}
       </DragOverlay>
 
       {showAccountSelectionModal && (
-        <AccountDashboardSelectionModal
+        <AccountDashboardSelectionModal //
           isOpen={showAccountSelectionModal}
           onClose={() => setShowAccountSelectionModal(false)}
           allAccounts={apiData.allUserAccounts} 
@@ -262,7 +269,7 @@ const DashboardPage = () => {
       )}
 
       {showWidgetSelectionModal && (
-        <WidgetSelectionModal
+        <WidgetSelectionModal //
           isOpen={showWidgetSelectionModal}
           onClose={() => setShowWidgetSelectionModal(false)}
           allAvailableWidgets={ALL_AVAILABLE_WIDGETS} 

@@ -1,0 +1,108 @@
+/* finanzas-app-pro/frontend/src/components/dashboard/SavingsGoalsWidget.css */
+.savings-goals-widget .dashboard-widget-content {
+  padding: 5px 0px 5px 5px; /* Similar a upcoming payments */
+}
+
+.savings-goals-widget-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.savings-goals-widget-list::-webkit-scrollbar { width: 6px; }
+.savings-goals-widget-list::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+.savings-goals-widget-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+.savings-goals-widget-list::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+.savings-goal-widget-item {
+  border-bottom: 1px solid #f0f0f0;
+}
+.savings-goal-widget-item:last-child {
+  border-bottom: none;
+}
+
+.goal-widget-link {
+  display: flex;
+  align-items: center;
+  padding: 8px 5px 8px 3px;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.15s ease-in-out;
+}
+.goal-widget-link:hover {
+  background-color: #f4f6f8;
+}
+
+.goal-widget-icon {
+  font-size: 1.3rem; /* Un poco más grande que el de upcoming payments */
+  margin-right: 10px;
+  min-width: 25px;
+  text-align: center;
+  color: var(--primary-color); /* Color primario para el icono de meta */
+}
+
+.goal-widget-info {
+  flex-grow: 1;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.goal-widget-name {
+  display: block;
+  font-weight: 500;
+  color: #344054;
+  font-size: 0.85rem; /* Consistente con otros widgets */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  margin-bottom: 4px; /* Espacio antes de la barra de progreso */
+}
+
+.goal-widget-progress-bar-container {
+  width: 100%;
+  background-color: #e9ecef;
+  border-radius: 8px;
+  height: 14px; /* Barra un poco más delgada */
+  overflow: hidden;
+}
+
+.goal-widget-progress-bar {
+  height: 100%;
+  color: white;
+  text-align: center;
+  font-size: 0.65rem; /* Texto pequeño en la barra */
+  line-height: 14px;
+  font-weight: bold;
+  transition: width 0.4s ease-in-out;
+  border-radius: 8px 0 0 8px;
+}
+.goal-widget-progress-bar[style*="width: 100%"] {
+  border-radius: 8px;
+}
+.goal-widget-progress-bar.progress-bar-low { background-color: var(--danger-color); }
+.goal-widget-progress-bar.progress-bar-medium { background-color: #f39c12; }
+.goal-widget-progress-bar.progress-bar-good { background-color: #5dade2; }
+.goal-widget-progress-bar.progress-bar-completed { background-color: var(--secondary-color); }
+
+
+.goal-widget-amounts {
+  text-align: right;
+  min-width: 100px; /* Asegurar espacio para los montos */
+  flex-shrink: 0;
+}
+
+.goal-widget-current {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--dark-color);
+}
+
+.goal-widget-target {
+  display: block;
+  font-size: 0.7rem;
+  color: #667085;
+}

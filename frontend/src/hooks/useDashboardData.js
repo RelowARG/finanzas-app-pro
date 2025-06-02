@@ -1,8 +1,9 @@
 // finanzas-app-pro/frontend/src/hooks/useDashboardData.js
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import dashboardService from '../services/dashboard.service';
-import accountService from '../services/accounts.service';
+import { useAuth } from '../contexts/AuthContext'; //
+import dashboardService from '../services/dashboard.service'; //
+import accountService from '../services/accounts.service'; //
+import goalsService from '../services/goals.service.js'; // *** NUEVA IMPORTACIÓN ***
 
 const initialApiDataState = {
   investmentHighlights: null,
@@ -12,7 +13,8 @@ const initialApiDataState = {
   globalBudgetStatus: null,
   balanceTrendData: null,
   saludFinancieraData: null,
-  upcomingEvents: [], // <--- NUEVO ESTADO
+  upcomingEvents: [],
+  savingsGoals: [], // *** NUEVO ESTADO PARA METAS ***
   // Estados de carga individuales
   loadingAccounts: true,
   loadingInvestments: true,
@@ -21,7 +23,8 @@ const initialApiDataState = {
   loadingGlobalBudget: true,
   loadingBalanceTrend: true,
   loadingSaludFinanciera: true,
-  loadingUpcomingEvents: true, // <--- NUEVO ESTADO DE CARGA
+  loadingUpcomingEvents: true,
+  loadingSavingsGoals: true, // *** NUEVO ESTADO DE CARGA PARA METAS ***
 };
 
 const shallowEqual = (objA, objB) => {
@@ -33,8 +36,6 @@ const shallowEqual = (objA, objB) => {
   for (let key of keysA) {
     if (!objB.hasOwnProperty(key) || objA[key] !== objB[key]) {
       if (typeof objA[key] === 'object' || typeof objB[key] === 'object') {
-          // Para objetos/arrays anidados, esta igualdad superficial solo chequeará referencias.
-          // Si se necesita deep comparison aquí, se complicaría, pero para datos de API suele ser suficiente.
           if (objA[key] !== objB[key]) return false; 
       } else if (objA[key] !== objB[key]) {
         return false;
@@ -46,9 +47,9 @@ const shallowEqual = (objA, objB) => {
 
 
 export const useDashboardData = () => {
-  const { user } = useAuth();
+  const { user } = useAuth(); //
   const [apiData, setApiData] = useState(initialApiDataState);
-  const [dataError, setDataError] = useState(''); // Puede ser un objeto para errores específicos
+  const [dataError, setDataError] = useState(''); 
   const prevApiDataRef = useRef(initialApiDataState);
 
   useEffect(() => {
@@ -58,48 +59,44 @@ export const useDashboardData = () => {
 
   const fetchDashboardData = useCallback(async (showLoadingIndicators = true) => {
     if (!user) {
-      setApiData(initialApiDataState); // Resetear si no hay usuario
+      setApiData(initialApiDataState); 
       setDataError('');
       return;
     }
 
-    // Si showLoadingIndicators es true, resetear todos los loading a true.
-    // Si es false (ej. un refresco en segundo plano), mantener los datos existentes
-    // y solo actualizar los loading de las llamadas que se harán.
-    let newLoadingStates = { ...initialApiDataState }; // Esto ya los pone a true por defecto
+    let newLoadingStates = { ...initialApiDataState }; 
     if (showLoadingIndicators) {
       setApiData(prev => ({
-        ...initialApiDataState, // Resetea datos a null/[] y loadings a true
-        allUserAccounts: prev.allUserAccounts, // Mantener cuentas si ya están cargadas y no se vuelven a pedir explícitamente
-        // Podríamos ser más selectivos aquí si solo algunas cosas se refrescan.
+        ...initialApiDataState, 
+        allUserAccounts: prev.allUserAccounts, 
       }));
     }
-    setDataError(''); // Limpiar errores antes de nueva carga
+    setDataError(''); 
     // console.log('[useDashboardData] Fetching data...');
 
     try {
       const results = await Promise.allSettled([
-        dashboardService.getInvestmentHighlights(3),
-        dashboardService.getCurrentMonthFinancialStatus(),
-        accountService.getAllAccounts(), // Podría ser condicional si no se necesita siempre
-        dashboardService.getDashboardSummary(),
-        dashboardService.getGlobalBudgetStatus(),
-        dashboardService.getBalanceTrendData({ months: 6 }),
-        dashboardService.getSaludFinancieraData(),
-        dashboardService.getUpcomingEvents(15), // <--- LLAMADA AL NUEVO SERVICIO
+        dashboardService.getInvestmentHighlights(3), //
+        dashboardService.getCurrentMonthFinancialStatus(), //
+        accountService.getAllAccounts(), //
+        dashboardService.getDashboardSummary(), //
+        dashboardService.getGlobalBudgetStatus(), //
+        dashboardService.getBalanceTrendData({ months: 6 }), //
+        dashboardService.getSaludFinancieraData(), //
+        dashboardService.getUpcomingEvents(15), //
+        goalsService.getAllGoals({ statusFilter: 'active' }), // *** NUEVA LLAMADA AL SERVICIO DE METAS ***
       ]);
 
-      // Crear un objeto para almacenar errores por cada "slice" de datos
       const errorMessages = {};
       results.forEach((result, index) => {
           if (result.status === 'rejected') {
-              const keys = ['investmentHighlights', 'monthlyFinancialStatus', 'allUserAccounts', 'balanceSummary', 'globalBudgetStatus', 'balanceTrendData', 'saludFinancieraData', 'upcomingEvents'];
+              const keys = ['investmentHighlights', 'monthlyFinancialStatus', 'allUserAccounts', 'balanceSummary', 'globalBudgetStatus', 'balanceTrendData', 'saludFinancieraData', 'upcomingEvents', 'savingsGoals']; // *** AÑADIDO savingsGoals ***
               errorMessages[keys[index]] = result.reason?.response?.data?.message || result.reason?.message || `Error en ${keys[index]}`;
               console.warn(`[useDashboardData] Error fetching ${keys[index]}:`, errorMessages[keys[index]]);
           }
       });
       if (Object.keys(errorMessages).length > 0) {
-          setDataError(errorMessages); // Guardar errores específicos
+          setDataError(errorMessages); 
       }
 
 
@@ -107,7 +104,8 @@ export const useDashboardData = () => {
         const newLoadingStatesValues = {
           loadingAccounts: false, loadingInvestments: false, loadingMonthlyStatus: false,
           loadingBalanceSummary: false, loadingGlobalBudget: false, loadingBalanceTrend: false,
-          loadingSaludFinanciera: false, loadingUpcomingEvents: false, // <--- NUEVO
+          loadingSaludFinanciera: false, loadingUpcomingEvents: false,
+          loadingSavingsGoals: false, // *** NUEVO ESTADO DE CARGA ***
         };
 
         const newFetchedData = {
@@ -118,7 +116,8 @@ export const useDashboardData = () => {
           globalBudgetStatus: results[4].status === 'fulfilled' ? results[4].value : prevApiDataNow.globalBudgetStatus,
           balanceTrendData: results[5].status === 'fulfilled' ? results[5].value : prevApiDataNow.balanceTrendData,
           saludFinancieraData: results[6].status === 'fulfilled' ? results[6].value : prevApiDataNow.saludFinancieraData,
-          upcomingEvents: results[7].status === 'fulfilled' ? (results[7].value || []) : prevApiDataNow.upcomingEvents, // <--- NUEVO
+          upcomingEvents: results[7].status === 'fulfilled' ? (results[7].value || []) : prevApiDataNow.upcomingEvents,
+          savingsGoals: results[8].status === 'fulfilled' ? (results[8].value || []) : prevApiDataNow.savingsGoals, // *** NUEVOS DATOS DE METAS ***
         };
         
         let hasDataChanged = false;
@@ -147,33 +146,27 @@ export const useDashboardData = () => {
       });
       
     } catch (err) { 
-      // Este catch es para errores imprevistos en Promise.allSettled o en la lógica del hook en sí.
-      // Los errores de las llamadas individuales ya se manejan con `errorMessages`.
       setDataError(prev => ({ ...prev, general: 'Error crítico al cargar datos del dashboard.' }));
       console.error("[useDashboardData] Error crítico en fetchDashboardData:", err);
-      // Asegurarse que todos los loading states se pongan a false
-      setApiData(prev => ({ ...initialApiDataState, loadingAccounts: false, loadingInvestments: false, loadingMonthlyStatus: false, loadingBalanceSummary: false, loadingGlobalBudget: false, loadingBalanceTrend: false, loadingSaludFinanciera: false, loadingUpcomingEvents: false }));
+      setApiData(prev => ({ ...initialApiDataState, loadingAccounts: false, loadingInvestments: false, loadingMonthlyStatus: false, loadingBalanceSummary: false, loadingGlobalBudget: false, loadingBalanceTrend: false, loadingSaludFinanciera: false, loadingUpcomingEvents: false, loadingSavingsGoals: false }));
     }
-  }, [user]); // Dependencia de 'user' para que se vuelva a crear si el usuario cambia.
+  }, [user]); 
 
   useEffect(() => {
     if (user) { 
-        // console.log('[useDashboardData] User changed or fetchDashboardData changed, calling fetchDashboardData.');
         fetchDashboardData();
     } else {
-        // console.log('[useDashboardData] No user, resetting apiData.');
         setApiData(initialApiDataState); 
-        setDataError(''); // Limpiar errores si el usuario se desloguea
+        setDataError(''); 
     }
-  }, [user, fetchDashboardData]); // fetchDashboardData está en useCallback, solo cambia si 'user' cambia.
+  }, [user, fetchDashboardData]); 
 
 
   const loadingStates = useMemo(() => {
-    // Determina el estado general de carga si alguna de las cargas individuales está activa.
     const isLoadingOverall = apiData.loadingAccounts || apiData.loadingInvestments || apiData.loadingMonthlyStatus ||
                          apiData.loadingBalanceSummary || apiData.loadingGlobalBudget || apiData.loadingBalanceTrend ||
-                         apiData.loadingSaludFinanciera || apiData.loadingUpcomingEvents; // <--- NUEVO
-    // console.log('[useDashboardData] Recalculating loadingStates. Overall:', isLoadingOverall);
+                         apiData.loadingSaludFinanciera || apiData.loadingUpcomingEvents ||
+                         apiData.loadingSavingsGoals; // *** AÑADIDO loadingSavingsGoals ***
     return {
       accounts: apiData.loadingAccounts,
       investments: apiData.loadingInvestments,
@@ -182,35 +175,32 @@ export const useDashboardData = () => {
       globalBudget: apiData.loadingGlobalBudget,
       balanceTrend: apiData.loadingBalanceTrend,
       saludFinanciera: apiData.loadingSaludFinanciera,
-      upcomingEvents: apiData.loadingUpcomingEvents, // <--- NUEVO
-      overall: isLoadingOverall, // Estado de carga general
+      upcomingEvents: apiData.loadingUpcomingEvents,
+      savingsGoals: apiData.loadingSavingsGoals, // *** AÑADIDO ***
+      overall: isLoadingOverall,
     };
-  }, [ // Lista de dependencias para useMemo
+  }, [ 
     apiData.loadingAccounts, apiData.loadingInvestments, apiData.loadingMonthlyStatus,
     apiData.loadingBalanceSummary, apiData.loadingGlobalBudget, apiData.loadingBalanceTrend,
-    apiData.loadingSaludFinanciera, apiData.loadingUpcomingEvents // <--- NUEVO
+    apiData.loadingSaludFinanciera, apiData.loadingUpcomingEvents,
+    apiData.loadingSavingsGoals // *** AÑADIDO ***
   ]);
 
-  // Log para cuando el objeto apiData que devuelve el hook cambia de referencia
   useEffect(() => {
     if (prevApiDataRef.current !== apiData) {
-        // console.log('[useDashboardData] apiData reference CHANGED.');
-        // Loguear qué parte específica de apiData cambió de referencia si es posible
         for (const key in apiData) {
             if (apiData[key] !== prevApiDataRef.current[key]) {
                 // console.log(`  - apiData.${key} reference changed.`);
             }
         }
-    } else {
-        // console.log('[useDashboardData] apiData reference is STABLE.');
     }
   }, [apiData]);
 
 
   return {
-    apiData, // El objeto que contiene todos los datos y los estados de carga individuales
-    loadingStates, // Un objeto separado con solo los booleanos de carga (útil para UI)
-    fetchDashboardData, // Función para refrescar los datos manualmente
-    error: dataError // Estado de error (puede ser string o objeto con errores por slice)
+    apiData, 
+    loadingStates, 
+    fetchDashboardData, 
+    error: dataError 
   };
 };
