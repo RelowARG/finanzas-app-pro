@@ -1,0 +1,130 @@
+/* finanzas-app-pro/frontend/src/components/dashboard/UpcomingPaymentsWidget.css */
+.upcoming-payments-widget {
+  /* Hereda .dashboard-widget: height: 300px; etc. */
+}
+
+.upcoming-payments-widget h3 {
+  /* color: #fd7e14; */ /* Ejemplo: Naranja para destacar */
+  /* border-bottom-color: #fd7e14; */
+}
+
+.upcoming-payments-widget .dashboard-widget-content {
+  padding: 5px 0px 5px 5px;
+}
+
+.upcoming-events-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  height: 100%; /* Para que el scroll funcione dentro del widget-content */
+  overflow-y: auto; /* Scroll si hay muchos items */
+}
+/* Personalizar scrollbar (opcional) */
+.upcoming-events-list::-webkit-scrollbar {
+  width: 6px;
+}
+.upcoming-events-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+.upcoming-events-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+.upcoming-events-list::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+
+.upcoming-event-item {
+  border-bottom: 1px solid #f0f0f0;
+}
+.upcoming-event-item:last-child {
+  border-bottom: none;
+}
+
+.upcoming-event-link {
+  display: flex;
+  align-items: center;
+  padding: 7px 5px 7px 3px; /* Ajustado para más compacidad */
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.15s ease-in-out;
+}
+.upcoming-event-link:hover {
+  background-color: #f4f6f8; /* Hover más sutil */
+}
+
+.event-icon {
+  font-size: 1.1rem; /* Ligeramente más pequeño */
+  margin-right: 8px;
+  min-width: 22px;
+  text-align: center;
+  color: #667085; /* Un gris neutro por defecto */
+}
+
+/* Colores específicos por tipo de evento */
+.item-type-tarjeta .event-icon,
+.item-event-egreso.item-type-recurrente .event-icon,
+.item-type-debt .event-icon {
+  color: var(--danger-color, #e53e3e);
+}
+.item-event-ingreso.item-type-recurrente .event-icon,
+.item-type-loan .event-icon {
+   color: var(--secondary-color, #38a169);
+}
+.item-type-inversion .event-icon {
+    color: #1e90ff; /* Azul para inversiones */
+}
+
+
+.event-info {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.event-description {
+  display: block;
+  font-weight: 500;
+  color: #344054; /* Color de texto principal */
+  font-size: 0.8rem; /* Ligeramente más pequeño */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.event-source {
+  display: block;
+  font-size: 0.7rem; /* Más pequeño */
+  color: #667085;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.event-details {
+  text-align: right;
+  min-width: 70px;
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
+.event-amount {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem; /* Ligeramente más pequeño */
+}
+.event-amount.info-event { /* Para montos que son solo informativos */
+    font-size: 0.8rem;
+    font-style: normal;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.event-date {
+  display: block;
+  font-size: 0.7rem; /* Más pequeño */
+  color: #4a5568;
+}

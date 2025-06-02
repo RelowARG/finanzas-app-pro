@@ -1,22 +1,5 @@
-// Ruta: finanzas-app-pro/frontend/src/services/dashboard.service.js
+// finanzas-app-pro/frontend/src/services/dashboard.service.js
 import apiClient from './api';
-
-const getMonthlySpendingByCategory = async (filters = {}) => {
-  console.log('[F-DashboardService] Fetching Dashboard SpendingChart data from backend endpoint: /dashboard/spending-chart. Filters:', filters);
-  const params = new URLSearchParams();
-  if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
-  if (filters.dateTo) params.append('dateTo', filters.dateTo);
-  if (filters.currency) params.append('currency', filters.currency); 
-
-  try {
-    const response = await apiClient.get(`/dashboard/spending-chart?${params.toString()}`);
-    console.log('[F-DashboardService] Dashboard SpendingChart data received:', response.data);
-    return response.data; 
-  } catch (error) {
-    console.error("[F-DashboardService] Error fetching dashboard spending chart data:", error.response?.data || error.message);
-    return { labels: [], datasets: [{ data: [], backgroundColor: [], borderColor: [] }], summary: { totalExpenses: 0, numberOfCategories: 0, currencyReported: 'ARS' } };
-  }
-};
 
 const getDashboardSummary = async () => {
   console.log('[F-DashboardService] Getting dashboard summary from backend endpoint: /dashboard/summary');
@@ -35,6 +18,23 @@ const getDashboardSummary = async () => {
   }
 };
 
+const getMonthlySpendingByCategory = async (filters = {}) => {
+  console.log('[F-DashboardService] Fetching Dashboard SpendingChart data from backend endpoint: /dashboard/spending-chart. Filters:', filters);
+  const params = new URLSearchParams();
+  if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+  if (filters.dateTo) params.append('dateTo', filters.dateTo);
+  if (filters.currency) params.append('currency', filters.currency); 
+
+  try {
+    const response = await apiClient.get(`/dashboard/spending-chart?${params.toString()}`);
+    console.log('[F-DashboardService] Dashboard SpendingChart data received:', response.data);
+    return response.data; 
+  } catch (error) {
+    console.error("[F-DashboardService] Error fetching dashboard spending chart data:", error.response?.data || error.message);
+    return { labels: [], datasets: [{ data: [], backgroundColor: [], borderColor: [] }], summary: { totalExpenses: 0, numberOfCategories: 0, currencyReported: 'ARS' } };
+  }
+};
+
 const getInvestmentHighlights = async (topN = 3) => {
   console.log('[F-DashboardService] Getting investment highlights from backend endpoint: /dashboard/investment-highlights');
   try {
@@ -50,7 +50,7 @@ const getInvestmentHighlights = async (topN = 3) => {
 const getCurrentMonthFinancialStatus = async () => {
   console.log('[F-DashboardService] Getting current month financial status from backend endpoint: /dashboard/monthly-financial-status');
   try {
-    const response = await apiClient.get('/dashboard/monthly-financial-status'); // El backend ahora puede tomar targetCurrency
+    const response = await apiClient.get('/dashboard/monthly-financial-status'); 
     console.log('[F-DashboardService] Current month financial status received:', response.data);
     return response.data;
   } catch (error) {
@@ -69,7 +69,7 @@ const getCurrentMonthFinancialStatus = async () => {
 const getGlobalBudgetStatus = async () => {
   console.log('[F-DashboardService] Getting global budget status from backend endpoint: /dashboard/global-budget-status');
   try {
-    const response = await apiClient.get('/dashboard/global-budget-status'); // El backend ahora puede tomar targetCurrency
+    const response = await apiClient.get('/dashboard/global-budget-status');
     console.log('[F-DashboardService] Global budget status received:', response.data);
     return response.data;
   } catch (error) {
@@ -81,7 +81,7 @@ const getGlobalBudgetStatus = async () => {
 const getBalanceTrendData = async ({ months = 6 } = {}) => {
   console.log(`[F-DashboardService] Getting balance trend data from backend (months: ${months})`);
   try {
-    const response = await apiClient.get(`/dashboard/balance-trend?months=${months}`); // El backend ahora puede tomar targetCurrency
+    const response = await apiClient.get(`/dashboard/balance-trend?months=${months}`);
     console.log('[F-DashboardService] Balance trend data received:', response.data);
     return response.data;
   } catch (error) {
@@ -90,12 +90,9 @@ const getBalanceTrendData = async ({ months = 6 } = {}) => {
   }
 };
 
-// LLAMADA REAL AL BACKEND
 const getSaludFinancieraData = async () => {
   console.log('[F-DashboardService] Getting Salud Financiera data from backend endpoint: /dashboard/financial-health');
   try {
-    // Podrías pasar targetCurrency como parámetro si quisieras que el usuario elija
-    // const response = await apiClient.get('/dashboard/financial-health?currency=USD');
     const response = await apiClient.get('/dashboard/financial-health');
     console.log('[F-DashboardService] Salud Financiera data received:', response.data);
     return response.data;
@@ -113,6 +110,19 @@ const getSaludFinancieraData = async () => {
   }
 };
 
+// --- NUEVA FUNCIÓN ---
+const getUpcomingEvents = async (days = 15) => {
+  console.log(`[F-DashboardService] Getting upcoming events for the next ${days} days.`);
+  try {
+    const response = await apiClient.get(`/dashboard/upcoming-events?days=${days}`);
+    // console.log('[F-DashboardService] Upcoming events received:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error("[F-DashboardService] Error fetching upcoming events:", error.response?.data || error.message);
+    return []; // Devuelve array vacío en caso de error para que el widget lo maneje
+  }
+};
+
 
 const dashboardService = {
   getDashboardSummary,
@@ -122,6 +132,7 @@ const dashboardService = {
   getGlobalBudgetStatus,
   getBalanceTrendData,
   getSaludFinancieraData,
+  getUpcomingEvents, // <--- Exportar
 };
 
 export default dashboardService;

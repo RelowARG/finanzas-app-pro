@@ -4,7 +4,6 @@ const router = express.Router();
 const dashboardController = require('./dashboard.controller');
 const { protect } = require('../../middleware/authMiddleware');
 
-// Aplicar protección a todas las rutas del dashboard
 router.use(protect);
 
 router.get('/summary', dashboardController.getDashboardSummaryController);
@@ -13,11 +12,9 @@ router.get('/monthly-financial-status', dashboardController.getMonthlyFinancialS
 router.get('/spending-chart', dashboardController.getSpendingChartController);
 router.get('/global-budget-status', dashboardController.getGlobalBudgetStatusController);
 router.get('/balance-trend', dashboardController.getBalanceTrendController);
+router.get('/financial-health', dashboardController.getFinancialHealthController);
 
 // --- NUEVA RUTA ---
-// @desc    Obtener datos de salud financiera general
-// @route   GET /api/dashboard/financial-health
-// @access  Private
-router.get('/financial-health', dashboardController.getFinancialHealthController);
+router.get('/upcoming-events', dashboardController.getUpcomingEventsController);
 
 module.exports = router;

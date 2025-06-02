@@ -1,5 +1,5 @@
 // Ruta: src/pages/DashboardPage.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react'; // useCallback añadido
 import { useAuth } from '../contexts/AuthContext';
 import {
   DndContext,
@@ -31,6 +31,7 @@ import MonthlySavingsWidget from '../components/dashboard/MonthlySavingsWidget';
 import ControlPanelWidget from '../components/dashboard/ControlPanelWidget';
 import BalanceTrendWidget from '../components/dashboard/BalanceTrendWidget';
 import SaludFinancieraWidget from '../components/dashboard/SaludFinancieraWidget';
+import UpcomingPaymentsWidget from '../components/dashboard/UpcomingPaymentsWidget'; // <--- NUEVO: Importar el widget
 
 import AccountDashboardSelectionModal from '../components/dashboard/AccountDashboardSelectionModal';
 import WidgetSelectionModal from '../components/dashboard/WidgetSelectionModal';
@@ -46,12 +47,14 @@ import InvestmentHighlightsPreview from '../components/dashboard/previews/Invest
 import MonthlySavingsPreview from '../components/dashboard/previews/MonthlySavingsPreview';
 import RecentTransactionsPreview from '../components/dashboard/previews/RecentTransactionsPreview';
 import BalanceTrendPreview from '../components/dashboard/previews/BalanceTrendPreview';
+import UpcomingPaymentsPreview from '../components/dashboard/previews/UpcomingPaymentsPreview'; // <--- NUEVO: Importar la preview
 
 import './DashboardPage.css';
 import '../components/dashboard/DashboardComponents.css';
 
 const ALL_AVAILABLE_WIDGETS = {
   saludFinanciera: { Component: SaludFinancieraWidget, name: 'Salud Financiera General', description: 'Puntuación y métricas clave de tu bienestar financiero.', defaultProps: {}, PreviewComponent: SaludFinancieraPreview },
+  upcomingPayments: { Component: UpcomingPaymentsWidget, name: 'Próximos Vencimientos', description: 'Vencimientos de tarjetas, pagos recurrentes, deudas y más.', defaultProps: {}, PreviewComponent: UpcomingPaymentsPreview }, // <--- NUEVO: Widget añadido
   controlPanel: { Component: ControlPanelWidget, name: 'Panel de Control Rápido', description: 'Vista rápida de saldo, flujo y presupuesto.', defaultProps: {}, PreviewComponent: ControlPanelPreview },
   spendingChart: { Component: SpendingChart, name: 'Gastos del Mes por Categoría', description: 'Gráfico de torta mostrando la distribución de tus gastos mensuales.', defaultProps: {}, PreviewComponent: SpendingChartPreview },
   balanceOverview: { Component: BalanceOverview, name: 'Resumen de Balance Total', description: 'Saldo total en ARS, USD y consolidado.', defaultProps: {}, PreviewComponent: BalanceOverviewPreview },
@@ -63,6 +66,7 @@ const ALL_AVAILABLE_WIDGETS = {
 
 const getDefaultWidgetOrder = () => [
   'saludFinanciera', 
+  'upcomingPayments', // <--- NUEVO: Widget añadido al orden
   'controlPanel',
   'balanceTrend',
   'monthlySavings',
@@ -76,7 +80,7 @@ const MAX_SUMMARY_CARDS_DISPLAY = 5;
 
 const DashboardPage = () => {
   const { user } = useAuth(); 
-  const { apiData, loadingStates, error: dataApiError } = useDashboardData();
+  const { apiData, loadingStates, error: dataApiError, fetchDashboardData } = useDashboardData(); // fetchDashboardData ya estaba, se mantiene
 
   const {
     masterWidgetOrder, 
@@ -102,46 +106,46 @@ const DashboardPage = () => {
   );
 
   const finalWidgetPropsList = useMemo(() => {
-    // console.log('[DashboardPage] Recalculando finalWidgetPropsList (useMemo)');
     return orderedVisibleWidgetsList.map(widget => {
-      // La 'key' ya está siendo usada por el componente SortableWidget en el mapeo.
-      // Aquí solo preparamos las props que irán *dentro* del componente del widget.
       let componentSpecificProps = {}; 
       switch (widget.id) {
         case 'saludFinanciera': 
-          componentSpecificProps = { data: apiData.saludFinancieraData, loading: loadingStates.saludFinanciera, error: dataApiError };
+          componentSpecificProps = { data: apiData.saludFinancieraData, loading: loadingStates.saludFinanciera, error: dataApiError?.saludFinanciera };
+          break;
+        case 'upcomingPayments': // <--- NUEVO: Caso para el widget
+          componentSpecificProps = { events: apiData.upcomingEvents, loading: loadingStates.upcomingEvents, error: dataApiError?.upcomingEvents };
           break;
         case 'balanceOverview':
-          componentSpecificProps = { summary: apiData.balanceSummary, loading: loadingStates.balanceSummary };
+          componentSpecificProps = { summary: apiData.balanceSummary, loading: loadingStates.balanceSummary, error: dataApiError?.balanceSummary };
           break;
         case 'investmentHighlights':
-          componentSpecificProps = { highlights: apiData.investmentHighlights, loading: loadingStates.investments };
+          componentSpecificProps = { highlights: apiData.investmentHighlights, loading: loadingStates.investments, error: dataApiError?.investmentHighlights };
           break;
         case 'controlPanel':
           componentSpecificProps = {
             saldoData: apiData.balanceSummary ? { value: apiData.balanceSummary.totalBalanceARSConverted, currency: 'ARS' } : null,
             flujoData: apiData.monthlyFinancialStatus?.statusByCurrency?.ARS ? { value: apiData.monthlyFinancialStatus.statusByCurrency.ARS.savings, currency: 'ARS' } : null,
             gastadoData: apiData.globalBudgetStatus,
-            loading: loadingStates.balanceSummary || loadingStates.monthlyStatus || loadingStates.globalBudget
+            loading: loadingStates.balanceSummary || loadingStates.monthlyStatus || loadingStates.globalBudget,
+            error: dataApiError?.controlPanel 
           };
           break;
         case 'monthlySavings':
-          componentSpecificProps = { status: apiData.monthlyFinancialStatus, loading: loadingStates.monthlyStatus, error: dataApiError };
+          componentSpecificProps = { status: apiData.monthlyFinancialStatus, loading: loadingStates.monthlyStatus, error: dataApiError?.monthlyFinancialStatus };
           break;
         case 'balanceTrend':
-          componentSpecificProps = { chartData: apiData.balanceTrendData, loading: loadingStates.balanceTrend };
+          componentSpecificProps = { chartData: apiData.balanceTrendData, loading: loadingStates.balanceTrend, error: dataApiError?.balanceTrendData };
           break;
         case 'spendingChart': 
-          componentSpecificProps = { loading: loadingStates.monthlyStatus };
+          componentSpecificProps = { loading: loadingStates.spendingChart, error: dataApiError?.spendingChart }; 
           break;
         case 'recentTransactions': 
-          componentSpecificProps = { loading: loadingStates.accounts };
+          componentSpecificProps = { loading: loadingStates.recentTransactions, error: dataApiError?.recentTransactions }; 
           break;
         default:
-          componentSpecificProps = { ...widget.props }; // Mantener props por defecto si no hay específicas
+          componentSpecificProps = { ...widget.props };
           break;
       }
-      // Devolver el objeto widget con sus props actualizadas, sin la 'key' aquí.
       return { ...widget, props: componentSpecificProps }; 
     });
   }, [orderedVisibleWidgetsList, apiData, loadingStates, dataApiError]);
@@ -197,6 +201,7 @@ const DashboardPage = () => {
       onDragEnd={handleDragEndDnd} 
     >
       <div className="page-container dashboard-page">
+        {/* Se mantiene la estructura original sin el div.dashboard-header que había eliminado previamente por tu indicación */}
         <div className="accounts-summary-row">
           {loadingStates.accounts && summaryAccountsToDisplay.length === 0 ? ( 
             <p className="loading-text-widget" style={{flexGrow: 1, textAlign:'center'}}>Cargando resumen de cuentas...</p> 
@@ -215,15 +220,20 @@ const DashboardPage = () => {
           )}
         </div>
 
-        {dataApiError && <p className="error-message" style={{marginBottom: '20px'}}>{dataApiError}</p>}
+        {typeof dataApiError === 'string' && dataApiError && <p className="error-message" style={{marginBottom: '20px'}}>{dataApiError}</p>}
+        {typeof dataApiError === 'object' && Object.keys(dataApiError).length > 0 && !dataApiError.general &&
+            Object.entries(dataApiError).map(([key, msg]) => (
+                msg && <p key={key} className="error-message small-error" style={{marginBottom: '5px'}}>{`Error en ${key}: ${msg}`}</p>
+            ))
+        }
+        {dataApiError?.general && <p className="error-message" style={{marginBottom: '20px'}}>{dataApiError.general}</p>}
+        
         {configError && <p className="error-message" style={{marginBottom: '20px'}}>{configError}</p>}
         
         <SortableContext items={finalWidgetPropsList.map(w => w.id)} strategy={rectSwappingStrategy}>
           <div className="dashboard-widgets-grid-target">
             {finalWidgetPropsList.map(widgetItem => (
-              // La 'key' se pasa directamente a SortableWidget
               <SortableWidget key={widgetItem.id} id={widgetItem.id}>
-                {/* El componente del widget recibe sus props específicas sin la 'key' */}
                 <widgetItem.Component {...widgetItem.props} />
               </SortableWidget>
             ))}
@@ -235,7 +245,6 @@ const DashboardPage = () => {
       <DragOverlay dropAnimation={null}>
         {activeDragId && activeDraggedWidgetObject ? (
           <div className="dashboard-widget" style={{height: '300px', opacity: 0.95, boxShadow: '0 10px 25px rgba(0,0,0,0.2)'}}>
-             {/* Aquí también, el componente se crea y las props se pasan sin 'key' en el spread */}
              {React.createElement(activeDraggedWidgetObject.Component, activeDraggedWidgetObject.props)}
           </div>
         ) : null}
