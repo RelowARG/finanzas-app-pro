@@ -45,18 +45,18 @@ const SpendingChart = () => {
 
   const options = {
     responsive: true,
-    maintainAspectRatio: false, // Muy importante para que el gráfico se adapte al contenedor
+    maintainAspectRatio: false, 
     plugins: {
       legend: {
-        position: 'bottom', // Posición de la leyenda como en la imagen objetivo
+        position: 'bottom', 
         labels: { 
-          boxWidth: 15, // Ancho de la caja de color de la leyenda
-          padding: 10, // Espaciado de la leyenda
-          font: { size: 9 } // Tamaño de fuente más pequeño para la leyenda
+          boxWidth: 15, 
+          padding: 10, 
+          font: { size: 9 } 
         }
       },
       title: { 
-        display: false, // El título "Gastos del Mes" ya está en el h3 del widget
+        display: false, 
       },
       tooltip: {
         callbacks: {
@@ -75,6 +75,10 @@ const SpendingChart = () => {
       }
     },
     cutout: '60%', 
+    animation: {
+      duration: 800, // *** CORRECCIÓN AQUÍ: Duración reducida a 800ms (0.8 segundos) ***
+      easing: 'easeOutQuart' 
+    }
   };
 
   const renderContent = () => {
@@ -96,7 +100,7 @@ const SpendingChart = () => {
   };
   
   return (
-    <div className="dashboard-widget spending-chart-widget"> {/* Clase específica opcional */}
+    <div className="dashboard-widget spending-chart-widget"> 
       <h3>Gastos del Mes ({currencyReported})</h3>
       <div className="dashboard-widget-content">
         {renderContent()}

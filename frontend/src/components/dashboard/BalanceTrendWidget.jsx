@@ -11,7 +11,7 @@ import {
   Legend,
 } from 'chart.js';
 import './DashboardComponents.css';
-import dashboardService from '../../services/dashboard.service'; // Importar el servicio
+import dashboardService from '../../services/dashboard.service'; 
 
 ChartJS.register(
   CategoryScale,
@@ -32,14 +32,13 @@ const BalanceTrendWidget = () => {
       setLoading(true);
       setError('');
       try {
-        // --- LLAMADA REAL AL SERVICIO ---
         const dataFromApi = await dashboardService.getBalanceTrendData({ months: 6 });
         setChartData(dataFromApi);
 
       } catch (err) {
         console.error("Error fetching balance trend data:", err);
         setError('Error al cargar la tendencia del saldo.');
-        setChartData({ // Estructura por defecto en caso de error para que el gráfico no falle
+        setChartData({ 
           labels: [],
           datasets: [],
           summary: { currentBalance: 0, currency: 'ARS', changeVsPreviousPeriodPercent: 0 }
@@ -56,12 +55,17 @@ const BalanceTrendWidget = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: chartData?.datasets?.length > 1, // Mostrar leyenda si hay más de un dataset
+        display: chartData?.datasets?.length > 1, 
       },
       title: {
-        display: false, // El título del widget ya es "Tendencia del Saldo"
+        display: false, 
       },
       tooltip: {
+        // *** AJUSTE SUGERIDO PARA EL TOOLTIP ***
+        enabled: true, // Asegurarse que esté habilitado
+        animation: { // Controlar animación del tooltip
+          duration: 150, // Duración rápida (0.15 segundos)
+        },
         callbacks: {
           label: function(context) {
             let label = context.dataset.label || '';
@@ -79,21 +83,25 @@ const BalanceTrendWidget = () => {
     },
     scales: {
       y: {
-        beginAtZero: false, // Permitir que el eje Y se ajuste mejor a los datos
+        beginAtZero: false, 
         ticks: {
           callback: function(value) {
             if (Math.abs(value) >= 1000000) return (value / 1000000).toFixed(1) + 'M';
             if (Math.abs(value) >= 1000) return (value / 1000).toFixed(0) + 'k';
-            return value.toFixed(0); // Ajustar decimales si es necesario
+            return value.toFixed(0); 
           }
         }
       },
       x: {
         grid: {
-          display: false, // Ocultar líneas de grid vertical
+          display: false, 
         }
       }
     },
+    animation: { // Animación general del gráfico al cargar/actualizar
+        duration: 800, // Duración de 0.8 segundos para la animación del gráfico
+        easing: 'easeOutQuart'
+    }
   };
 
   const renderContent = () => {
@@ -118,7 +126,7 @@ const BalanceTrendWidget = () => {
                 </div>
             </div>
         )}
-        <div className="chart-container" style={{height: chartData.summary ? 'calc(100% - 70px)' : '100%' }}> {/* Ajustar altura si hay resumen */}
+        <div className="chart-container" style={{height: chartData.summary ? 'calc(100% - 70px)' : '100%' }}> 
           <Bar data={chartData} options={options} />
         </div>
       </>
