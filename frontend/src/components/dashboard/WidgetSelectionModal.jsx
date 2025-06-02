@@ -1,12 +1,12 @@
 // Ruta: src/components/dashboard/WidgetSelectionModal.jsx
 import React, { useState, useEffect } from 'react';
-import './WidgetSelectionModal.css'; // Crearemos este CSS
+import './WidgetSelectionModal.css'; 
 
 const WidgetSelectionModal = ({
   isOpen,
   onClose,
-  allAvailableWidgets, // Objeto: { widgetId: { name, description, Component, ... }, ... }
-  currentVisibleWidgetIds, // Array de IDs: ['widgetId1', 'widgetId2']
+  allAvailableWidgets, 
+  currentVisibleWidgetIds, 
   onSave,
 }) => {
   const [selectedWidgetIds, setSelectedWidgetIds] = useState(new Set());
@@ -30,7 +30,7 @@ const WidgetSelectionModal = ({
   };
 
   const handleSaveChanges = () => {
-    onSave(Array.from(selectedWidgetIds)); // Pasar como array
+    onSave(Array.from(selectedWidgetIds)); 
     onClose();
   };
 
@@ -50,31 +50,34 @@ const WidgetSelectionModal = ({
           {widgetEntries.map(([widgetId, widgetConfig]) => (
             <div key={widgetId} className="widget-selection-item">
               <div className="widget-preview-area">
-                {/* Placeholder para la previsualización visual */}
-                {widgetConfig.staticPreviewImage ? (
+                {widgetConfig.PreviewComponent ? (
+                  <widgetConfig.PreviewComponent />
+                ) : widgetConfig.staticPreviewImage ? (
                   <img src={widgetConfig.staticPreviewImage} alt={`${widgetConfig.name} preview`} className="widget-static-preview-img" />
                 ) : (
                   <div className="widget-preview-placeholder">
-                    <span role="img" aria-label="Preview icon">🖼️</span>
-                    {/* Aquí podrías renderizar widgetConfig.PreviewComponent si lo implementas */}
+                    <span role="img" aria-label="Preview icon">🖼️ Vista Previa no disponible</span>
                   </div>
                 )}
               </div>
-              <div className="widget-info-area">
-                <h4 className="widget-item-name">{widgetConfig.name}</h4>
-                <p className="widget-item-description">{widgetConfig.description}</p>
-              </div>
-              <div className="widget-checkbox-area">
-                <input
-                  type="checkbox"
-                  id={`widget-select-${widgetId}`}
-                  checked={selectedWidgetIds.has(widgetId)}
-                  onChange={() => handleToggleWidget(widgetId)}
-                  className="widget-select-checkbox"
-                />
-                <label htmlFor={`widget-select-${widgetId}`} className="checkbox-custom-label">
-                  {selectedWidgetIds.has(widgetId) ? 'Visible' : 'Oculto'}
-                </label>
+              {/* Contenedor para la info y el checkbox, debajo del preview */}
+              <div className="widget-selection-item-footer">
+                <div className="widget-info-area">
+                  <h4 className="widget-item-name">{widgetConfig.name}</h4>
+                  <p className="widget-item-description">{widgetConfig.description}</p>
+                </div>
+                <div className="widget-checkbox-area">
+                  <input
+                    type="checkbox"
+                    id={`widget-select-${widgetId}`}
+                    checked={selectedWidgetIds.has(widgetId)}
+                    onChange={() => handleToggleWidget(widgetId)}
+                    className="widget-select-checkbox"
+                  />
+                  <label htmlFor={`widget-select-${widgetId}`} className="checkbox-custom-label">
+                    {selectedWidgetIds.has(widgetId) ? 'Visible' : 'Oculto'}
+                  </label>
+                </div>
               </div>
             </div>
           ))}

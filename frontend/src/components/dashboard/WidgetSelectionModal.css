@@ -19,7 +19,7 @@
   border-radius: var(--border-radius, 8px);
   box-shadow: 0 5px 20px rgba(0,0,0,0.25);
   width: 100%;
-  max-width: 900px; /* Modal más ancho para 2 columnas */
+  max-width: 900px; /* Ancho para acomodar 2 widgets de 420px (aprox) */
   max-height: 85vh;
   display: flex;
   flex-direction: column;
@@ -34,7 +34,7 @@
   text-align: center;
 }
 
-.widget-selection-modal-content > p { /* El párrafo introductorio */
+.widget-selection-modal-content > p { 
   font-size: 0.95rem;
   color: #555;
   margin-bottom: 20px;
@@ -43,19 +43,29 @@
 
 .widget-selection-list {
   display: grid;
-  grid-template-columns: 1fr; /* Por defecto una columna */
+  grid-template-columns: 1fr; 
   gap: 20px;
   overflow-y: auto;
   padding: 10px;
-  margin: 0 -10px 20px -10px; /* Compensar padding para que el scroll sea completo */
-  flex-grow: 1; /* Para que ocupe el espacio disponible y permita scroll */
+  margin: 0 -10px 20px -10px; 
+  flex-grow: 1; 
 }
 
-@media (min-width: 768px) { /* Para pantallas más grandes, usar 2 columnas */
+@media (min-width: 900px) { /* Ajustar breakpoint si es necesario */
   .widget-selection-list {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr); /* Dos columnas si hay espacio */
   }
 }
+@media (max-width: 600px) { 
+  .widget-selection-modal-content {
+    max-width: 95%; /* Hacer el modal más ancho en pantallas pequeñas */
+    padding: 15px 20px;
+  }
+  .widget-selection-list {
+    grid-template-columns: 1fr; /* Siempre una columna en móviles */
+  }
+}
+
 
 .widget-selection-item {
   background-color: #f8f9fa;
@@ -63,68 +73,72 @@
   border-radius: var(--border-radius);
   padding: 15px;
   display: flex;
-  gap: 15px;
-  align-items: flex-start; /* Alinear items al inicio verticalmente */
+  flex-direction: column; /* CAMBIO: Stack vertical para preview grande */
+  gap: 10px; /* Espacio entre preview y (info + checkbox) */
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .widget-preview-area {
-  flex-shrink: 0;
-  width: 120px; /* Ancho para la previsualización */
-  height: 90px; /* Alto para la previsualización */
-  background-color: #e9ecef;
+  width: 100%; /* Ocupar todo el ancho del item */
+  height: 300px; /* MISMA ALTURA QUE EL WIDGET REAL */
+  max-width: 420px; /* MISMO MAX-WIDTH QUE EL WIDGET REAL */
+  margin: 0 auto 10px auto; /* Centrar si el item es más ancho, y margen inferior */
+  background-color: #e0e6ed; 
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: hidden; 
+  border: 1px solid #cdd7e1; 
 }
-.widget-static-preview-img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: cover;
-}
-.widget-preview-placeholder {
-  font-size: 2rem;
-  color: #adb5bd;
+
+/* Contenedor para la info y el checkbox, debajo del preview */
+.widget-selection-item-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 10px; /* Espacio sobre este bloque */
 }
 
 .widget-info-area {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  text-align: left; /* Alinear texto a la izquierda */
 }
 
 .widget-item-name {
-  font-size: 1.1rem;
+  font-size: 1.05rem; /* Ligeramente más pequeño */
   font-weight: 600;
   color: var(--dark-color);
-  margin: 0 0 5px 0;
+  margin: 0 0 3px 0;
 }
 
 .widget-item-description {
-  font-size: 0.85rem;
+  font-size: 0.8rem; /* Más pequeño */
   color: #495057;
-  line-height: 1.4;
+  line-height: 1.3;
   margin: 0;
-  flex-grow: 1; /* Para que ocupe espacio y el checkbox quede abajo */
 }
 
 .widget-checkbox-area {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* Centrar el checkbox y su label */
-  padding-left: 10px;
-  border-left: 1px solid #e0e0e0;
-  margin-left: 10px;
-  min-width: 70px; /* Ancho mínimo para el área del checkbox */
+  justify-content: center; 
+  padding-left: 10px; /* Espacio si está al lado de la info */
+  /* Ya no necesita borde si está debajo del preview */
+  /* border-left: 1px solid #e0e0e0; */ 
+  /* margin-left: 10px; */
+  min-width: 70px; 
+  flex-shrink: 0; /* Para que no se encoja */
 }
 
 .widget-select-checkbox {
-  transform: scale(1.5); /* Checkbox más grande */
+  transform: scale(1.5); 
   accent-color: var(--primary-color);
-  margin-bottom: 5px; /* Espacio entre checkbox y label */
+  margin-bottom: 5px; 
   cursor: pointer;
 }
 .checkbox-custom-label {
