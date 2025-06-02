@@ -1,10 +1,10 @@
 // finanzas-app-pro/backend/services/dashboard.service.js
 const db = require('../models');
 const { Op, Sequelize, literal } = require('sequelize');
-// ... (otras importaciones y helpers como getMonthDateRange, getRatesForItems, convertItemAmount) ...
 
+// Asegúrate que esta función esté disponible o impleméntala si es necesaria para otros contextos.
+// Si solo es para el formato de fecha en este archivo, puedes simplificarlo o moverlo.
 const getMonthDateRange = (date = new Date(), monthsOffset = 0) => {
-  // ... (código existente)
   const d = new Date(date);
   d.setUTCMonth(d.getUTCMonth() + monthsOffset);
 
@@ -28,7 +28,6 @@ const getMonthDateRange = (date = new Date(), monthsOffset = 0) => {
 };
 
 const getRatesForItems = async (userId, items, targetCurrency = 'ARS') => {
-  // ... (código existente)
   if (!items || items.length === 0) return { rates: {}, notes: [] };
   
   const rateMap = {}; 
@@ -74,7 +73,6 @@ const getRatesForItems = async (userId, items, targetCurrency = 'ARS') => {
 };
 
 const convertItemAmount = (amount, currency, dateStr, ratesMap, targetCurrency = 'ARS', notesSet) => {
-  // ... (código existente)
   const originalAmount = parseFloat(amount);
   if (currency === targetCurrency) return originalAmount;
   if (isNaN(originalAmount)) return 0; 
@@ -98,9 +96,7 @@ const convertItemAmount = (amount, currency, dateStr, ratesMap, targetCurrency =
 };
 
 
-// --- getDashboardSummary (sin cambios directos aquí, pero su lógica de saldos es correcta) ---
 const getDashboardSummary = async (userId) => {
-  // ... (código existente) ...
   console.log('[DEBUG] Backend Service: Entering getDashboardSummary for userId:', userId);
   try {
     const accounts = await db.Account.findAll({ 
@@ -165,8 +161,6 @@ const getDashboardSummary = async (userId) => {
   }
 };
 
-
-// --- getMonthlySpendingByCategory ---
 const getMonthlySpendingByCategory = async (userId, filters = {}) => {
   console.log('[DashboardService Backend] Fetching MonthlySpendingByCategory for userId:', userId, 'Filters:', filters);
   try {
@@ -177,11 +171,10 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
 
     const transactionWhereClause = {
       userId,
-      type: 'egreso', // *** MANTENER 'egreso' para este widget específico de gastos ***
+      type: 'egreso',
       date: { [Op.between]: [dateFrom, dateTo] },
     };
 
-    // ... (resto de la función sin cambios, ya que solo considera 'egreso') ...
     const transactions = await db.Transaction.findAll({
       where: transactionWhereClause,
       include: [{ model: db.Category, as: 'category', attributes: ['id', 'name', 'icon'] }],
@@ -235,13 +228,42 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
         numberOfCategories: labels.length, currencyReported: targetCurrency, conversionNotes
       }
     };
+
   } catch (error) {
     console.error("[DashboardService Backend] Error fetching monthly spending for chart:", error);
     return { labels: [], datasets: [{ data: [] }], summary: { totalExpenses: 0, numberOfCategories: 0, currencyReported: 'ARS', conversionNotes:['Error al cargar datos.'] } };
   }
 };
 
-// --- getCurrentMonthFinancialStatus ---
+const getInvestmentHighlights = async (userId, topN = 3) => {
+  console.log('[DashboardService Backend] getInvestmentHighlights for userId:', userId);
+  try {
+    const allInvestments = await db.Investment.findAll({ where: { userId }});
+    if (!allInvestments || allInvestments.length === 0) {
+        return { totalValueByCurrency: {}, topInvestments: [], totalNumberOfInvestments: 0 };
+    }
+    const summaryByCurrency = allInvestments.reduce((acc, inv) => {
+      const currency = inv.currency || 'ARS';
+      acc[currency] = (acc[currency] || 0) + (parseFloat(inv.currentValue) || 0); 
+      return acc;
+    }, {});
+
+    const sortedByValue = [...allInvestments].sort((a, b) => (parseFloat(b.currentValue) || 0) - (parseFloat(a.currentValue) || 0));
+    const topInvestments = sortedByValue.slice(0, topN).map(inv => ({
+        id: inv.id, name: inv.name, currentValue: parseFloat(inv.currentValue) || 0, 
+        currency: inv.currency, icon: inv.icon, type: inv.type,
+    }));
+    return {
+      totalValueByCurrency: summaryByCurrency, 
+      topInvestments: topInvestments,
+      totalNumberOfInvestments: allInvestments.length,
+    };
+  } catch (error) {
+    console.error("[DashboardService Backend] Error getting investment highlights:", error);
+    return { totalValueByCurrency: {}, topInvestments: [], totalNumberOfInvestments: 0 };
+  }
+};
+
 const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') => {
   console.log('\n[DashService-MonthlyStatus] =================================================');
   console.log('[DashService-MonthlyStatus] INICIO getCurrentMonthFinancialStatus para user:', userId);
@@ -254,14 +276,11 @@ const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') =>
     const currentMonthTransactions = await db.Transaction.findAll({
         where: {
             userId,
-            date: { [Op.between]: [dateFrom, dateTo] },
-            // *** FILTRAR PARA EXCLUIR TRANSFERENCIAS DEL CÁLCULO DE INGRESOS/EGRESOS DEL MES ***
-            type: { [Op.in]: ['ingreso', 'egreso'] }
+            date: { [Op.between]: [dateFrom, dateTo] } 
         },
         raw: true
     });
-    // ... (resto de la lógica de conversión y agregación sin cambios) ...
-    console.log(`[DashService-MonthlyStatus] Transacciones (no transferencias) encontradas para ${monthName} ${year}: ${currentMonthTransactions.length}`);
+    console.log(`[DashService-MonthlyStatus] Transacciones encontradas para ${monthName} ${year}: ${currentMonthTransactions.length}`);
     
     const { rates, notes: rateConversionNotes } = await getRatesForItems(userId, currentMonthTransactions, targetCurrency);
     let conversionNotes = [...rateConversionNotes];
@@ -292,7 +311,7 @@ const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') =>
 
             if (tx.type === 'ingreso') {
                 totalIncomeTargetCurrency += amountInTarget;
-            } else if (tx.type === 'egreso') { // Ya está filtrado para que no sea 'transferencia'
+            } else if (tx.type === 'egreso') {
                 totalExpensesTargetCurrency += Math.abs(amountInTarget);
             }
         }
@@ -344,39 +363,7 @@ const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') =>
   }
 };
 
-// ... (getInvestmentHighlights, getGlobalBudgetStatus, getBalanceTrend, calculateFinancialHealth, getUpcomingEvents sin cambios necesarios para este fix específico) ...
-const getInvestmentHighlights = async (userId, topN = 3) => {
-  // ... (código existente)
-  console.log('[DashboardService Backend] getInvestmentHighlights for userId:', userId);
-  try {
-    const allInvestments = await db.Investment.findAll({ where: { userId }});
-    if (!allInvestments || allInvestments.length === 0) {
-        return { totalValueByCurrency: {}, topInvestments: [], totalNumberOfInvestments: 0 };
-    }
-    const summaryByCurrency = allInvestments.reduce((acc, inv) => {
-      const currency = inv.currency || 'ARS';
-      acc[currency] = (acc[currency] || 0) + (parseFloat(inv.currentValue) || 0); 
-      return acc;
-    }, {});
-
-    const sortedByValue = [...allInvestments].sort((a, b) => (parseFloat(b.currentValue) || 0) - (parseFloat(a.currentValue) || 0));
-    const topInvestments = sortedByValue.slice(0, topN).map(inv => ({
-        id: inv.id, name: inv.name, currentValue: parseFloat(inv.currentValue) || 0, 
-        currency: inv.currency, icon: inv.icon, type: inv.type,
-    }));
-    return {
-      totalValueByCurrency: summaryByCurrency, 
-      topInvestments: topInvestments,
-      totalNumberOfInvestments: allInvestments.length,
-    };
-  } catch (error) {
-    console.error("[DashboardService Backend] Error getting investment highlights:", error);
-    return { totalValueByCurrency: {}, topInvestments: [], totalNumberOfInvestments: 0 };
-  }
-};
-
 const getGlobalBudgetStatus = async (userId, targetCurrency = 'ARS') => {
-  // ... (código existente)
   console.log('[DashboardService Backend] Calculating Global Budget Status for user:', userId);
   const currentServerDate = new Date();
   const { dateFrom, dateTo, monthName, year } = getMonthDateRange(currentServerDate);
@@ -416,7 +403,7 @@ const getGlobalBudgetStatus = async (userId, targetCurrency = 'ARS') => {
       const transactionsInBudgetedCategories = await db.Transaction.findAll({
         where: {
           userId,
-          type: 'egreso', // Solo egresos para presupuestos
+          type: 'egreso',
           date: { [Op.between]: [dateFrom, dateTo] }, 
           categoryId: { [Op.in]: budgetCategoryIds },
         },
@@ -455,7 +442,6 @@ const getGlobalBudgetStatus = async (userId, targetCurrency = 'ARS') => {
 };
 
 const getBalanceTrend = async (userId, numberOfMonths = 6, targetCurrency = 'ARS') => {
-  // ... (código existente)
   console.log(`[DashboardService Backend] Calculating Balance Trend for ${numberOfMonths} months for user:`, userId);
   try {
     const accounts = await db.Account.findAll({ where: { userId }, raw: true }); 
@@ -505,15 +491,11 @@ const getBalanceTrend = async (userId, numberOfMonths = 6, targetCurrency = 'ARS
         const flowMonthRange = getMonthDateRange(new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - i + 1, 1)));
 
         const transactionsThisFlowMonth = await db.Transaction.findAll({
-          where: { 
-            userId, 
-            date: { [Op.between]: [flowMonthRange.dateFrom, flowMonthRange.dateTo] },
-            type: { [Op.in]: ['ingreso', 'egreso'] } // *** EXCLUIR TRANSFERENCIAS ***
-          },
+          where: { userId, date: { [Op.between]: [flowMonthRange.dateFrom, flowMonthRange.dateTo] } },
           raw: true,
         });
         
-        let netFlowThisMonthConvertedTarget = 0;
+        let netFlowThisMonthConvertedTarget = 0; // Corrected variable name here
 
         for (const tx of transactionsThisFlowMonth) {
           const txAccount = accounts.find(acc => acc.id === tx.accountId && acc.includeInDashboardSummary);
@@ -564,7 +546,6 @@ const getBalanceTrend = async (userId, numberOfMonths = 6, targetCurrency = 'ARS
 };
 
 const calculateFinancialHealth = async (userId, targetCurrency = 'ARS') => {
-  // ... (código existente, asegurándose que los cálculos de ingresos/egresos excluyan transferencias) ...
   console.log(`[DashboardService] Calculating Financial Health for userId: ${userId} in ${targetCurrency}`);
   const today = new Date(); 
   const currentMonthRange = getMonthDateRange(today);
@@ -575,11 +556,7 @@ const calculateFinancialHealth = async (userId, targetCurrency = 'ARS') => {
   const dateForAveragesStart = getMonthDateRange(today, -2).dateFrom; 
   
   const recentTransactionsRaw = await db.Transaction.findAll({
-      where: { 
-        userId, 
-        date: { [Op.gte]: dateForAveragesStart },
-        type: { [Op.in]: ['ingreso', 'egreso'] } // *** EXCLUIR TRANSFERENCIAS ***
-      },
+      where: { userId, date: { [Op.gte]: dateForAveragesStart } },
       raw: true
   });
   
@@ -699,7 +676,6 @@ const calculateFinancialHealth = async (userId, targetCurrency = 'ARS') => {
 };
 
 const getUpcomingEvents = async (userId, daysInFuture = 15) => {
-  // ... (código existente)
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
 
@@ -753,7 +729,7 @@ const getUpcomingEvents = async (userId, daysInFuture = 15) => {
         [Op.gte]: todayString,
         [Op.lte]: futureDateString,
       },
-      statementBalance: { [Op.gt]: 0 } // Solo si hay saldo a pagar
+      statementBalance: { [Op.gt]: 0 }
     },
     order: [['statementDueDate', 'ASC']],
     raw: true,
@@ -762,7 +738,7 @@ const getUpcomingEvents = async (userId, daysInFuture = 15) => {
   creditCards.forEach(card => {
     upcomingEvents.push({
       type: 'tarjeta',
-      eventType: 'egreso', // Pagar tarjeta es un egreso del flujo de caja
+      eventType: 'egreso',
       date: card.statementDueDate,
       description: `Venc. Tarjeta ${card.name}`,
       amount: parseFloat(card.statementBalance),
@@ -815,7 +791,7 @@ const getUpcomingEvents = async (userId, daysInFuture = 15) => {
         }
 
         upcomingEvents.push({
-            type: item.type, // 'debt' o 'loan'
+            type: item.type,
             eventType: item.type === 'debt' ? 'egreso' : 'ingreso',
             date: relevantDate,
             description: `${descriptionPrefix}${item.description}`,
@@ -844,10 +820,10 @@ const getUpcomingEvents = async (userId, daysInFuture = 15) => {
   fixedTermInvestments.forEach(inv => {
     upcomingEvents.push({
       type: 'inversion',
-      eventType: 'info', // Es informativo, no un egreso/ingreso directo de flujo de caja
+      eventType: 'info',
       date: inv.endDate,
       description: `Venc. P.Fijo: ${inv.name}`,
-      amount: parseFloat(inv.currentValue) || parseFloat(inv.initialInvestment), // Mostrar valor final
+      amount: parseFloat(inv.currentValue) || parseFloat(inv.initialInvestment),
       currency: inv.currency,
       icon: inv.icon || '📜',
       source: `Inversión: ${inv.entity || inv.name}`
@@ -857,6 +833,36 @@ const getUpcomingEvents = async (userId, daysInFuture = 15) => {
   upcomingEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
 
   return upcomingEvents;
+};
+
+// NUEVA FUNCIÓN: Obtener transacciones más recientes
+const getRecentTransactions = async (userId, limit = 5) => {
+  console.log(`[DashboardService Backend] Fetching recent transactions for userId: ${userId}`);
+  try {
+    const transactions = await db.Transaction.findAll({
+      where: {
+        userId,
+      },
+      include: [
+        { model: db.Account, as: 'account', attributes: ['name', 'icon', 'currency'] },
+        { model: db.Category, as: 'category', attributes: ['name', 'icon'] }
+      ],
+      order: [['date', 'DESC'], ['createdAt', 'DESC']],
+      limit: limit,
+      raw: true,
+      nest: true
+    });
+
+    const formattedTransactions = transactions.map(tx => ({
+        ...tx,
+        amount: parseFloat(tx.amount)
+    }));
+    
+    return formattedTransactions;
+  } catch (error) {
+    console.error("[DashboardService Backend] Error fetching recent transactions:", error);
+    return [];
+  }
 };
 
 
@@ -869,4 +875,5 @@ module.exports = {
   getBalanceTrend,
   calculateFinancialHealth,
   getUpcomingEvents,
+  getRecentTransactions,
 };

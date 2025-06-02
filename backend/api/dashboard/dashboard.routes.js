@@ -16,5 +16,6 @@ router.get('/financial-health', dashboardController.getFinancialHealthController
 
 // --- NUEVA RUTA ---
 router.get('/upcoming-events', dashboardController.getUpcomingEventsController);
+router.get('/recent-transactions', dashboardController.getRecentTransactionsController); // <--- AÑADIR ESTA LÍNEA
 
 module.exports = router;

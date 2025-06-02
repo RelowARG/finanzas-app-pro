@@ -14,6 +14,7 @@ const initialApiDataState = {
   balanceTrendData: null,
   saludFinancieraData: null,
   upcomingEvents: [],
+  recentTransactions: [], // *** NUEVO ESTADO PARA TRANSACCIONES RECIENTES ***
   savingsGoals: [], // *** NUEVO ESTADO PARA METAS ***
   // Estados de carga individuales
   loadingAccounts: true,
@@ -24,6 +25,7 @@ const initialApiDataState = {
   loadingBalanceTrend: true,
   loadingSaludFinanciera: true,
   loadingUpcomingEvents: true,
+  loadingRecentTransactions: true, // *** NUEVO ESTADO DE CARGA PARA TRANSACCIONES RECIENTES ***
   loadingSavingsGoals: true, // *** NUEVO ESTADO DE CARGA PARA METAS ***
 };
 
@@ -76,21 +78,27 @@ export const useDashboardData = () => {
 
     try {
       const results = await Promise.allSettled([
-        dashboardService.getInvestmentHighlights(3), //
-        dashboardService.getCurrentMonthFinancialStatus(), //
-        accountService.getAllAccounts(), //
-        dashboardService.getDashboardSummary(), //
-        dashboardService.getGlobalBudgetStatus(), //
-        dashboardService.getBalanceTrendData({ months: 6 }), //
-        dashboardService.getSaludFinancieraData(), //
-        dashboardService.getUpcomingEvents(15), //
-        goalsService.getAllGoals({ statusFilter: 'active' }), // *** NUEVA LLAMADA AL SERVICIO DE METAS ***
+        dashboardService.getInvestmentHighlights(3), // 0
+        dashboardService.getCurrentMonthFinancialStatus(), // 1
+        accountService.getAllAccounts(), // 2
+        dashboardService.getDashboardSummary(), // 3
+        dashboardService.getGlobalBudgetStatus(), // 4
+        dashboardService.getBalanceTrendData({ months: 6 }), // 5
+        dashboardService.getSaludFinancieraData(), // 6
+        dashboardService.getUpcomingEvents(15), // 7
+        dashboardService.getRecentTransactions(5), // 8: Nueva promesa para transacciones recientes
+        goalsService.getAllGoals({ statusFilter: 'active' }), // 9: Metas (su índice se movió)
       ]);
 
       const errorMessages = {};
+      // Actualizar el array de keys para que coincida con el orden de las promesas
+      const keys = [
+        'investmentHighlights', 'monthlyFinancialStatus', 'allUserAccounts', 'balanceSummary',
+        'globalBudgetStatus', 'balanceTrendData', 'saludFinancieraData', 'upcomingEvents',
+        'recentTransactions', 'savingsGoals' // <-- ORDEN ACTUALIZADO
+      ];
       results.forEach((result, index) => {
           if (result.status === 'rejected') {
-              const keys = ['investmentHighlights', 'monthlyFinancialStatus', 'allUserAccounts', 'balanceSummary', 'globalBudgetStatus', 'balanceTrendData', 'saludFinancieraData', 'upcomingEvents', 'savingsGoals']; // *** AÑADIDO savingsGoals ***
               errorMessages[keys[index]] = result.reason?.response?.data?.message || result.reason?.message || `Error en ${keys[index]}`;
               console.warn(`[useDashboardData] Error fetching ${keys[index]}:`, errorMessages[keys[index]]);
           }
@@ -105,6 +113,7 @@ export const useDashboardData = () => {
           loadingAccounts: false, loadingInvestments: false, loadingMonthlyStatus: false,
           loadingBalanceSummary: false, loadingGlobalBudget: false, loadingBalanceTrend: false,
           loadingSaludFinanciera: false, loadingUpcomingEvents: false,
+          loadingRecentTransactions: false, // *** NUEVO ESTADO DE CARGA ***
           loadingSavingsGoals: false, // *** NUEVO ESTADO DE CARGA ***
         };
 
@@ -117,7 +126,8 @@ export const useDashboardData = () => {
           balanceTrendData: results[5].status === 'fulfilled' ? results[5].value : prevApiDataNow.balanceTrendData,
           saludFinancieraData: results[6].status === 'fulfilled' ? results[6].value : prevApiDataNow.saludFinancieraData,
           upcomingEvents: results[7].status === 'fulfilled' ? (results[7].value || []) : prevApiDataNow.upcomingEvents,
-          savingsGoals: results[8].status === 'fulfilled' ? (results[8].value || []) : prevApiDataNow.savingsGoals, // *** NUEVOS DATOS DE METAS ***
+          recentTransactions: results[8].status === 'fulfilled' ? (results[8].value || []) : prevApiDataNow.recentTransactions, // <-- ÍNDICE ACTUALIZADO
+          savingsGoals: results[9].status === 'fulfilled' ? (results[9].value || []) : prevApiDataNow.savingsGoals, // <-- ÍNDICE ACTUALIZADO
         };
         
         let hasDataChanged = false;
@@ -148,7 +158,7 @@ export const useDashboardData = () => {
     } catch (err) { 
       setDataError(prev => ({ ...prev, general: 'Error crítico al cargar datos del dashboard.' }));
       console.error("[useDashboardData] Error crítico en fetchDashboardData:", err);
-      setApiData(prev => ({ ...initialApiDataState, loadingAccounts: false, loadingInvestments: false, loadingMonthlyStatus: false, loadingBalanceSummary: false, loadingGlobalBudget: false, loadingBalanceTrend: false, loadingSaludFinanciera: false, loadingUpcomingEvents: false, loadingSavingsGoals: false }));
+      setApiData(prev => ({ ...initialApiDataState, loadingAccounts: false, loadingInvestments: false, loadingMonthlyStatus: false, loadingBalanceSummary: false, loadingGlobalBudget: false, loadingBalanceTrend: false, loadingSaludFinanciera: false, loadingUpcomingEvents: false, loadingRecentTransactions: false, loadingSavingsGoals: false }));
     }
   }, [user]); 
 
@@ -166,6 +176,7 @@ export const useDashboardData = () => {
     const isLoadingOverall = apiData.loadingAccounts || apiData.loadingInvestments || apiData.loadingMonthlyStatus ||
                          apiData.loadingBalanceSummary || apiData.loadingGlobalBudget || apiData.loadingBalanceTrend ||
                          apiData.loadingSaludFinanciera || apiData.loadingUpcomingEvents ||
+                         apiData.loadingRecentTransactions || // *** AÑADIDO loadingRecentTransactions ***
                          apiData.loadingSavingsGoals; // *** AÑADIDO loadingSavingsGoals ***
     return {
       accounts: apiData.loadingAccounts,
@@ -176,6 +187,7 @@ export const useDashboardData = () => {
       balanceTrend: apiData.loadingBalanceTrend,
       saludFinanciera: apiData.loadingSaludFinanciera,
       upcomingEvents: apiData.loadingUpcomingEvents,
+      recentTransactions: apiData.loadingRecentTransactions, // *** AÑADIDO ***
       savingsGoals: apiData.loadingSavingsGoals, // *** AÑADIDO ***
       overall: isLoadingOverall,
     };
@@ -183,6 +195,7 @@ export const useDashboardData = () => {
     apiData.loadingAccounts, apiData.loadingInvestments, apiData.loadingMonthlyStatus,
     apiData.loadingBalanceSummary, apiData.loadingGlobalBudget, apiData.loadingBalanceTrend,
     apiData.loadingSaludFinanciera, apiData.loadingUpcomingEvents,
+    apiData.loadingRecentTransactions, // *** AÑADIDO ***
     apiData.loadingSavingsGoals // *** AÑADIDO ***
   ]);
 

@@ -99,6 +99,20 @@ const getUpcomingEventsController = async (req, res, next) => {
   }
 };
 
+// NUEVO CONTROLADOR para obtener transacciones recientes
+const getRecentTransactionsController = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const limit = req.query.limit ? parseInt(req.query.limit, 10) : 5; // Default a 5
+    const transactions = await dashboardService.getRecentTransactions(userId, limit);
+    res.json(transactions);
+  } catch (error) {
+    console.error('[DashboardController] Error in getRecentTransactionsController:', error);
+    next(error);
+  }
+};
+
+
 module.exports = {
   getDashboardSummaryController,
   getInvestmentHighlightsController,
@@ -108,4 +122,5 @@ module.exports = {
   getBalanceTrendController,
   getFinancialHealthController,
   getUpcomingEventsController,
+  getRecentTransactionsController, // <--- AÑADIR ESTA LÍNEA
 };

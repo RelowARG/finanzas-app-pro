@@ -123,6 +123,19 @@ const getUpcomingEvents = async (days = 15) => {
   }
 };
 
+// <--- LA FUNCIÓN QUE FALTABA O ESTABA MAL EN ESTE ARCHIVO
+const getRecentTransactions = async (limit = 5) => {
+  console.log(`[F-DashboardService] Getting recent transactions with limit: ${limit}.`);
+  try {
+    const response = await apiClient.get(`/dashboard/recent-transactions?limit=${limit}`);
+    // console.log('[F-DashboardService] Recent transactions received:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error("[F-DashboardService] Error fetching recent transactions:", error.response?.data || error.message);
+    return []; // Devuelve array vacío en caso de error
+  }
+};
+
 
 const dashboardService = {
   getDashboardSummary,
@@ -132,7 +145,8 @@ const dashboardService = {
   getGlobalBudgetStatus,
   getBalanceTrendData,
   getSaludFinancieraData,
-  getUpcomingEvents, // <--- Exportar
+  getUpcomingEvents, 
+  getRecentTransactions, // <--- ESTO DEBE ESTAR EXPORTADO
 };
 
 export default dashboardService;
