@@ -1,23 +1,30 @@
 /* Ruta: finanzas-app-pro/frontend/src/components/dashboard/InvestmentHighlights.css */
-/* ARCHIVO NUEVO */
 
 .investment-highlights-widget {
-  /* Utiliza .dashboard-widget para estilos base */
+  /* .dashboard-widget ya define height: 300px y overflow: hidden */
+  /* El contenido debe gestionarse para caber aquí */
 }
 
-.investment-highlights-widget h3 {
-  color: #1abc9c; /* Color temático de inversiones */
-  border-bottom-color: #1abc9c;
+.investment-highlights-widget .dashboard-widget-content {
+  display: flex;
+  flex-direction: column;
+  /* overflow: hidden; /* Si se añade aquí, CORTARÁ el contenido abruptamente. Mejor manejarlo en los hijos. */
+}
+
+/* Eliminar el color específico para el h3 para que herede el general */
+.investment-highlights-widget .widget-header-container h3 {
+  /* color: #1abc9c; */ /* Eliminado para usar color por defecto */
 }
 
 .total-investments-value {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1.1rem;
-  padding: 10px 0;
-  margin-bottom: 15px;
+  font-size: 1rem; /* Ajustado para consistencia */
+  padding: 8px 0; 
+  margin-bottom: 8px; /* Reducido */
   border-bottom: 1px dashed #e0e0e0;
+  flex-shrink: 0; 
 }
 .total-investments-value span:first-child {
   font-weight: 500;
@@ -30,25 +37,28 @@
 }
 .total-value-currency-item {
   font-weight: bold;
-  color: var(--primary-color); /* O usar el color de inversiones */
-  font-size: 1.2rem;
-  margin-left: 10px; /* Si hay múltiples monedas */
+  color: var(--primary-color);
+  font-size: 1.1rem; /* Ajustado */
+  margin-left: 10px; 
 }
 .total-value-currency-item:first-child {
     margin-left: 0;
 }
 
-
 .top-investments-list {
-  margin-top: 10px;
-  margin-bottom: 15px;
+  margin-top: 5px; 
+  margin-bottom: 8px; 
+  flex-grow: 1; 
+  overflow-y: hidden; /* Ocultar el scroll de la lista si excede */
+  min-height: 0; 
 }
 
 .top-investments-list h4 {
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Más pequeño */
   color: #555;
-  margin-bottom: 8px;
+  margin-bottom: 5px; 
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .top-investments-list ul {
@@ -58,7 +68,7 @@
 }
 
 .top-investments-list li {
-  margin-bottom: 8px;
+  margin-bottom: 4px; /* Reducido */
 }
 
 .top-investments-list li a {
@@ -66,19 +76,19 @@
   align-items: center;
   text-decoration: none;
   color: #454545;
-  padding: 6px 8px;
+  padding: 4px 6px; /* Reducido */
   border-radius: var(--border-radius);
   transition: background-color 0.2s ease;
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Más pequeño */
 }
 
 .top-investments-list li a:hover {
-  background-color: #f0f8ff; /* Un azul muy claro al hover */
+  background-color: #f0f8ff;
 }
 
 .inv-icon {
-  margin-right: 10px;
-  font-size: 1.1em;
+  margin-right: 6px; 
+  font-size: 1em; 
 }
 
 .inv-name {
@@ -90,20 +100,30 @@
 
 .inv-value {
   font-weight: 500;
-  margin-left: 10px;
+  margin-left: 6px; 
   white-space: nowrap;
   color: var(--primary-color);
 }
 
-.button-view-all {
+/* Estilo del botón "Ver Todas las Inversiones" para que se parezca a button-primary */
+.button-view-all-investments { /* Nueva clase para evitar conflictos */
   display: block;
-  width: 100% !important; /* Ocupar todo el ancho */
-  margin-top: 15px;
+  width: 100% !important; 
+  margin-top: auto; /* Empujar al final si hay espacio */
+  padding: 8px 15px !important; 
+  font-size: 0.85rem !important; 
   text-align: center;
-  background-color: #e9ecef !important;
-  color: #495057 !important;
-  border: 1px solid #ced4da !important;
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border: 1px solid var(--primary-color) !important;
+  border-radius: var(--border-radius) !important;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  flex-shrink: 0; 
 }
-.button-view-all:hover {
-  background-color: #dde2e6 !important;
+.button-view-all-investments:hover {
+  background-color: var(--primary-color-dark, #0056b3) !important;
+  border-color: var(--primary-color-dark, #0056b3) !important;
+  color: white !important;
 }
