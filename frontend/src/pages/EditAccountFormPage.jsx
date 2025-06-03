@@ -1,16 +1,17 @@
-// Ruta: finanzas-app-pro/frontend/src/pages/EditAccountPage.jsx
+// Ruta: frontend/src/pages/EditAccountFormPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import accountService from '../services/accounts.service'; // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
-import './AddAccountPage.css'; // Reutilizamos los estilos [cite: finanzas-app-pro/frontend/src/pages/AddAccountPage.css]
+import accountService from '../services/accounts.service';
+import './AddAccountPage.css'; // Reutilizamos los estilos de AddAccountPage
+import { formatCurrency } from '../utils/formatters'; 
 
-const EditAccountPage = () => {
+const EditAccountFormPage = () => {
   const navigate = useNavigate();
-  const { accountId } = useParams(); 
+  const { accountId } = useParams(); // Obtener el ID de la URL
 
   const [accountName, setAccountName] = useState('');
-  const [accountType, setAccountType] = useState('efectivo');
-  const [balance, setBalance] = useState('');
+  const [accountType, setAccountType] = useState('efectivo'); // El tipo no será editable
+  const [balance, setBalance] = useState(''); // El balance no será editable directamente aquí
   const [currency, setCurrency] = useState('ARS');
   const [icon, setIcon] = useState('💰');
   
@@ -19,17 +20,17 @@ const EditAccountPage = () => {
   const [creditLimit, setCreditLimit] = useState('');
   const [includeInDashboardSummary, setIncludeInDashboardSummary] = useState(true);
   
-  // Nuevos estados para tarjetas de crédito
+  // Estados para tarjetas de crédito
   const [statementBalance, setStatementBalance] = useState('');
   const [statementCloseDate, setStatementCloseDate] = useState('');
   const [statementDueDate, setStatementDueDate] = useState('');
   
-  const [originalAccountData, setOriginalAccountData] = useState(null); 
+  const [originalAccountData, setOriginalAccountData] = useState(null); // Para comparar cambios
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true); 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const accountTypeOptions = [
+  const accountTypeOptions = [ // Solo para mostrar el label, no para seleccionar
     { value: 'efectivo', label: 'Efectivo', icon: '💵' },
     { value: 'bancaria', label: 'Cuenta Bancaria', icon: '🏦' },
     { value: 'tarjeta_credito', label: 'Tarjeta de Crédito', icon: '💳' },
@@ -37,7 +38,6 @@ const EditAccountPage = () => {
     { value: 'digital_wallet', label: 'Billetera Digital', icon: '📱' },
     { value: 'otro', label: 'Otro', icon: '📁' },
   ];
-
   const currencyOptions = [
     { value: 'ARS', label: 'ARS - Peso Argentino' },
     { value: 'USD', label: 'USD - Dólar Estadounidense' },
@@ -46,8 +46,8 @@ const EditAccountPage = () => {
   const populateForm = useCallback((accData) => {
     setOriginalAccountData(accData); 
     setAccountName(accData.name || '');
-    setAccountType(accData.type || 'efectivo'); // El tipo no se edita, solo se muestra
-    setBalance(accData.balance !== null && accData.balance !== undefined ? accData.balance.toString() : '');
+    setAccountType(accData.type || 'efectivo'); 
+    setBalance(accData.balance !== null && accData.balance !== undefined ? accData.balance.toString() : ''); // Balance se muestra, no se edita
     setCurrency(accData.currency || 'ARS');
     setIcon(accData.icon || '💰');
     setBankName(accData.bankName || '');
@@ -67,16 +67,16 @@ const EditAccountPage = () => {
       setLoading(true);
       setError('');
       try {
-        const data = await accountService.getAccountById(accountId); // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
+        const data = await accountService.getAccountById(accountId);
         if (data) {
           populateForm(data);
         } else {
           setError('Cuenta no encontrada.');
-          navigate('/accounts'); 
+          // navigate('/accounts'); // No redirigir aquí, dejar que el usuario vea el error
         }
       } catch (err) {
-        setError(err.response?.data?.message || err.message || 'Error al cargar la cuenta.');
-        console.error("Error fetching account for edit:", err);
+        setError(err.response?.data?.message || err.message || 'Error al cargar la cuenta para editar.');
+        console.error("Error fetching account for edit form:", err);
       } finally {
         setLoading(false);
       }
@@ -84,10 +84,8 @@ const EditAccountPage = () => {
     if (accountId) {
       fetchAccountData();
     }
-  }, [accountId, navigate, populateForm]);
+  }, [accountId, populateForm]);
 
-  // No necesitamos el useEffect para cambiar el ícono si el tipo no se edita.
-  // Si el ícono es editable independientemente, se maneja con su propio input.
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -100,16 +98,17 @@ const EditAccountPage = () => {
 
     const accountDataToUpdate = {
       name: accountName.trim(),
-      // type: accountType, // NO ENVIAR EL TIPO, no se permite editar
-      balance: parseFloat(balance) || 0.00,
-      currency: currency,
-      icon: icon,
-      bankName: bankName !== undefined ? bankName.trim() : null,
-      accountNumberLast4: accountNumberLast4 !== undefined ? accountNumberLast4.trim() : null,
-      creditLimit: accountType === 'tarjeta_credito' && creditLimit ? parseFloat(creditLimit) : null,
+      type: accountType, // <<-- AÑADIDO: Enviar el tipo de cuenta
+      balance: parseFloat(balance) || 0.00, // <<-- AÑADIDO: Enviar el balance actual (aunque no editable)
+      currency,
+      icon,
+      bankName: bankName.trim() || null, 
+      accountNumberLast4: accountNumberLast4.trim() || null, 
+      creditLimit: accountType === 'tarjeta_credito' && creditLimit ? parseFloat(creditLimit) : null, 
       includeInDashboardSummary,
     };
 
+    // Solo enviar campos de resumen si el tipo original es tarjeta de crédito
     if (originalAccountData && originalAccountData.type === 'tarjeta_credito') {
       accountDataToUpdate.statementBalance = statementBalance ? parseFloat(statementBalance) : null;
       accountDataToUpdate.statementCloseDate = statementCloseDate || null;
@@ -117,8 +116,8 @@ const EditAccountPage = () => {
     }
     
     try {
-      await accountService.updateAccount(accountId, accountDataToUpdate); // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
-      navigate('/accounts'); 
+      await accountService.updateAccount(accountId, accountDataToUpdate);
+      navigate(`/accounts/edit/${accountId}`); // Redirigir de vuelta a la página de detalles
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Error al actualizar la cuenta.');
       console.error("Error updating account:", err.response?.data || err);
@@ -128,14 +127,14 @@ const EditAccountPage = () => {
   };
 
   if (loading) {
-    return <div className="page-container"><p className="loading-text">Cargando datos de la cuenta...</p></div>;
+    return <div className="page-container"><p className="loading-text">Cargando formulario de edición...</p></div>;
   }
   if (error && !originalAccountData) { 
      return <div className="page-container"><p className="error-message">{error}</p> <Link to="/accounts" className="button">Volver a Cuentas</Link> </div>;
   }
 
   return (
-    <div className="page-container add-account-page"> 
+    <div className="page-container add-account-page"> {/* Reutiliza la clase de AddAccountPage */}
       <div className="form-container" style={{maxWidth: '600px'}}>
         <h2>Editar Cuenta: {originalAccountData?.name || ''}</h2>
         <form onSubmit={handleSubmit}>
@@ -157,9 +156,10 @@ const EditAccountPage = () => {
             />
           </div>
           
+          {/* El balance no se edita directamente desde aquí */}
           <div className="form-group">
-            <label htmlFor="balance">Saldo:</label>
-            <input type="number" id="balance" value={balance} onChange={(e) => setBalance(e.target.value)} step="0.01" />
+            <label htmlFor="balanceDisplay">Saldo Actual (Solo Informativo):</label>
+            <input type="text" id="balanceDisplay" value={formatCurrency(balance, currency)} disabled style={{backgroundColor: '#e9ecef', cursor: 'not-allowed'}}/>
           </div>
 
           <div className="form-group">
@@ -193,7 +193,7 @@ const EditAccountPage = () => {
               <hr/>
               <h4>Información del Resumen (Opcional)</h4>
               <div className="form-group">
-                <label htmlFor="statementBalance">Saldo del Resumen a Pagar:</label>
+                <label htmlFor="statementBalance">Saldo del Último Resumen a Pagar:</label>
                 <input type="number" step="0.01" id="statementBalance" value={statementBalance} onChange={(e) => setStatementBalance(e.target.value)} />
               </div>
               <div className="form-grid-halves">
@@ -231,7 +231,7 @@ const EditAccountPage = () => {
             <button type="submit" disabled={isSubmitting || loading} className="button-primary">
               {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
             </button>
-            <button type="button" onClick={() => navigate('/accounts')} className="button-secondary" disabled={isSubmitting || loading}>
+            <button type="button" onClick={() => navigate(`/accounts/edit/${accountId}`)} className="button-secondary" disabled={isSubmitting || loading}>
               Cancelar
             </button>
           </div>
@@ -241,4 +241,4 @@ const EditAccountPage = () => {
   );
 };
 
-export default EditAccountPage;
+export default EditAccountFormPage;

@@ -1,13 +1,15 @@
 // Ruta: src/components/Layout/Navbar.jsx
 import React, { useState, useRef, useEffect } from 'react';
-// La línea de importación corregida
 import { Link, useNavigate, NavLink } from 'react-router-dom'; 
 import { useAuth } from '../../contexts/AuthContext'; 
+import { useModals, MODAL_TYPES } from '../../contexts/ModalContext';
 import './Navbar.css'; 
 
 const Navbar = () => {
   const { user, logout } = useAuth(); 
   const navigate = useNavigate();
+  const { openModal } = useModals();
+
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false); 
   const addMenuRef = useRef(null);
@@ -39,7 +41,6 @@ const Navbar = () => {
       if (addMenuRef.current && !addMenuRef.current.contains(event.target)) {
         setShowAddMenu(false);
       }
-      // Corregido el typo aquí: userMenuMenuRef.current debería ser userMenuRef.current
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) { 
         setShowUserMenu(false);
       }
@@ -49,6 +50,10 @@ const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleAccountCreatedFromModal = (newAccount) => {
+    console.log("Nueva cuenta creada desde el modal de Navbar:", newAccount);
+  };
 
 
   return (
@@ -101,9 +106,18 @@ const Navbar = () => {
                     <Link to="/transactions/add?type=egreso" className="add-menu-item" onClick={() => setShowAddMenu(false)}>
                       Registrar Gasto
                     </Link>
-                    <Link to="/accounts/add" className="add-menu-item" onClick={() => setShowAddMenu(false)}>
+                    {/* *** CLASE MODIFICADA AQUÍ *** */}
+                    <button 
+                        onClick={() => {
+                            openModal(MODAL_TYPES.ADD_ACCOUNT, { 
+                                onAccountCreated: handleAccountCreatedFromModal
+                            });
+                            setShowAddMenu(false);
+                        }}
+                        className="add-menu-item" // Cambiado de "add-menu-button-action" a "add-menu-item"
+                    >
                       Nueva Cuenta
-                    </Link>
+                    </button>
                     <Link to="/investments/add" className="add-menu-item" onClick={() => setShowAddMenu(false)}>
                       Nueva Inversión
                     </Link>

@@ -1,170 +1,163 @@
 // Ruta: finanzas-app-pro/backend/api/accounts/accounts.controller.js
 const db = require('../../models');
 const Account = db.Account;
-const Transaction = db.Transaction;
 const Category = db.Category;
-const { Op } = require('sequelize');
+const Transaction = db.Transaction;
+const RecurringTransaction = db.RecurringTransaction;
+const { Op, literal } = require('sequelize');
 
-// @desc    Obtener todas las cuentas del usuario autenticado
-// @route   GET /api/accounts
-// @access  Private
-const getAccounts = async (req, res, next) => {
-  try {
-    const accounts = await Account.findAll({
-      where: { userId: req.user.id }, 
-      order: [['name', 'ASC']] 
-    });
-    res.status(200).json(accounts);
-  } catch (error) {
-    console.error('Error en getAccounts:', error);
-    next(error);
-  }
-};
-
-// @desc    Crear una nueva cuenta para el usuario autenticado
+// @desc    Crear una nueva cuenta
 // @route   POST /api/accounts
 // @access  Private
 const createAccount = async (req, res, next) => {
-  const { 
-    name, type, balance, currency, icon, 
-    bankName, accountNumberLast4, creditLimit,
-    includeInDashboardSummary,
-    statementBalance, statementCloseDate, statementDueDate
-  } = req.body;
-  
-  if (!name || !type) {
-    return res.status(400).json({ message: 'El nombre y el tipo de cuenta son requeridos.' });
+  // *** ACTUALIZADO: Añadir 'color' y asegurar 'includeInDashboardSummary' se maneja ***
+  const { name, type, balance, currency, icon, color, bankName, accountNumberLast4, creditLimit, includeInDashboardSummary, statementBalance, statementCloseDate, statementDueDate } = req.body;
+  const userId = req.user.id;
+
+  if (!name || !type || balance === undefined || balance === null || !currency) {
+    return res.status(400).json({ message: 'Nombre, tipo, balance y moneda son requeridos.' });
   }
 
   try {
-    const newAccountData = {
+    const newAccount = await Account.create({
       name,
       type,
-      balance: parseFloat(balance) || 0.00,
-      currency: currency || 'ARS',
+      balance: parseFloat(balance),
+      currency,
       icon,
+      color, // *** AÑADIDO ***
       bankName,
       accountNumberLast4,
-      creditLimit: creditLimit ? parseFloat(creditLimit) : null,
+      creditLimit: type === 'tarjeta_credito' ? parseFloat(creditLimit) : null,
+      // includeInDashboardSummary viene del modal como el opuesto de "excludeFromStatistics"
       includeInDashboardSummary: includeInDashboardSummary !== undefined ? includeInDashboardSummary : true,
-      userId: req.user.id 
-    };
-
-    if (type === 'tarjeta_credito') {
-      newAccountData.statementBalance = statementBalance ? parseFloat(statementBalance) : null;
-      newAccountData.statementCloseDate = statementCloseDate || null;
-      newAccountData.statementDueDate = statementDueDate || null;
-    }
-
-    const newAccount = await Account.create(newAccountData);
+      statementBalance: type === 'tarjeta_credito' ? parseFloat(statementBalance || 0) : null,
+      statementCloseDate: type === 'tarjeta_credito' ? statementCloseDate : null,
+      statementDueDate: type === 'tarjeta_credito' ? statementDueDate : null,
+      userId,
+    });
     res.status(201).json(newAccount);
   } catch (error) {
     console.error('Error en createAccount:', error);
     if (error.name === 'SequelizeValidationError') {
-        return res.status(400).json({ message: 'Error de validación', errors: error.errors.map(e => e.message) });
+      return res.status(400).json({ message: error.message, errors: error.errors.map(e => e.message) });
     }
     next(error);
   }
 };
 
-// @desc    Obtener una cuenta específica por ID del usuario autenticado
+// @desc    Obtener todas las cuentas del usuario
+// @route   GET /api/accounts
+// @access  Private
+const getAllAccounts = async (req, res, next) => {
+  try {
+    const accounts = await Account.findAll({
+      where: { userId: req.user.id },
+      order: [['name', 'ASC']]
+    });
+    res.status(200).json(accounts);
+  } catch (error) {
+    console.error('Error en getAllAccounts:', error);
+    next(error);
+  }
+};
+
+// @desc    Obtener una cuenta por ID
 // @route   GET /api/accounts/:id
 // @access  Private
 const getAccountById = async (req, res, next) => {
   try {
     const account = await Account.findOne({
-      where: { 
-        id: req.params.id,
-        userId: req.user.id 
-      }
+      where: { id: req.params.id, userId: req.user.id }
     });
-
-    if (account) {
-      res.status(200).json(account);
-    } else {
-      res.status(404).json({ message: 'Cuenta no encontrada o no pertenece al usuario.' });
+    if (!account) {
+      return res.status(404).json({ message: 'Cuenta no encontrada o no pertenece al usuario.' });
     }
+    res.status(200).json(account);
   } catch (error) {
     console.error('Error en getAccountById:', error);
     next(error);
   }
 };
 
-// @desc    Actualizar una cuenta del usuario autenticado
+// @desc    Actualizar una cuenta
 // @route   PUT /api/accounts/:id
 // @access  Private
 const updateAccount = async (req, res, next) => {
-  const { 
-    name, type, balance, currency, icon, 
-    bankName, accountNumberLast4, creditLimit,
-    includeInDashboardSummary,
-    statementBalance, statementCloseDate, statementDueDate
-  } = req.body;
+  // *** ACTUALIZADO: Añadir 'color' y asegurar 'includeInDashboardSummary' se maneja ***
+  const { name, type, balance, currency, icon, color, bankName, accountNumberLast4, creditLimit, includeInDashboardSummary, statementBalance, statementCloseDate, statementDueDate } = req.body;
+  const userId = req.user.id;
+
   try {
     const account = await Account.findOne({
-      where: {
-        id: req.params.id,
-        userId: req.user.id
-      }
+      where: { id: req.params.id, userId: userId }
     });
 
     if (!account) {
-      return res.status(404).json({ message: 'Cuenta no encontrada o no pertenece al usuario para actualizar.' });
+      return res.status(404).json({ message: 'Cuenta no encontrada o no pertenece al usuario.' });
     }
 
-    account.name = name !== undefined ? name : account.name;
-    // El tipo de cuenta generalmente no se edita. Si se permite, descomentar:
-    // account.type = type !== undefined ? type : account.type; 
-    account.balance = balance !== undefined ? parseFloat(balance) : account.balance;
-    account.currency = currency !== undefined ? currency : account.currency;
-    account.icon = icon !== undefined ? icon : account.icon; 
-    account.bankName = bankName !== undefined ? bankName : account.bankName;
-    account.accountNumberLast4 = accountNumberLast4 !== undefined ? accountNumberLast4 : account.accountNumberLast4;
-    account.creditLimit = creditLimit !== undefined ? (creditLimit ? parseFloat(creditLimit) : null) : account.creditLimit;
+    const hasTransactions = await db.Transaction.count({ where: { accountId: account.id } });
+    if (hasTransactions > 0 && account.type !== type) { // El tipo no debería cambiar si hay transacciones
+        return res.status(400).json({ message: 'No se puede cambiar el tipo de una cuenta con movimientos existentes.' });
+    }
+
+    if (!name || !type || balance === undefined || balance === null || !currency) {
+        return res.status(400).json({ message: 'Nombre, tipo, balance y moneda son requeridos.' });
+    }
+
+    account.name = name;
+    // account.type = type; // Generalmente el tipo no se edita después de la creación, o si se edita, requiere cuidado.
+                         // Lo mantenemos por si el modal de edición lo permite, pero el modal de creación es el foco.
+    account.balance = parseFloat(balance); // En el formulario de EDICIÓN de cuenta, SÍ se envía el balance.
+    account.currency = currency;
+    account.icon = icon;
+    account.color = color; // *** AÑADIDO ***
+    account.bankName = bankName;
+    account.accountNumberLast4 = accountNumberLast4;
     account.includeInDashboardSummary = includeInDashboardSummary !== undefined ? includeInDashboardSummary : account.includeInDashboardSummary;
-
-    if (account.type === 'tarjeta_credito') {
-      account.statementBalance = statementBalance !== undefined ? (statementBalance ? parseFloat(statementBalance) : null) : account.statementBalance;
-      account.statementCloseDate = statementCloseDate !== undefined ? statementCloseDate : account.statementCloseDate;
-      account.statementDueDate = statementDueDate !== undefined ? statementDueDate : account.statementDueDate;
-    } else { 
-        if (type !== undefined && type !== 'tarjeta_credito') { // Si se cambia el tipo y ya no es tarjeta
-            account.statementBalance = null;
-            account.statementCloseDate = null;
-            account.statementDueDate = null;
-        }
-    }
+    account.creditLimit = account.type === 'tarjeta_credito' ? parseFloat(creditLimit || 0) : null; // Usar account.type (el original)
+    account.statementBalance = account.type === 'tarjeta_credito' ? parseFloat(statementBalance || 0) : null;
+    account.statementCloseDate = account.type === 'tarjeta_credito' ? statementCloseDate : null;
+    account.statementDueDate = account.type === 'tarjeta_credito' ? statementDueDate : null;
 
     await account.save();
     res.status(200).json(account);
+
   } catch (error) {
     console.error('Error en updateAccount:', error);
-     if (error.name === 'SequelizeValidationError') {
-        return res.status(400).json({ message: 'Error de validación', errors: error.errors.map(e => e.message) });
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({ message: error.message, errors: error.errors.map(e => e.message) });
     }
     next(error);
   }
 };
 
-// @desc    Eliminar una cuenta del usuario autenticado
+// @desc    Eliminar una cuenta
 // @route   DELETE /api/accounts/:id
 // @access  Private
 const deleteAccount = async (req, res, next) => {
   try {
     const account = await Account.findOne({
-      where: {
-        id: req.params.id,
-        userId: req.user.id
-      }
+      where: { id: req.params.id, userId: req.user.id }
     });
 
     if (!account) {
-      return res.status(404).json({ message: 'Cuenta no encontrada o no pertenece al usuario para eliminar.' });
+      return res.status(404).json({ message: 'Cuenta no encontrada o no pertenece al usuario.' });
+    }
+
+    const transactionCount = await db.Transaction.count({
+      where: { accountId: account.id }
+    });
+    if (transactionCount > 0) {
+      return res.status(400).json({ message: 'No se puede eliminar la cuenta porque tiene movimientos asociados. Elimina o reasigna los movimientos primero.' });
     }
     
-    const transactionsExist = await db.Transaction.findOne({ where: { accountId: req.params.id, userId: req.user.id }});
-    if (transactionsExist) {
-        return res.status(400).json({ message: 'No se puede eliminar la cuenta porque tiene movimientos asociados. Por favor, reasigna o elimina los movimientos primero.' });
+    const recurringTransactionCount = await db.RecurringTransaction.count({
+        where: { accountId: account.id }
+    });
+    if (recurringTransactionCount > 0) {
+        return res.status(400).json({ message: 'No se puede eliminar la cuenta porque tiene movimientos recurrentes asociados. Elimina o desactiva los movimientos recurrentes primero.' });
     }
 
     await account.destroy();
@@ -175,121 +168,146 @@ const deleteAccount = async (req, res, next) => {
   }
 };
 
-// @desc    Pagar resumen de tarjeta de crédito
-// @route   POST /api/accounts/:cardAccountId/pay
+// @desc    Pagar el resumen de una tarjeta de crédito
+// @route   POST /api/accounts/:accountId/pay
 // @access  Private
-const payCreditCardStatement = async (req, res, next) => {
-  const { cardAccountId } = req.params;
+const payCreditCard = async (req, res, next) => {
+  const { accountId: creditCardAccountId } = req.params;
   const { payingAccountId, paymentAmount, paymentDate, notes } = req.body;
   const userId = req.user.id;
 
   if (!payingAccountId || !paymentAmount || !paymentDate) {
-    return res.status(400).json({ message: 'La cuenta pagadora, el monto y la fecha del pago son requeridos.' });
+    return res.status(400).json({ message: 'Cuenta pagadora, monto y fecha son requeridos.' });
   }
-
-  const amountToPay = parseFloat(paymentAmount);
-  if (amountToPay <= 0) {
-    return res.status(400).json({ message: 'El monto a pagar debe ser mayor a cero.' });
+  if (parseFloat(paymentAmount) <= 0) {
+    return res.status(400).json({ message: 'El monto del pago debe ser positivo.' });
   }
 
   const t = await db.sequelize.transaction();
-  try {
-    const creditCardAccount = await Account.findOne({ where: { id: cardAccountId, userId, type: 'tarjeta_credito' }, transaction: t });
-    const payingAccount = await Account.findOne({ where: { id: payingAccountId, userId }, transaction: t });
 
+  try {
+    const creditCardAccount = await Account.findOne({
+      where: { id: creditCardAccountId, userId, type: 'tarjeta_credito' },
+      transaction: t
+    });
     if (!creditCardAccount) {
       await t.rollback();
-      return res.status(404).json({ message: 'Tarjeta de crédito no encontrada o no válida.' });
+      return res.status(404).json({ message: 'Tarjeta de crédito no encontrada o no pertenece al usuario.' });
     }
+
+    const payingAccount = await Account.findOne({
+      where: { id: payingAccountId, userId },
+      transaction: t
+    });
     if (!payingAccount) {
       await t.rollback();
-      return res.status(404).json({ message: 'Cuenta pagadora no encontrada o no válida.' });
+      return res.status(404).json({ message: 'Cuenta pagadora no encontrada o no pertenece al usuario.' });
     }
-    if (payingAccount.id === creditCardAccount.id) {
-      await t.rollback();
-      return res.status(400).json({ message: 'La cuenta pagadora no puede ser la misma tarjeta de crédito.' });
+    if (payingAccount.id.toString() === creditCardAccount.id.toString()) {
+        await t.rollback();
+        return res.status(400).json({ message: 'La cuenta pagadora no puede ser la misma tarjeta de crédito.' });
     }
 
-    let categoryPayment;
-    const existingCategoryPayment = await Category.findOne({
-        where: {
-            name: 'Pago de Tarjetas',
-            [Op.or]: [{ userId: null }, { userId: userId }]
-        },
+    const numericPaymentAmount = parseFloat(paymentAmount);
+
+    let paymentCategory = await Category.findOne({ 
+        where: { name: 'Pago de Tarjetas', type: 'egreso', [Op.or]: [{ userId: null }, { userId }] },
         transaction: t
     });
-
-    if (existingCategoryPayment) {
-        categoryPayment = existingCategoryPayment;
-    } else {
-        const [newCat] = await Category.findOrCreate({
-            where: { name: 'Pago de Tarjetas', userId: null }, 
-            defaults: { name: 'Pago de Tarjetas', type: 'egreso', icon: '💳' }, 
-            transaction: t
-        });
-        categoryPayment = newCat;
+    if (!paymentCategory) {
+        paymentCategory = await Category.findOne({ where: { name: 'Transferencias Salientes', type: 'egreso', [Op.or]: [{ userId: null }, { userId }] }, transaction: t}) 
+                       || await Category.findOne({ where: { name: 'Otros Egresos', type: 'egreso', [Op.or]: [{ userId: null }, { userId }] }, transaction: t});
+        if (!paymentCategory) {
+            const categories = await Category.findAll({where: {type: 'egreso', [Op.or]: [{ userId: null }, { userId }]}, limit: 1, transaction: t});
+            if (categories.length > 0) paymentCategory = categories[0];
+            else {
+                await t.rollback();
+                return res.status(500).json({ message: 'No se encontró una categoría de egreso adecuada para el pago.' });
+            }
+        }
     }
-    const categoryIdForPayment = categoryPayment.id;
-
-    // 1. Crear transacción de "transferencia saliente" en la cuenta pagadora
-    await Transaction.create({
-      description: `Pago Tarjeta ${creditCardAccount.name}`,
-      amount: -Math.abs(amountToPay),
+    
+    const egresoTransaction = await Transaction.create({
+      description: `Pago Tarjeta ${creditCardAccount.name}${notes ? ` (${notes})` : ''}`,
+      amount: -numericPaymentAmount,
       currency: payingAccount.currency,
       date: paymentDate,
-      type: 'transferencia', // Tipo 'transferencia'
-      notes: notes || `Pago desde ${payingAccount.name} a Tarjeta ${creditCardAccount.name}`,
-      icon: categoryPayment.icon,
-      userId,
+      type: 'egreso', 
       accountId: payingAccount.id,
-      categoryId: categoryIdForPayment,
-      relatedAccountId: creditCardAccount.id 
+      categoryId: paymentCategory.id,
+      userId,
     }, { transaction: t });
 
-    // 2. Actualizar saldo de la cuenta pagadora
-    payingAccount.balance = parseFloat(payingAccount.balance) - Math.abs(amountToPay);
+    payingAccount.balance = parseFloat(payingAccount.balance) - numericPaymentAmount;
     await payingAccount.save({ transaction: t });
 
-    // 3. Crear transacción de "transferencia entrante" en la tarjeta de crédito
-    await Transaction.create({
-      description: `Pago Recibido desde ${payingAccount.name}`,
-      amount: Math.abs(amountToPay), 
+     let creditCardPaymentCategory = await Category.findOne({ 
+        where: { name: 'Pago de Tarjetas', type: 'ingreso', [Op.or]: [{ userId: null }, { userId }] },
+        transaction: t
+    });
+     if (!creditCardPaymentCategory) {
+        creditCardPaymentCategory = await Category.findOne({ where: { name: 'Transferencias Entrantes', type: 'ingreso', [Op.or]: [{ userId: null }, { userId }] }, transaction: t})
+                                || await Category.findOne({ where: { name: 'Otros Ingresos', type: 'ingreso', [Op.or]: [{ userId: null }, { userId }] }, transaction: t});
+         if (!creditCardPaymentCategory) {
+            const categories = await Category.findAll({where: {type: 'ingreso', [Op.or]: [{ userId: null }, { userId }]}, limit: 1, transaction: t});
+            if (categories.length > 0) creditCardPaymentCategory = categories[0];
+            else {
+                await t.rollback();
+                return res.status(500).json({ message: 'No se encontró una categoría de ingreso adecuada para el crédito en la tarjeta.' });
+            }
+        }
+    }
+
+    const ingresoTransaction = await Transaction.create({
+      description: `Pago Tarjeta desde ${payingAccount.name}${notes ? ` (${notes})` : ''}`,
+      amount: numericPaymentAmount, 
       currency: creditCardAccount.currency,
       date: paymentDate,
-      type: 'transferencia', // Tipo 'transferencia'
-      notes: notes || `Pago a Tarjeta ${creditCardAccount.name} desde ${payingAccount.name}`,
-      icon: categoryPayment.icon,
-      userId,
+      type: 'ingreso', 
       accountId: creditCardAccount.id,
-      categoryId: categoryIdForPayment,
-      relatedAccountId: payingAccount.id
+      categoryId: creditCardPaymentCategory.id, 
+      userId,
     }, { transaction: t });
+
+    creditCardAccount.balance = parseFloat(creditCardAccount.balance) + numericPaymentAmount;
     
-    creditCardAccount.balance = parseFloat(creditCardAccount.balance) + Math.abs(amountToPay);
+    if (creditCardAccount.statementBalance !== null && creditCardAccount.statementBalance !== undefined) {
+      const currentStatement = Math.abs(parseFloat(creditCardAccount.statementBalance));
+      if (numericPaymentAmount >= currentStatement) {
+        creditCardAccount.statementBalance = 0; 
+      } else {
+        creditCardAccount.statementBalance = currentStatement - numericPaymentAmount;
+      }
+    }
     await creditCardAccount.save({ transaction: t });
 
     await t.commit();
-    res.status(200).json({ 
-        message: 'Pago de tarjeta registrado exitosamente como transferencia.', 
-        payingAccountAfterPayment: payingAccount, 
-        creditCardAccountAfterPayment: creditCardAccount 
+
+    res.status(200).json({
+      message: 'Pago de tarjeta registrado exitosamente.',
+      payingAccount: payingAccount.toJSON(),
+      creditCardAccount: creditCardAccount.toJSON(),
+      transactions: [egresoTransaction.toJSON(), ingresoTransaction.toJSON()]
     });
 
   } catch (error) {
     if (t && !t.finished) {
       await t.rollback();
     }
-    console.error('Error en payCreditCardStatement:', error);
+    console.error('[PayCreditCardController] Error:', error);
+    if (error.name === 'SequelizeValidationError') {
+        return res.status(400).json({ message: error.message, errors: error.errors.map(e => e.message) });
+    }
     next(error);
   }
 };
 
-// Asegúrate que este bloque esté al final del archivo y después de todas las definiciones de funciones.
+
 module.exports = {
-  getAccounts,
   createAccount,
+  getAllAccounts,
   getAccountById,
   updateAccount,
   deleteAccount,
-  payCreditCardStatement,
+  payCreditCard,
 };

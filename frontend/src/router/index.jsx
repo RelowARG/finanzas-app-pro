@@ -7,8 +7,12 @@ import RegisterPage from '../pages/RegisterPage';
 import DashboardPage from '../pages/DashboardPage';
 import DashboardWrapper from '../pages/DashboardWrapper';
 import AccountsPage from '../pages/AccountsPage';
-import AddAccountPage from '../pages/AddAccountPage';
-import EditAccountPage from '../pages/EditAccountPage';
+// AddAccountPage ya no se importa si se eliminó
+import AccountDetailsPage from '../pages/AccountDetailsPage'; 
+// EditAccountFormPage ya no se importa
+// import EditAccountFormPage from '../pages/EditAccountFormPage'; 
+
+// ... (otros imports sin cambios)
 import TransactionsPage from '../pages/TransactionsPage';
 import AddTransactionPage from '../pages/AddTransactionPage';
 import EditTransactionPage from '../pages/EditTransactionPage';
@@ -27,25 +31,21 @@ import DebtsAndLoansPage from '../pages/DebtsAndLoansPage';
 import AddDebtAndLoanPage from '../pages/AddDebtAndLoanPage';
 import EditDebtAndLoanPage from '../pages/EditDebtAndLoanPage';
 import ExchangeRatesPage from '../pages/ExchangeRatesPage';
-import AdminUsersPage from '../pages/AdminUsersPage';
-import AdminPermissionsPage from '../pages/AdminPermissionsPage';
+import AdminPanelPage from '../pages/AdminPanelPage.jsx'; // Ruta actualizada para AdminPanelPage
 import HowItWorksPage from '../pages/HowItWorksPage';
 import TermsOfServicePage from '../pages/TermsOfServicePage';
 import PrivacyPolicyPage from '../pages/PrivacyPolicyPage';
 import NotFoundPage from '../pages/NotFoundPage';
 
-// Importaciones de Goals
 import GoalsPage from '../pages/GoalsPage.jsx';
 import AddGoalPage from '../pages/AddGoalPage.jsx';
 import EditGoalPage from '../pages/EditGoalPage.jsx';
 import HowToUsePage from '../pages/HowToUsePage.jsx';
 
-// Importación del nuevo panel de administración unificado
-import AdminPanelPage from '../pages/AdminPanelPage.jsx';
-
 import PrivateRoute from '../components/Route/PrivateRoute';
 import AdminRoute from '../components/Route/AdminRoute';
-import PermissionRoute from '../components/Route/PermissionRoute';
+// PermissionRoute no se usa directamente aquí para /admin, AdminRoute lo maneja internamente
+// import PermissionRoute from '../components/Route/PermissionRoute';
 
 import { useAuth } from '../contexts/AuthContext';
 
@@ -72,8 +72,14 @@ const AppRouter = () => {
         </Route>
         
         <Route path="/accounts" element={<AccountsPage />} />
-        <Route path="/accounts/add" element={<AddAccountPage />} />
-        <Route path="/accounts/edit/:accountId" element={<EditAccountPage />} />
+        {/* La ruta /accounts/add puede eliminarse si AddAccountPage.jsx se eliminó */}
+        {/* O si AddAccountPage.jsx redirige, se puede mantener */}
+        {/* <Route path="/accounts/add" element={<AddAccountPage />} /> */}
+        
+        {/* La ruta de edición ahora es manejada por AccountDetailsPage, que abrirá el modal */}
+        <Route path="/accounts/edit/:accountId" element={<AccountDetailsPage />} /> 
+        {/* La ruta para el formulario de página completa se puede eliminar si ya no se usa */}
+        {/* <Route path="/accounts/:accountId/edit-form" element={<EditAccountFormPage />} /> */}
         
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/transactions/add" element={<AddTransactionPage />} />
@@ -103,11 +109,8 @@ const AppRouter = () => {
         <Route path="/settings/recurring-transactions/edit/:recurringId" element={<EditRecurringTransactionPage />} />
         <Route path="/settings/exchange-rates" element={<ExchangeRatesPage />} />
         
-        {/* Ruta unificada para el Panel de Administración */}
         <Route path="/admin" element={<AdminRoute />}>
-          {/* Redirigir la ruta base /admin a /admin/users por defecto */}
           <Route index element={<Navigate to="users" replace />} />
-          {/* Renderiza AdminPanelPage para las sub-rutas de usuarios y permisos */}
           <Route path="users" element={<AdminPanelPage />} />
           <Route path="config/permissions" element={<AdminPanelPage />} />
         </Route>

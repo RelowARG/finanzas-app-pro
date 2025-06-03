@@ -50,18 +50,18 @@ const PayCreditCardModal = ({ isOpen, onClose, creditCardAccount, payingAccounts
     }
 
     // Opcional: Advertencia si el monto a pagar es mayor al saldo de la cuenta pagadora (si tenemos esa info)
-    // const selectedPayingAccount = payingAccounts.find(acc => acc.id.toString() === payingAccountId);
-    // if (selectedPayingAccount && parseFloat(selectedPayingAccount.balance) < amountToPay) {
-    //   if (!window.confirm(`El saldo de la cuenta ${selectedPayingAccount.name} (${formatCurrency(selectedPayingAccount.balance, selectedPayingAccount.currency)}) es menor al monto a pagar. ¿Continuar?`)) {
-    //     return;
-    //   }
-    // }
+    const selectedPayingAccount = payingAccounts.find(acc => acc.id.toString() === payingAccountId);
+    if (selectedPayingAccount && parseFloat(selectedPayingAccount.balance) < amountToPay) {
+      if (!window.confirm(`El saldo de la cuenta ${selectedPayingAccount.name} (${formatCurrency(selectedPayingAccount.balance, selectedPayingAccount.currency)}) es menor al monto a pagar. ¿Continuar?`)) {
+        return;
+      }
+    }
 
     setError('');
     setIsSubmitting(true);
 
     try {
-      await accountService.payCreditCardStatement(creditCardAccount.id, { // [cite: finanzas-app-pro/frontend/src/services/accounts.service.js]
+      await accountService.payCreditCardStatement(creditCardAccount.id, { 
         payingAccountId: parseInt(payingAccountId),
         paymentAmount: amountToPay,
         paymentDate,

@@ -1,22 +1,43 @@
 // Ruta: frontend/src/pages/AccountsPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+// Link ya no es necesario para el botón de agregar si se maneja con modal global
+// import { Link, useLocation } from 'react-router-dom'; 
 import accountService from '../services/accounts.service'; 
-import AccountItem from '../components/accounts/AccountItem'; // Asegúrate de que esta ruta sea correcta
-import PayCreditCardModal from '../components/accounts/PayCreditCardModal'; // Asegúrate de que esta ruta sea correcta
-import { formatCurrency } from '../utils/formatters'; // Asegúrate de que esta ruta sea correcta
-import './AccountsPage.css'; // Asegúrate de que esta ruta sea correcta
+import AccountItem from '../components/accounts/AccountItem'; 
+// PayCreditCardModal también se manejará globalmente si se desea, o se mantiene aquí por ahora
+// import PayCreditCardModal from '../components/accounts/PayCreditCardModal'; 
+// AddAccountModal ya no se importa ni renderiza aquí directamente
+import { useModals, MODAL_TYPES } from '../contexts/ModalContext'; // *** NUEVO IMPORT ***
+import './AccountsPage.css'; 
 
 const AccountsPage = () => {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showPayModal, setShowPayModal] = useState(false);
-  const [selectedCreditCard, setSelectedCreditCard] = useState(null);
+  
+  // Estados para PayCreditCardModal (se pueden mover a ModalContext si se quiere globalizar)
+  // const [showPayModal, setShowPayModal] = useState(false); // Comentado o eliminado si se globaliza
+  // const [selectedCardToPay, setSelectedCardToPay] = useState(null); // Comentado o eliminado si se globaliza
+  const [payingAccountsList, setPayingAccountsList] = useState([]);
 
-  // Estados para búsqueda y ordenamiento
+  // showAddAccountModal ya no es necesario aquí
+  // const [showAddAccountModal, setShowAddAccountModal] = useState(false); 
+
+  const { openModal, closeModal, modalType, modalProps } = useModals(); // *** USAR EL CONTEXTO ***
+
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('default'); // 'default', 'nameAsc', 'nameDesc', 'balanceAsc', 'balanceDesc'
+  const [sortBy, setSortBy] = useState('default');
+
+  // const location = useLocation(); // Ya no es necesario para abrir el modal de agregar
+
+  // useEffect para abrir el modal si venía del state de location (ya no es necesario con Context)
+  // useEffect(() => {
+  //   if (location.state?.openAddAccountModal) {
+  //     openModal(MODAL_TYPES.ADD_ACCOUNT); // Usa el contexto para abrir
+  //     window.history.replaceState({}, document.title) 
+  //   }
+  // }, [location.state, openModal]);
+
 
   const fetchAccounts = useCallback(async () => {
     setLoading(true);
@@ -24,14 +45,12 @@ const AccountsPage = () => {
     try {
       const fetchedAccounts = await accountService.getAllAccounts();
 
-      // Aplicar búsqueda en el frontend (más simple para searchTerm)
       let filteredAccounts = fetchedAccounts.filter(account =>
         account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         account.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (account.bankName && account.bankName.toLowerCase().includes(searchTerm.toLowerCase()))
       );
 
-      // Aplicar ordenamiento en el frontend
       if (sortBy !== 'default') {
         filteredAccounts.sort((a, b) => {
           if (sortBy === 'nameAsc') return a.name.localeCompare(b.name);
@@ -40,9 +59,6 @@ const AccountsPage = () => {
           const balanceA = parseFloat(a.balance) || 0;
           const balanceB = parseFloat(b.balance) || 0;
 
-          // Convertir a una moneda común para ordenar por balance si es necesario
-          // Por simplicidad, ordenamos por el valor numérico directo.
-          // Una implementación más robusta convertiría a una moneda base antes de ordenar.
           if (sortBy === 'balanceAsc') return balanceA - balanceB;
           if (sortBy === 'balanceDesc') return balanceB - balanceA;
           return 0;
@@ -50,26 +66,27 @@ const AccountsPage = () => {
       }
 
       setAccounts(filteredAccounts);
+      setPayingAccountsList(fetchedAccounts.filter(acc => acc.type !== 'tarjeta_credito'));
+
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Error al cargar las cuentas.');
+      setAccounts([]);
+      setPayingAccountsList([]);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, sortBy]); // Dependencias para useCallback
+  }, [searchTerm, sortBy]);
 
   useEffect(() => {
     fetchAccounts();
-  }, [fetchAccounts]); // Se ejecuta cuando fetchAccounts cambia (debido a searchTerm o sortBy)
+  }, [fetchAccounts]);
 
-  // Las funciones handleDeleteAccount y handlePayCreditCard ya no se pasan directamente a AccountItem
-  // Si necesitas estas funcionalidades, deberías implementarlas en la página de edición de la cuenta
-  // o a través de un menú contextual en el AccountItem si el diseño lo permite.
   const handleDeleteAccount = async (accountId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta cuenta? Esto eliminará todos los movimientos asociados y no se puede deshacer.')) {
       try {
         setLoading(true);
         await accountService.deleteAccount(accountId);
-        fetchAccounts(); // Recargar la lista de cuentas
+        fetchAccounts(); 
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Error al eliminar la cuenta.');
         setLoading(false);
@@ -77,35 +94,28 @@ const AccountsPage = () => {
     }
   };
 
-  const handlePayCreditCard = (card) => {
-    setSelectedCreditCard(card);
-    setShowPayModal(true);
+  const handleOpenPayModal = (card) => {
+    //setSelectedCardToPay(card);
+    //setShowPayModal(true);
+    openModal(MODAL_TYPES.PAY_CREDIT_CARD, { 
+        creditCardAccount: card, 
+        payingAccounts: payingAccountsList, 
+        onPaymentSuccess: handlePaymentSuccess // Pasar el callback
+    });
   };
 
   const handlePaymentSuccess = () => {
-    setShowPayModal(false);
-    setSelectedCreditCard(null);
-    fetchAccounts(); // Recargar cuentas para reflejar el pago
+    //setShowPayModal(false);
+    //setSelectedCardToPay(null);
+    closeModal();
+    fetchAccounts(); 
+  };
+  
+  const handleAccountCreated = (newAccount) => {
+    fetchAccounts(); 
+    // El modal de agregar cuenta se cierra desde su propio componente o desde el ModalContext
   };
 
-  const handlePaymentCancel = () => {
-    setShowPayModal(false);
-    setSelectedCreditCard(null);
-  };
-
-  const totalBalanceARS = accounts.reduce((sum, account) => {
-    if (account.currency === 'ARS') {
-      return sum + (parseFloat(account.balance) || 0);
-    }
-    return sum;
-  }, 0);
-
-  const totalBalanceUSD = accounts.reduce((sum, account) => {
-    if (account.currency === 'USD') {
-      return sum + (parseFloat(account.balance) || 0);
-    }
-    return sum;
-  }, 0);
 
   return (
     <div className="page-container accounts-page">
@@ -116,18 +126,21 @@ const AccountsPage = () => {
       {error && <p className="error-message">{error}</p>}
 
       <div className="accounts-content-wrapper">
-        {/* Sidebar de filtros y acciones */}
         <aside className="accounts-filter-sidebar">
-          <Link to="/accounts/add" className="button button-primary add-account-button">
-            + Agregar
-          </Link>
+          {/* *** BOTÓN AHORA ABRE EL MODAL MEDIANTE CONTEXTO *** */}
+          <button 
+            onClick={() => openModal(MODAL_TYPES.ADD_ACCOUNT, { onAccountCreated: handleAccountCreated })} 
+            className="button button-primary add-account-button"
+          >
+            + Agregar Cuenta
+          </button>
 
           <div className="filter-group">
-            <label htmlFor="search-accounts" className="filter-label">Q Buscar</label>
+            <label htmlFor="search-accounts" className="filter-label">Buscar</label>
             <input
               type="text"
               id="search-accounts"
-              placeholder="Buscar por nombre o tipo..."
+              placeholder="Nombre, tipo, banco..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="filter-input"
@@ -151,20 +164,19 @@ const AccountsPage = () => {
           </div>
         </aside>
 
-        {/* Contenido principal: lista de cuentas */}
         <main className="accounts-list-main">
           {loading ? (
             <p className="loading-text">Cargando cuentas...</p>
           ) : accounts.length === 0 ? (
             <p className="no-data-message">No tienes cuentas registradas. ¡Agrega una para empezar!</p>
           ) : (
-            <div className="accounts-list"> {/* Cambiado de accounts-grid a accounts-list */}
+            <div className="accounts-list">
               {accounts.map((account) => (
                 <AccountItem
                   key={account.id}
                   account={account}
-                  // onDelete={handleDeleteAccount} // Ya no se pasa directamente
-                  // onPayCreditCard={handlePayCreditCard} // Ya no se pasa directamente
+                  // Las acciones como onPayStatement (si es tarjeta) se manejarán en AccountDetailsPage
+                  // Si el item en sí mismo debe poder abrir el modal de pago, pasa handleOpenPayModal
                 />
               ))}
             </div>
@@ -172,13 +184,17 @@ const AccountsPage = () => {
         </main>
       </div>
 
-      {showPayModal && selectedCreditCard && (
-        <PayCreditCardModal
-          creditCard={selectedCreditCard}
-          onPaymentSuccess={handlePaymentSuccess}
-          onCancel={handlePaymentCancel}
-        />
-      )}
+      {/* AddAccountModal se renderizará globalmente en Layout.jsx o App.jsx */}
+      {/* PayCreditCardModal se puede renderizar aquí o globalmente también */}
+      {/* Si PayCreditCardModal se mantiene local a AccountsPage:
+        modalType === MODAL_TYPES.PAY_CREDIT_CARD && (
+          <PayCreditCardModal
+            isOpen={true} // El modal context ya maneja la visibilidad
+            onClose={closeModal}
+            {...modalProps} // Pasa las props desde el contexto (creditCardAccount, etc.)
+          />
+        )
+      */}
     </div>
   );
 };

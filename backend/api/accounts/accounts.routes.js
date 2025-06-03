@@ -1,36 +1,29 @@
-// Ruta: finanzas-app-pro/backend/api/accounts/accounts.routes.js
-// ACTUALIZA ESTE ARCHIVO
+// Ruta: backend/api/accounts/accounts.routes.js
+console.log('DEBUG: accounts.routes.js started loading');
 const express = require('express');
 const router = express.Router();
 const accountsController = require('./accounts.controller');
-const { protect } = require('../../middleware/authMiddleware'); 
+const { getAccountTrendController } = require('./accountTrend.controller'); 
+const { protect } = require('../../middleware/authMiddleware');
 
-// Aplicar el middleware 'protect' a todas las rutas de cuentas
-router.use(protect);
+console.log('DEBUG: accountTrendController (from import) in routes:', typeof getAccountTrendController);
 
-// @desc    Obtener todas las cuentas del usuario o crear una nueva
-// @route   GET /api/accounts
-// @route   POST /api/accounts
-// @access  Private
+router.use(protect); // Todas las rutas requieren autenticación
+
 router.route('/')
-  .get(accountsController.getAccounts)
-  .post(accountsController.createAccount);
+  .post(accountsController.createAccount)
+  .get(accountsController.getAllAccounts);
 
-// *** NUEVA RUTA PARA PAGAR RESUMEN DE TARJETA ***
-// @desc    Pagar resumen de tarjeta de crédito
-// @route   POST /api/accounts/:cardAccountId/pay
-// @access  Private
-// Debe ir ANTES de la ruta genérica /:id para que no interprete 'pay' como un ID.
-router.post('/:cardAccountId/pay', accountsController.payCreditCardStatement);
-
-// @desc    Obtener, actualizar o eliminar una cuenta específica por ID
-// @route   GET /api/accounts/:id
-// @route   PUT /api/accounts/:id
-// @route   DELETE /api/accounts/:id
-// @access  Private
 router.route('/:id')
   .get(accountsController.getAccountById)
   .put(accountsController.updateAccount)
   .delete(accountsController.deleteAccount);
 
+// Ruta para la tendencia de saldo de una cuenta específica
+router.get('/:accountId/trend', getAccountTrendController); 
+
+// *** NUEVA RUTA PARA PAGAR TARJETA DE CRÉDITO ***
+router.post('/:accountId/pay', accountsController.payCreditCard); 
+
 module.exports = router;
+console.log('DEBUG: accounts.routes.js finished loading');

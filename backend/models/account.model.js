@@ -28,6 +28,11 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
       type: Sequelize.STRING(10),
       allowNull: true
     },
+    // *** NUEVO CAMPO COLOR ***
+    color: {
+      type: Sequelize.STRING(7), // Para códigos hexadecimales ej: #RRGGBB
+      allowNull: true,
+    },
     bankName: {
         type: Sequelize.STRING,
         allowNull: true
@@ -45,20 +50,18 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: true
     },
-    // Campos para tarjetas de crédito
-    statementBalance: { // Saldo del resumen actual a pagar
+    statementBalance: { 
         type: Sequelize.DECIMAL(15, 2),
         allowNull: true
     },
-    statementCloseDate: { // Fecha de cierre del resumen actual
+    statementCloseDate: { 
         type: DataTypes.DATEONLY,
         allowNull: true
     },
-    statementDueDate: { // Fecha de vencimiento del resumen actual
+    statementDueDate: { 
         type: DataTypes.DATEONLY,
         allowNull: true
     }
-    // userId se añade por la asociación
   }, {
     tableName: 'accounts',
     timestamps: true,

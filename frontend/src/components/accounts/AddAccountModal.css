@@ -1,0 +1,401 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/accounts/AddAccountModal.css */
+.modal-overlay-add-account {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 15px;
+}
+
+.modal-content-add-account.exact-replica-style {
+  background-color: #fff;
+  border-radius: 6px; 
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+  width: 100%;
+  max-width: 475px; 
+  display: flex;
+  flex-direction: column;
+  color: #4A4A4A; 
+  overflow: visible; /* *** CAMBIO: Permitir que la paleta se desborde visualmente *** */
+}
+
+.modal-content-add-account.exact-replica-style .modal-header-add-account {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 12px 15px; 
+  background-color: #fff;
+  border-bottom: 1px solid #E8E8E8;
+  height: 48px; 
+  box-sizing: border-box;
+}
+
+.modal-content-add-account.exact-replica-style .modal-header-add-account h3 {
+  margin: 0;
+  color: #4A4A4A; 
+  font-size: 0.9rem; 
+  font-weight: 600; 
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap; 
+  flex-grow: 1; 
+  text-align: left; 
+}
+
+.modal-content-add-account.exact-replica-style .close-modal-button {
+  background: none;
+  border: none;
+  font-size: 1.6rem; 
+  color: #B0B0B0; 
+  cursor: pointer;
+  padding: 0 0 0 10px; 
+  line-height: 1;
+  margin-left: auto; 
+  flex-shrink: 0;
+}
+.modal-content-add-account.exact-replica-style .close-modal-button:hover {
+  color: #777;
+}
+
+.modal-content-add-account.exact-replica-style form {
+  padding: 20px 25px 25px 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px; 
+}
+
+.modal-content-add-account.exact-replica-style .form-group-add-account label {
+  font-size: 0.65rem; 
+  color: #9B9B9B; 
+  margin-bottom: 3px; 
+  font-weight: 500;
+  text-transform: uppercase;
+  display: block; 
+}
+
+.modal-content-add-account.exact-replica-style .form-group-add-account input[type="text"],
+.modal-content-add-account.exact-replica-style .form-group-add-account input[type="number"],
+.modal-content-add-account.exact-replica-style .form-group-add-account select,
+.modal-content-add-account.exact-replica-style .custom-color-input
+{
+  padding: 0 10px; 
+  border: 1px solid #D8D8D8; 
+  border-radius: 3px; 
+  font-size: 0.85rem; 
+  background-color: #fff;
+  color: #4A4A4A;
+  height: 36px; 
+  box-sizing: border-box;
+  width: 100%; 
+  line-height: 34px; 
+}
+.modal-content-add-account.exact-replica-style .form-group-add-account select {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+
+.modal-content-add-account.exact-replica-style .form-group-add-account input:focus,
+.modal-content-add-account.exact-replica-style .form-group-add-account select:focus,
+.modal-content-add-account.exact-replica-style .custom-color-input:focus-within 
+{
+  border-color: #4A90E2; 
+  box-shadow: 0 0 0 0.1rem rgba(74, 144, 226, 0.25); 
+  outline: none;
+}
+
+.form-row-exact {
+  display: flex;
+  gap: 15px;
+}
+.form-row-exact .form-group-add-account {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.form-row-exact.name-color-row .name-group-exact {
+  flex-grow: 1; 
+}
+.form-row-exact.name-color-row .color-group-exact {
+  flex-basis: 90px; 
+  flex-grow: 0;
+  flex-shrink: 0;
+  position: relative; 
+}
+.type-group-fullwidth-exact {
+    width: 100%;
+}
+
+.form-row-exact .balance-group-exact {
+  flex-grow: 1; 
+}
+.form-row-exact .currency-group-narrow-exact {
+  flex-basis: 100px; 
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.custom-color-picker-group .custom-color-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  cursor: pointer;
+  position: relative; /* Asegurar que el z-index de la paleta funcione relativo a esto */
+}
+
+.custom-color-input .color-preview-exact {
+  width: 100%; 
+  height: calc(100% - 4px); 
+  margin: 2px; 
+  border-radius: 1px; 
+}
+
+.custom-color-input .dropdown-arrow-exact {
+  color: #B0B0B0;
+  font-size: 0.7rem;
+  user-select: none; 
+  position: absolute; 
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; 
+}
+
+.color-palette-dropdown {
+  position: absolute;
+  top: calc(100% + 4px); /* Un poco más de espacio debajo del input */
+  left: 0; /* Alineado con el input de color */
+  background-color: #fff;
+  border: 1px solid #C0C0C0; /* Borde un poco más oscuro para destacar */
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Sombra más notable */
+  padding: 10px; /* Más padding interno */
+  display: grid;
+  grid-template-columns: repeat(8, 1fr); 
+  gap: 8px; /* Más espacio entre colores */
+  z-index: 1060; /* *** AUMENTAR Z-INDEX para estar sobre otros elementos del modal *** */
+  min-width: 240px; /* Ancho mínimo para que quepan 8 colores con buen espaciado */
+  /* width: max-content;  Puede ayudar si el contenido es variable */
+}
+
+.color-palette-item {
+  width: 24px; /* Ligeramente más grande */
+  height: 24px;
+  border-radius: 50%; 
+  border: 1px solid rgba(0,0,0,0.1); 
+  cursor: pointer;
+  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+  outline: none;
+  padding: 0; 
+}
+.color-palette-item:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.5); 
+}
+.color-palette-item:focus-visible { 
+  box-shadow: 0 0 0 2px #4A90E2;
+}
+
+.type-group-fullwidth-exact.new-type-style .type-select-container-exact {
+  position: relative; 
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: 1px solid #D8D8D8; 
+  border-radius: 3px;
+  height: 36px;
+  box-sizing: border-box;
+  background-color: #fff; 
+}
+.type-group-fullwidth-exact.new-type-style .type-select-container-exact:focus-within { 
+  border-color: #4A90E2; 
+  box-shadow: 0 0 0 0.1rem rgba(74, 144, 226, 0.25); 
+  outline: none;
+}
+
+.type-select-container-exact .type-icon-beside-select-exact {
+  font-size: 1rem; 
+  color: #555; 
+  padding-left: 8px; 
+  padding-right: 5px; 
+  line-height: 34px; 
+  pointer-events: none; 
+}
+
+.type-select-container-exact select.type-select-exact-no-internal-icon {
+  flex-grow: 1; 
+  border: none !important; 
+  box-shadow: none !important; 
+  outline: none !important; 
+  background-color: transparent !important; 
+  padding-left: 5px; 
+  padding-right: 25px; 
+  height: 100%;
+  line-height: normal; 
+  appearance: none; 
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23B0B0B0' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center; 
+  background-size: 10px; 
+}
+
+.currency-group-narrow-exact.new-currency-style select.currency-select-exact {
+  appearance: none; 
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23B0B0B0' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  padding-right: 30px; 
+}
+
+.toggle-group-exact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+.toggle-switch-exact {
+  position: relative;
+  display: inline-block;
+  width: 34px; 
+  height: 18px; 
+}
+.toggle-switch-exact input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider-exact {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #D8D8D8; 
+  transition: .3s;
+  border-radius: 18px; 
+}
+.slider-exact:before {
+  position: absolute;
+  content: "";
+  height: 14px; 
+  width: 14px;
+  left: 2px; 
+  bottom: 2px; 
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.toggle-switch-exact input:checked + .slider-exact {
+  background-color: #00BFA5; 
+}
+.toggle-switch-exact input:checked + .slider-exact:before {
+  transform: translateX(16px); 
+}
+.toggle-label-exact {
+  font-size: 0.8rem; 
+  color: #4A4A4A;
+  margin-left: 0; 
+}
+.info-tooltip-exact {
+  font-size: 0.7rem; 
+  color: #9B9B9B;
+  cursor: help;
+  border: 1px solid #D0D0D0;
+  border-radius: 50%;
+  width: 13px;
+  height: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-weight: bold;
+}
+
+.modal-content-add-account.exact-replica-style .modal-actions-add-account {
+  margin-top: 10px; 
+}
+.exact-save-button { 
+  width: 100% !important;
+  padding: 10px 20px !important; 
+  font-size: 0.9rem !important;
+  font-weight: 600;
+  border-radius: 4px !important; 
+  background-color: #00BFA5 !important; 
+  border-color: #00BFA5 !important;
+  text-transform: none; 
+  color: white !important;
+  transition: background-color 0.2s;
+}
+.exact-save-button:hover {
+  background-color: #00a693 !important; 
+  border-color: #00a693 !important;
+}
+
+.error-message.small-error {
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  margin-bottom: 0; 
+  text-align: center;
+}
+/* Estilo para campos que parecen deshabilitados pero son solo de muestra */
+.modal-content-add-account.exact-replica-style .type-display-exact {
+  display: flex;
+  align-items: center;
+  padding: 0 10px; 
+  border: 1px solid #D8D8D8; 
+  border-radius: 3px; 
+  font-size: 0.85rem; 
+  background-color: #f8f9fa; /* Fondo ligeramente gris para indicar no editable */
+  color: #6c757d; /* Texto gris */
+  height: 36px; 
+  box-sizing: border-box;
+  width: 100%; 
+  line-height: 34px; 
+}
+
+.modal-content-add-account.exact-replica-style .type-display-exact .type-icon-beside-select-exact {
+  margin-right: 8px; /* Espacio entre icono y texto */
+  font-size: 1rem;
+}
+.modal-content-add-account.exact-replica-style .type-display-exact .type-text-exact {
+  /* Estilos adicionales para el texto si es necesario */
+}
+
+/* Estilo para el input de Monto Inicial deshabilitado */
+.modal-content-add-account.exact-replica-style input.disabled-input-lookalike {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+  border-style: dashed; /* Para diferenciarlo visualmente un poco más */
+}
+
+
+/* Asegurar que los toggle groups tengan suficiente espacio si hay dos */
+.modal-content-add-account.exact-replica-style .toggle-group-exact {
+  /* gap: 8px; ya estaba */
+  /* margin-top: 5px; ya estaba */
+  padding-bottom: 5px; /* Pequeño espacio si hay otro toggle debajo */
+}
+.modal-content-add-account.exact-replica-style .form-section-title-modal {
+  font-size: 0.75rem; /* Un poco más grande que los labels */
+  color: #4A4A4A;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 10px; /* Espacio antes del título de sección */
+  margin-bottom: 8px; /* Espacio después del título de sección */
+  padding-bottom: 5px;
+  border-bottom: 1px solid #E8E8E8; /* Línea divisoria sutil */
+}
