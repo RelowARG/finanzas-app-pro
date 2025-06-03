@@ -564,7 +564,7 @@
   font-size: 1.5rem;
   margin-bottom: 3px;
   color: var(--primary-color); 
-  line-height: 1;
+  line-height: 1; 
 }
 .add-account-card-container div:not(.add-account-icon) { 
   font-weight: 500;
@@ -603,4 +603,46 @@
 
 .add-widget-placeholder div[style*="font-size: 3rem"] { 
   line-height: 1; 
+}
+
+/* Add or modify these styles for the SpendingChart widget */
+.spending-chart-widget .chart-wrapper {
+    flex-grow: 1; /* Allow it to take available vertical space */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Center content vertically */
+    padding: 5px; /* Adjust as needed */
+    box-sizing: border-box;
+    min-height: 0; /* Necessary for flex-grow to work */
+}
+
+.spending-chart-widget .chart-container {
+    position: relative;
+    width: 100%; /* Take full width of parent */
+    flex-grow: 1; /* Allow it to take available vertical space within chart-wrapper */
+    min-height: 150px; /* Minimum height for the chart to be visible */
+    max-height: 200px; /* Maximum height to limit its size */
+    margin-bottom: 5px; /* Space between chart and legend/summary if needed */
+    overflow: hidden; /* Ensure no overflow */
+}
+
+/* Adjust the total expenses display if it's pushing the chart */
+.spending-chart-widget .total-expenses-display {
+    font-size: 0.9rem; /* Adjust font size */
+    margin-bottom: 8px; /* Space above the chart */
+    padding-bottom: 5px;
+    border-bottom: 1px dashed #e0e0e0; /* Optional separator */
+    width: 100%; /* Occupy full width for centering */
+    text-align: center;
+}
+
+/* Adjust legend size if needed */
+.spending-chart-widget .chartjs-render-monitor {
+    width: 100% !important; /* Ensure canvas fills container */
+    height: 100% !important; /* Ensure canvas fills container */
+}
+
+.spending-chart-widget .dashboard-widget-content {
+    padding: 5px; /* Add some padding to the content wrapper */
 }
