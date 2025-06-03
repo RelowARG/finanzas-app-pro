@@ -203,6 +203,30 @@ const getTransactions = async (req, res, next) => {
   }
 
   try {
+    // 1. Obtener el total de transacciones que coinciden con los filtros (sin paginación)
+    const allFilteredTransactions = await Transaction.findAll({
+      where: whereClause,
+      attributes: ['amount', 'type'], // Solo necesitamos el monto y el tipo para los cálculos
+      raw: true,
+    });
+
+    let totalIncome = 0;
+    let totalExpenses = 0;
+
+    allFilteredTransactions.forEach(tx => {
+      const amount = parseFloat(tx.amount);
+      if (tx.type === 'ingreso') {
+        totalIncome += amount;
+      } else if (tx.type === 'egreso') {
+        totalExpenses += Math.abs(amount); // Asegurar que los egresos se sumen como positivos
+      }
+      // Las transferencias no se suman aquí para ingresos/egresos netos
+    });
+
+    const totalNet = totalIncome - totalExpenses;
+
+
+    // 2. Obtener las transacciones paginadas
     const { count, rows } = await Transaction.findAndCountAll({
       where: whereClause,
       include: [ 
@@ -222,7 +246,11 @@ const getTransactions = async (req, res, next) => {
       totalPages: Math.ceil(count / parseInt(limit, 10)),
       currentPage: parseInt(page, 10),
       totalTransactions: count,
-      transactions: rows
+      transactions: rows,
+      // *** NUEVOS TOTALES GLOBALES/FILTRADOS ***
+      totalIncomeFiltered: totalIncome,
+      totalExpensesFiltered: totalExpenses,
+      totalNetFiltered: totalNet,
     });
   } catch (error) {
     console.error('Error en getTransactions:', error);

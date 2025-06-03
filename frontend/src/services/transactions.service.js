@@ -19,6 +19,7 @@ const getAllTransactions = async (filters = {}) => {
 
   const response = await apiClient.get(`/transactions?${params.toString()}`);
   console.log('[TransactionService] Transactions received:', response.data);
+  // El backend ahora devuelve: { transactions, totalPages, currentPage, totalTransactions, totalIncomeFiltered, totalExpensesFiltered, totalNetFiltered }
   return response.data; 
 };
 

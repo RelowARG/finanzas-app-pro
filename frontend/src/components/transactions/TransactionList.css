@@ -1,25 +1,33 @@
 /* Ruta: finanzas-app-pro/frontend/src/components/transactions/TransactionList.css */
 .transaction-list-container {
   overflow-x: auto; 
-  background-color: #fff;
+  background-color: #ffffff; /* Fondo blanco */
   border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  box-shadow: var(--box-shadow); /* Sombra sutil */
+  border: 1px solid #e9ecef; /* Borde sutil */
 }
 
 .transaction-table {
   width: 100%;
   border-collapse: collapse;
+  /* Eliminar bordes de la tabla si ya se manejan en las celdas */
+  border: none; 
 }
 
 .transaction-table th {
-  background-color: #f8f9fa;
+  background-color: #f8f9fa; /* Fondo más claro para el encabezado */
   color: #495057;
-  padding: 12px 10px;
+  padding: 12px 15px; /* Más padding */
   text-align: left;
   font-weight: 600;
   font-size: 0.9rem;
-  border-bottom: 2px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6; /* Borde inferior más suave */
+  border-right: 1px solid #f0f2f5; /* Borde entre columnas del encabezado */
 }
+.transaction-table th:last-child {
+  border-right: none; /* Eliminar borde derecho de la última columna del encabezado */
+}
+
 
 /* Estilos para cabeceras ordenables */
 .transaction-table th.sortable-header {
@@ -29,7 +37,7 @@
 }
 
 .transaction-table th.sortable-header:hover {
-  background-color: #e9ecef; 
+  background-color: #eef2f7; /* Hover más sutil */
 }
 
 .transaction-table th .sort-indicator { 
@@ -41,12 +49,13 @@
 }
 
 
+/* Ajustes de ancho de columnas (pueden requerir ajuste fino) */
 .transaction-table .th-icon { width: 50px; text-align: center; }
-.transaction-table .th-description { min-width: 200px; }
-.transaction-table .th-date { width: 110px; }
-.transaction-table .th-account { width: 150px; }
-.transaction-table .th-amount { width: 120px; text-align: right; }
-.transaction-table .th-actions { width: 100px; text-align: center;}
+.transaction-table .th-description { min-width: 250px; } /* Aumentar ancho */
+.transaction-table .th-date { width: 120px; }
+.transaction-table .th-account { width: 160px; }
+.transaction-table .th-amount { width: 130px; text-align: right; }
+.transaction-table .th-actions { width: 120px; text-align: center;}
 
 
 .no-transactions-message {
@@ -54,4 +63,38 @@
   padding: 20px;
   font-style: italic;
   color: #666;
+}
+
+/* Media Query para tablas en móviles - Desbordamiento horizontal */
+@media (max-width: 768px) {
+  .transaction-list-container {
+    padding: 0; /* Eliminar padding para que la tabla ocupe todo el ancho */
+    border: none; /* Eliminar bordes para que no se dupliquen con el contenedor principal */
+    box-shadow: none; /* Eliminar sombra */
+  }
+  .transaction-table {
+    width: 100%; /* Asegurar que ocupe el 100% del contenedor con scroll */
+    display: block; /* Permite el scroll horizontal */
+    white-space: nowrap; /* Evita que el contenido de las celdas se envuelva */
+  }
+  .transaction-table thead, .transaction-table tbody, .transaction-table th, .transaction-table td, .transaction-table tr {
+    display: block; /* Para que cada fila y celda se comporte como un bloque en el flujo */
+  }
+  .transaction-table th, .transaction-table td {
+    border-bottom: 1px solid #eee; /* Mantener bordes horizontales */
+    border-right: none; /* Eliminar bordes verticales en móvil */
+  }
+  .transaction-table th {
+    position: sticky; /* Encabezado pegajoso al hacer scroll horizontal */
+    left: 0;
+    z-index: 1;
+    background-color: #f8f9fa; /* Asegurar fondo para el sticky */
+  }
+  .transaction-table .th-icon, .transaction-table .th-description, .transaction-table .th-date, .transaction-table .th-account, .transaction-table .th-amount, .transaction-table .th-actions {
+    width: auto; /* Ancho automático para que el contenido se ajuste */
+    min-width: 120px; /* Mínimo para evitar que se aplasten demasiado */
+  }
+  .transaction-table .th-description { min-width: 180px; }
+  .transaction-table .th-amount { text-align: left; } /* Alinear a la izquierda en móvil */
+  .transaction-table .th-actions { text-align: left; } /* Alinear a la izquierda en móvil */
 }
