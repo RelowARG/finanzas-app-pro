@@ -2,41 +2,22 @@
 .navbar.new-style {
   background-color: #ffffff;
   color: var(--dark-color, #343a40);
-  height: 65px;
+  height: 65px; /* Altura fija */
   display: flex;
   align-items: center;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  position: fixed;
+  position: fixed; /* Esto es CRÍTICO: la navbar se queda fija arriba */
   top: 0;
-  left: 0;  /* Siempre pegada a la izquierda del viewport */
-  width: 100%; /* Siempre 100% del ancho del viewport */
-  z-index: 1030; /* Navbar encima del Sidebar y del contenido */
-  padding-left: 25px;  /* Padding interno ESTÁTICO para el contenido de la navbar */
+  left: 0;
+  width: 100%;
+  z-index: 1030; /* Asegura que esté por encima de otros elementos */
+  padding-left: 25px;
   padding-right: 25px;
   box-sizing: border-box;
-  /* No necesita transición de padding-left relacionada con el sidebar */
 }
-
-/* --- ELIMINAR ESTAS REGLAS --- */
-/*
-.app-layout.sidebar-active:not(.sidebar-expanded) .navbar.new-style {
-  padding-left: calc(70px + 25px);
-}
-.app-layout.sidebar-expanded .navbar.new-style {
-  padding-left: calc(240px + 25px);
-}
-@media (max-width: 576px) {
-  .app-layout.sidebar-active .navbar.new-style,
-  .app-layout.sidebar-expanded .navbar.new-style {
-    padding-left: 25px;
-  }
-}
-*/
-/* --- FIN ELIMINACIÓN --- */
-
 
 .navbar.new-style .nav-container {
-  max-width: 1200px;
+  max-width: 1200px; /* Ancho máximo para el contenido de la navbar */
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -52,7 +33,7 @@
   letter-spacing: -0.5px;
   flex-shrink: 0;
   position: relative;
-  z-index: 1; /* Para asegurar que esté sobre el padding del sidebar si es necesario */
+  z-index: 1;
 }
 
 .navbar.new-style .nav-menu {
@@ -62,52 +43,302 @@
   margin: 0;
   padding: 0;
   align-items: center;
-}
-
-.navbar.new-style .main-nav-links {
-  flex-grow: 1;
-  justify-content: center;
+  flex-grow: 1; /* Permite que este menú ocupe el espacio central */
+  justify-content: center; /* Centra los elementos del menú principal */
   overflow: hidden;
-  padding-left: 0; /* Asegurarse que no haya padding izquierdo aquí que cause movimiento */
-  /* Ya no se necesita transición aquí si no hay cambio de padding */
 }
 
-/* --- INICIO: MODIFICACIÓN - Eliminar o comentar las siguientes reglas --- */
-/*
-.app-layout.sidebar-active:not(.sidebar-expanded) .navbar.new-style .nav-container {
-  padding-left: calc(70px - 25px);
+.navbar.new-style .nav-links {
+  color: #555e69;
+  text-decoration: none;
+  padding: 8px 15px; /* Ajustado para ser más compacto */
+  border-radius: 6px;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+  display: inline-block; /* Asegura que el padding se aplique correctamente */
 }
-.app-layout.sidebar-expanded .navbar.new-style .nav-container {
-  padding-left: calc(240px - 25px);
+.navbar.new-style .nav-links:hover,
+.navbar.new-style .nav-links.active {
+  color: var(--primary-color);
+  background-color: rgba(var(--primary-rgb), 0.08);
 }
-*/
-/* La regla @media (max-width: 576px) para .nav-container ya establece padding-left: 0, lo cual es coherente.
-   Si se eliminan las de arriba, esta puede permanecer o ser eliminada si se desea que .nav-container
-   siempre se comporte igual respecto a su padding izquierdo (es decir, sin padding-left explícito,
-   dejando que el padding del .navbar.new-style y el margin:auto del .nav-container hagan el trabajo).
-   Para consistencia y asegurar que no haya un padding-left explícito que lo mueva:
-*/
-@media (max-width: 576px) {
-  .app-layout.sidebar-active .navbar.new-style .nav-container,
-  .app-layout.sidebar-expanded .navbar.new-style .nav-container {
-    padding-left: 0; /* Mantenido o asegurarse que el padding-left no se modifique */
+
+/* Estilos para el enlace "Próximamente" en la barra principal (si se usara) */
+/* .navbar.new-style .nav-links.coming-soon {
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
+  text-decoration: none;
+} */
+
+
+.navbar.new-style .nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Estilos para los botones de acción (+ Registros, Iniciar Sesión, Regístrate) */
+.navbar.new-style .nav-button-action {
+  padding: 9px 18px !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  border-radius: 20px !important; /* Botones más redondeados */
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+  white-space: nowrap;
+  min-width: 100px; /* Un poco más pequeño para dejar espacio */
+  text-align: center;
+}
+.navbar.new-style .nav-button-action:hover {
+  transform: translateY(-1px);
+}
+.navbar.new-style .button.button-primary.nav-button-action {
+  background-color: var(--primary-color) !important;
+  border: 1px solid var(--primary-color) !important;
+  color: white !important;
+}
+.navbar.new-style .button.button-primary.nav-button-action:hover {
+  background-color: var(--primary-color-dark, #0056b3) !important;
+  border-color: var(--primary-color-dark, #0056b3) !important;
+}
+.navbar.new-style .button.button-secondary.nav-button-action {
+  background-color: transparent !important;
+  border: 1px solid #ced4da !important;
+  color: var(--dark-color) !important;
+}
+.navbar.new-style .button.button-secondary.nav-button-action:hover {
+  background-color: #f0f2f5 !important;
+  border-color: #adb5bd !important;
+}
+
+/* Dropdown para "+ Registros" */
+.navbar.new-style .nav-item-add-record {
+  position: relative;
+}
+.navbar.new-style .add-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius, 6px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  z-index: 1100;
+  min-width: 220px;
+  padding: 8px 0;
+  overflow: hidden;
+}
+.navbar.new-style .add-menu-item {
+  display: block;
+  padding: 10px 18px;
+  color: var(--dark-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.navbar.new-style .add-menu-item:hover {
+  background-color: rgba(var(--primary-rgb), 0.08);
+  color: var(--primary-color);
+}
+
+/* --- ESTILOS PARA EL MENÚ DE USUARIO (BudgetBakers-like) --- */
+.navbar.new-style .nav-item-user-menu {
+  position: relative;
+  margin-left: 10px; /* Espacio entre el botón de +Registros y el menú de usuario */
+}
+
+.navbar.new-style .nav-user-button {
+  background-color: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px 8px; /* Padding sutil para el botón del usuario */
+  border-radius: 20px; /* Bordes redondeados */
+  transition: background-color 0.2s ease;
+  color: var(--text-color); /* Color de texto por defecto */
+}
+.navbar.new-style .nav-user-button:hover {
+  background-color: #f0f2f5; /* Fondo suave al pasar el ratón */
+}
+
+.navbar.new-style .nav-user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; /* Tamaño del avatar */
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--primary-color); /* Color de fondo del avatar */
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.navbar.new-style .nav-user-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-right: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px; /* Limitar ancho del nombre si es muy largo */
+}
+
+.navbar.new-style .nav-user-arrow {
+  font-size: 0.7rem;
+  color: #6c757d;
+  transition: transform 0.2s ease;
+}
+.navbar.new-style .nav-user-button[aria-expanded="true"] .nav-user-arrow {
+    transform: rotate(180deg); /* Flecha hacia arriba cuando el menú está abierto */
+}
+
+
+/* Dropdown del menú de usuario */
+.navbar.new-style .user-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius, 6px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  z-index: 1100;
+  min-width: 250px; /* Ancho del menú */
+  padding: 8px 0;
+  overflow: hidden;
+}
+
+.navbar.new-style .user-menu-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 18px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 8px;
+}
+.navbar.new-style .user-menu-header .user-menu-avatar {
+  width: 40px; /* Avatar más grande en el menú */
+  height: 40px;
+  font-size: 1.1rem;
+  margin-right: 12px;
+}
+.navbar.new-style .user-menu-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.navbar.new-style .user-menu-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--dark-color);
+}
+.navbar.new-style .user-menu-email {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.navbar.new-style .user-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 18px;
+  color: var(--dark-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  width: 100%; /* Para que el botón ocupe todo el ancho del menú */
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.navbar.new-style .user-menu-item:hover {
+  background-color: rgba(var(--primary-rgb), 0.08);
+  color: var(--primary-color);
+}
+.navbar.new-style .user-menu-item .menu-item-icon {
+  margin-right: 10px;
+  font-size: 1.1em;
+  color: #6c757d; /* Color por defecto para los iconos del menú */
+}
+.navbar.new-style .user-menu-item:hover .menu-item-icon {
+    color: var(--primary-color); /* Icono se vuelve primary-color en hover */
+}
+
+/* Estilo para el elemento "Próximamente" en el menú de usuario */
+.navbar.new-style .user-menu-item-coming-soon {
+  cursor: not-allowed; /* Cursor de no permitido */
+  opacity: 0.6; /* Un poco transparente */
+  position: relative; /* Para el tooltip nativo */
+  pointer-events: none; /* Deshabilita clics y eventos de mouse */
+  text-decoration: none; /* Asegura que no haya subrayado */
+}
+/* Al pasar el mouse por encima del elemento "Próximamente", mostrar el tooltip nativo del atributo 'title' */
+/* No se necesita CSS adicional para el tooltip si usamos el atributo 'title' en el JSX */
+
+
+.navbar.new-style .user-menu-separator {
+  height: 1px;
+  background-color: #f0f0f0;
+  margin: 8px 0;
+}
+
+.navbar.new-style .user-menu-logout-button {
+  color: var(--danger-color) !important;
+  font-weight: 500;
+}
+.navbar.new-style .user-menu-logout-button:hover {
+  background-color: rgba(var(--danger-rgb, 231, 76, 60), 0.1) !important;
+  color: var(--danger-color) !important;
+}
+.navbar.new-style .user-menu-logout-button .menu-item-icon {
+    color: var(--danger-color) !important;
+}
+
+/* Media queries */
+@media (max-width: 992px) {
+  .navbar.new-style .main-nav-links {
+    display: none; /* Oculta los enlaces principales en pantallas más pequeñas */
   }
 }
-/* --- FIN: MODIFICACIÓN --- */
 
-/* ... (resto de estilos de Navbar.css como .nav-links, .nav-actions, etc. sin cambios significativos) ... */
-.navbar.new-style .nav-links { color: #555e69; text-decoration: none; padding: 8px 15px; border-radius: 6px; transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out; font-size: 0.95rem; font-weight: 500; white-space: nowrap; }
-.navbar.new-style .nav-links:hover, .navbar.new-style .nav-links.active { color: var(--primary-color); background-color: rgba(var(--primary-rgb), 0.08); }
-.navbar.new-style .nav-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-.navbar.new-style .nav-button-action { padding: 9px 18px !important; font-size: 0.9rem !important; font-weight: 600 !important; border-radius: 20px !important; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; line-height: 1; transition: background-color 0.2s, border-color 0.2s, transform 0.1s; white-space: nowrap; min-width: 120px; text-align: center; }
-.navbar.new-style .nav-button-action:hover { transform: translateY(-1px); }
-.navbar.new-style .button.button-primary.nav-button-action { background-color: var(--primary-color) !important; border: 1px solid var(--primary-color) !important; color: white !important; }
-.navbar.new-style .button.button-primary.nav-button-action:hover { background-color: var(--primary-color-dark, #0056b3) !important; border-color: var(--primary-color-dark, #0056b3) !important; }
-.navbar.new-style .button.button-secondary.nav-button-action { background-color: transparent !important; border: 1px solid #ced4da !important; color: var(--dark-color) !important; }
-.navbar.new-style .button.button-secondary.nav-button-action:hover { background-color: #f0f2f5 !important; border-color: #adb5bd !important; }
-.navbar.new-style .nav-item-add-record { position: relative; }
-.navbar.new-style .add-menu-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: var(--border-radius, 6px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 1100; min-width: 220px; padding: 8px 0; overflow: hidden; }
-.navbar.new-style .add-menu-item { display: block; padding: 10px 18px; color: var(--dark-color); text-decoration: none; font-size: 0.9rem; white-space: nowrap; }
-.navbar.new-style .add-menu-item:hover { background-color: rgba(var(--primary-rgb), 0.08); color: var(--primary-color); }
-@media (max-width: 992px) { .navbar.new-style .main-nav-links { display: none; } }
-@media (max-width: 768px) { .navbar.new-style .nav-logo { font-size: 1.5rem; } .navbar.new-style .nav-actions { gap: 8px; } .navbar.new-style .nav-button-action { padding: 8px 12px !important; font-size: 0.85rem !important; min-width: auto; } .navbar.new-style .add-menu-dropdown { min-width: 180px; } }
+@media (max-width: 768px) {
+  .navbar.new-style {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .navbar.new-style .nav-logo {
+    font-size: 1.5rem;
+  }
+  .navbar.new-style .nav-actions {
+    gap: 8px;
+  }
+  .navbar.new-style .nav-button-action {
+    padding: 8px 12px !important;
+    font-size: 0.85rem !important;
+    min-width: auto;
+  }
+  .navbar.new-style .add-menu-dropdown {
+    min-width: 180px;
+  }
+  .navbar.new-style .nav-user-name {
+    display: none; /* Oculta el nombre del usuario en móvil para ahorrar espacio */
+  }
+  .navbar.new-style .nav-user-arrow {
+    margin-left: 0; /* Ajusta el margen si el nombre está oculto */
+  }
+  .navbar.new-style .user-menu-dropdown {
+    min-width: 200px; /* Ajusta el ancho del menú desplegable de usuario en móvil */
+  }
+}

@@ -1,0 +1,413 @@
+/* Ruta: frontend/src/pages/HowToUsePage.css */
+.how-to-use-page-active {
+  /* Puedes añadir estilos específicos al body cuando esta página está activa */
+}
+
+.how-to-use-page {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #333;
+  background-color: #fff;
+  padding: 0; /* Elimina el padding del page-container para el header de ancho completo */
+}
+
+.htu-main-header {
+  background-color: #f4f7f6; /* Un color de fondo muy claro, casi blanco */
+  padding: 60px 20px;
+  display: flex;
+  flex-direction: column; /* Por defecto en columna para móvil, se cambia a row en desktop */
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  text-align: center;
+}
+
+.htu-main-header-content {
+  max-width: 700px;
+}
+
+.htu-main-header h1 {
+  font-size: 2.8rem; /* Tamaño grande para el título principal */
+  color: #2c3e50; /* Un azul oscuro/gris */
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+
+.htu-main-subtitle {
+  font-size: 1.1rem;
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 30px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.htu-app-buttons {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  justify-content: center;
+}
+
+.htu-start-button {
+  padding: 14px 30px !important;
+  font-size: 1.1rem !important;
+  background-color: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+  border-radius: 30px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  color: white !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+  line-height: normal !important;
+}
+.htu-start-button:hover {
+  background-color: #27ae60 !important;
+  transform: translateY(-2px);
+  color: white !important;
+}
+
+/* Contenido Principal de Características */
+.htu-main-content {
+  max-width: 1000px; /* Ancho máximo para el contenido principal */
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.htu-section {
+  margin-bottom: 60px;
+  padding: 20px 0;
+}
+
+.htu-section h2 {
+  font-size: 2.2rem;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.htu-subsection-title {
+  font-size: 1.8rem;
+  color: var(--primary-color);
+  margin-top: 40px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Estilos para los pasos del "Primer Día" */
+.htu-first-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.htu-step-card {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: var(--border-radius);
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.htu-step-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+  background-color: rgba(var(--primary-rgb), 0.1);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.htu-step-card h4 {
+  font-size: 1.3rem;
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.htu-step-card p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #4a4a4a;
+  margin-bottom: 10px;
+}
+
+.htu-step-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-top: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+
+/* Estilos para FeatureSection (funcionalidades principales) */
+.htu-feature-section {
+  display: flex;
+  align-items: center;
+  gap: 60px; /* Más espacio entre texto e imagen */
+  margin-bottom: 60px;
+  padding: 20px 0;
+}
+
+.htu-feature-section.reverse {
+  flex-direction: row-reverse;
+}
+
+.htu-feature-text {
+  flex: 1;
+}
+
+.htu-feature-text h3 {
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.htu-feature-text p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #4a4a4a;
+  margin-bottom: 15px;
+}
+.htu-feature-text ul {
+  padding-left: 20px;
+  list-style-type: disc; /* Opcional: cambiar a 'circle' o 'square' */
+  margin-bottom: 20px;
+}
+.htu-feature-text ul li {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.htu-feature-image {
+  flex: 1;
+  text-align: center;
+}
+
+.htu-feature-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1); /* Sombra más pronunciada */
+}
+
+/* Sección de Consejos y Solución de Problemas */
+.htu-tips-section, .htu-troubleshooting-section {
+  background-color: #f8f9fa;
+  border-radius: var(--border-radius);
+  padding: 40px;
+  margin-bottom: 60px;
+  box-shadow: var(--box-shadow);
+  border: 1px solid #e9ecef;
+}
+.htu-tips-section h2, .htu-troubleshooting-section h2 {
+  color: #2c3e50;
+  margin-bottom: 25px;
+}
+.htu-tips-section ul, .htu-troubleshooting-section ul {
+  list-style-type: disc;
+  padding-left: 25px;
+  margin-bottom: 20px;
+}
+.htu-tips-section li, .htu-troubleshooting-section li {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #4a4a4a;
+  margin-bottom: 10px;
+}
+.htu-troubleshooting-section li ul { /* Para listas anidadas */
+  list-style-type: circle;
+  margin-left: 20px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+/* CTA Final */
+.htu-cta-final {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 60px 20px;
+  text-align: center;
+  /* Ajuste para que ocupe todo el ancho si page-container-fluid no tiene padding horizontal */
+  margin-left: calc((100% - 100vw) / 2);
+  margin-right: calc((100% - 100vw) / 2);
+}
+
+.htu-cta-final h2 {
+  font-size: 2rem;
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+.htu-cta-final .button-xlarge {
+  padding: 15px 35px !important;
+  font-size: 1.15rem !important;
+  background-color: white !important;
+  color: var(--primary-color) !important;
+  font-weight: bold;
+  border-radius: 30px;
+  width: auto !important;
+  display: inline-block !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  text-decoration: none !important;
+  line-height: normal !important;
+}
+.htu-cta-final .button-xlarge:hover {
+  background-color: #f0f0f0 !important;
+  transform: translateY(-2px);
+  color: var(--primary-color) !important;
+}
+
+/* Sección de Soporte Inferior */
+.htu-support-section-bottom {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #f4f7f6;
+}
+.htu-support-section-bottom h3 {
+  font-size: 1.6rem;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+.htu-support-section-bottom p {
+  color: #555;
+  max-width: 600px;
+  margin: 0 auto 20px auto;
+}
+
+.cafecito-button-container-htu {
+  margin-top: 20px;
+}
+.cafecito-button-container-htu img {
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease-out;
+}
+.cafecito-button-container-htu img:hover {
+  transform: scale(1.03);
+}
+
+.htu-page-footer {
+  text-align: center;
+  padding: 30px 20px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.9rem;
+  color: #777;
+  background-color: #fff;
+}
+.htu-page-footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+.htu-page-footer a:hover {
+    text-decoration: underline;
+}
+
+
+/* Media Queries para Responsividad */
+@media (max-width: 900px) {
+  .htu-main-header {
+    padding: 40px 20px;
+  }
+  .htu-main-header h1 {
+    font-size: 2.2rem;
+  }
+  .htu-main-subtitle {
+    font-size: 1rem;
+  }
+  .htu-feature-section {
+    flex-direction: column !important; /* Apilar siempre texto e imagen */
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  .htu-feature-section.reverse {
+    flex-direction: column !important; /* Mantener apilado */
+  }
+  .htu-feature-text h3 {
+    font-size: 1.6rem;
+    text-align: center;
+  }
+  .htu-feature-text {
+    text-align: center;
+  }
+  .htu-cta-final h2 {
+    font-size: 1.6rem;
+  }
+  .htu-section h2 {
+    font-size: 1.8rem;
+  }
+  .htu-subsection-title {
+    font-size: 1.4rem;
+  }
+  .htu-step-card h4 {
+    font-size: 1.1rem;
+  }
+  .htu-step-card p {
+    font-size: 0.9rem;
+  }
+  .htu-tips-section, .htu-troubleshooting-section {
+    padding: 30px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .htu-main-header h1 {
+    font-size: 1.8rem;
+  }
+  .htu-main-subtitle {
+    font-size: 0.9rem;
+  }
+  .htu-start-button {
+    font-size: 1rem !important;
+    padding: 10px 20px !important;
+  }
+  .htu-first-steps-grid {
+    gap: 20px;
+  }
+  .htu-step-number {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+  }
+  .htu-step-card h4 {
+    font-size: 1rem;
+  }
+  .htu-section h2 {
+    font-size: 1.5rem;
+  }
+  .htu-subsection-title {
+    font-size: 1.2rem;
+  }
+  .htu-feature-text h3 {
+    font-size: 1.4rem;
+  }
+  .htu-feature-text p, .htu-feature-text ul li {
+    font-size: 0.85rem;
+  }
+  .htu-tips-section li, .htu-troubleshooting-section li {
+    font-size: 0.8rem;
+  }
+}
