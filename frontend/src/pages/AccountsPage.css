@@ -1,69 +1,165 @@
 /* Ruta: finanzas-app-pro/frontend/src/pages/AccountsPage.css */
-/* ARCHIVO NUEVO */
-.accounts-page {
-  /* Estilos específicos para la página de cuentas si son necesarios */
-}
 
-.accounts-page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid var(--primary-color, #3498db);
+.accounts-page {
+  /* Contenedor principal de la página de cuentas */
+  background-color: var(--background-color); /* Fondo similar al dashboard */
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 20px;
 }
 
 .accounts-page-header h1 {
-  margin: 0;
-  color: var(--dark-color, #333);
+  margin: 0 0 25px 0;
   font-size: 2rem;
+  color: var(--dark-color);
+  text-align: left; /* Alineado a la izquierda como en la referencia */
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--primary-color);
 }
 
-.accounts-page-header .button-primary {
-  background-color: var(--primary-color, #3498db) !important;
-  color: white !important;
-  padding: 10px 20px !important;
-  font-size: 1rem !important;
+.accounts-content-wrapper {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  width: auto !important; /* Para que no ocupe todo el ancho */
-}
-.accounts-page-header .button-primary:hover {
-  background-color: #2980b9 !important;
+  gap: 30px; /* Espacio entre el sidebar y la lista de cuentas */
+  align-items: flex-start; /* Alinear el contenido al inicio */
 }
 
-.icon-add {
-  font-size: 0.9em; /* Ajustar tamaño del emoji si es necesario */
-}
-
-.loading-text,
-.no-accounts-message {
-  text-align: center;
-  font-size: 1.1rem;
-  color: #666;
+/* Sidebar de filtros y acciones */
+.accounts-filter-sidebar {
+  flex: 0 0 250px; /* Ancho fijo para el sidebar */
+  background-color: #ffffff; /* Fondo blanco */
   padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08); /* Sombra sutil */
+  border: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Espacio entre los grupos de filtros */
+  box-sizing: border-box; /* Asegurar que padding y border no aumenten el ancho */
 }
 
-.accounts-grid {
-  list-style: none;
+.accounts-filter-sidebar .add-account-button {
+  width: 100%; /* Botón de agregar ocupa todo el ancho */
+  padding: 10px 15px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important; /* Bordes menos redondeados para este botón */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.1s ease-out, box-shadow 0.2s ease;
+  text-align: center; /* Centrar el texto del botón */
+}
+.accounts-filter-sidebar .add-account-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.accounts-filter-sidebar .filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.accounts-filter-sidebar .filter-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.accounts-filter-sidebar .filter-input,
+.accounts-filter-sidebar .filter-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  color: #495057;
+  background-color: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box; /* Incluir padding y borde en el ancho */
+}
+.accounts-filter-sidebar .filter-input:focus,
+.accounts-filter-sidebar .filter-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25);
+  outline: none;
+}
+
+/* Contenido principal: lista de cuentas */
+.accounts-list-main {
+  flex: 1; /* Ocupa el espacio restante */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Lista de cuentas (cambiado de grid a lista simple) */
+.accounts-list {
+  display: flex;
+  flex-direction: column; /* Apilar elementos verticalmente */
+  gap: 8px; /* Espacio entre cada tarjeta de cuenta */
   padding: 0;
-  display: grid;
-  /* Ajusta el número de columnas según el tamaño de pantalla */
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsivo */
-  gap: 20px; /* Espacio entre tarjetas */
+  margin: 0;
+  list-style: none; /* Eliminar viñetas si fuera una lista */
 }
 
-/* Media query para una sola columna en pantallas muy pequeñas */
-@media (max-width: 480px) {
-  .accounts-grid {
-    grid-template-columns: 1fr;
+
+.loading-text, .no-data-message, .error-message {
+  text-align: center;
+  padding: 20px;
+  color: #6c757d;
+  font-size: 1rem;
+}
+.error-message {
+  color: var(--danger-color);
+  font-weight: 500;
+}
+
+/* Media Queries para responsividad */
+@media (max-width: 992px) {
+  .accounts-content-wrapper {
+    flex-direction: column; /* Apilar sidebar y lista en pantallas medianas */
+    gap: 25px;
   }
-  .accounts-page-header {
-    flex-direction: column;
-    gap: 15px;
+  .accounts-filter-sidebar {
+    flex: none; /* Eliminar el ancho fijo */
+    width: 100%; /* Ocupar todo el ancho */
+    flex-direction: row; /* Poner filtros en fila */
+    flex-wrap: wrap; /* Permitir que los filtros se envuelvan */
+    justify-content: space-between; /* Espacio entre filtros */
+  }
+  .accounts-filter-sidebar .add-account-button {
+    width: auto; /* Ajustar ancho del botón */
+    flex-grow: 1; /* Permitir que crezca */
+    max-width: 200px; /* Limitar el ancho máximo */
+  }
+  .accounts-filter-sidebar .filter-group {
+    flex: 1 1 calc(50% - 10px); /* Dos columnas para filtros */
+  }
+  .accounts-filter-sidebar .filter-input,
+  .accounts-filter-sidebar .filter-select {
+    width: 100%; /* Asegurar que ocupen el 100% de su columna */
+  }
+}
+
+@media (max-width: 768px) {
+  .accounts-page {
+    padding: 15px;
   }
   .accounts-page-header h1 {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
+    text-align: center; /* Centrar título en móvil */
+  }
+  .accounts-filter-sidebar {
+    gap: 15px; /* Reducir espacio */
+    flex-direction: column; /* Apilar filtros en pantallas pequeñas */
+  }
+  .accounts-filter-sidebar .filter-group {
+    flex: 1 1 100%; /* Una columna para filtros en pantallas pequeñas */
+  }
+  .accounts-filter-sidebar .add-account-button {
+    max-width: 100%; /* Ocupar todo el ancho en móvil */
+  }
+  /* .accounts-grid ya no existe, ahora es .accounts-list */
+  .accounts-list {
+    gap: 10px; /* Reducir espacio entre elementos de la lista */
   }
 }
