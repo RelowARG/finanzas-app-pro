@@ -1,0 +1,245 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/transactions/AddTransactionModal.css */
+.modal-overlay-atm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 20px;
+}
+
+.modal-content-atm {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 480px; 
+  display: flex;
+  flex-direction: column;
+  color: #333;
+  max-height: 90vh; 
+}
+
+.modal-header-atm {
+  display: flex;
+  /* justify-content: space-between; Quitamos esto para un control más fino */
+  align-items: center; 
+  padding: 0 15px; /* Padding solo horizontal */
+  border-bottom: 1px solid #eee;
+  height: 48px; 
+  box-sizing: border-box;
+  position: relative; /* Necesario para el posicionamiento absoluto de la X */
+}
+
+.modal-header-atm h3 {
+  margin: 0;
+  font-size: 1rem; 
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #555;
+  white-space: nowrap; 
+  /* El título se alinea a la izquierda por defecto */
+  /* No necesita flex-grow si la X es absoluta */
+  /* Damos espacio a la derecha para que no se solape con la X */
+  padding-right: 30px; 
+}
+
+.close-modal-button-atm {
+  background: none !important; 
+  border: none !important; 
+  font-size: 1.8rem; 
+  color: #B0B0B0 !important;  
+  cursor: pointer;
+  line-height: 1;
+  padding: 0; /* Quitar padding para que el icono se pegue más al borde */
+  outline: none !important; 
+  box-shadow: none !important; 
+  position: absolute; /* Posicionamiento absoluto */
+  top: 50%; /* Centrado vertical */
+  right: 15px; /* Pegado a la derecha con un pequeño margen */
+  transform: translateY(-50%); /* Ajuste fino vertical */
+}
+.close-modal-button-atm:hover {
+  color: #777 !important; 
+  background-color: transparent !important; 
+}
+.close-modal-button-atm:focus,
+.close-modal-button-atm:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+
+.type-selector-atm {
+  display: flex;
+  padding: 15px 20px 10px 20px; 
+  border-bottom: 1px solid #eee; 
+}
+.type-selector-atm button {
+  flex-grow: 1;
+  padding: 10px 5px; 
+  border: none; /* Quitar cualquier borde por defecto del botón */
+  background-color: transparent !important; /* *** Forzar fondo transparente *** */
+  color: #777;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  border-radius: 0; 
+  outline: none; /* Quitar outline en foco */
+  box-shadow: none; /* Quitar cualquier sombra de botón */
+}
+.type-selector-atm button.active {
+  color: #00BFA5; 
+  border-bottom-color: #00BFA5;
+  font-weight: 600;
+}
+.type-selector-atm button:hover:not(.active) {
+  color: #333;
+  background-color: #f8f9fa !important; /* *** Un hover muy sutil si se desea, o transparent *** */
+  /* border-bottom-color: #ddd; Opcional: un borde sutil al pasar el mouse */
+}
+/* Evitar que los estilos globales de button:hover interfieran */
+.type-selector-atm button:hover {
+    border-color: transparent; /* Resetear border-color de hover global si es necesario */
+}
+.type-selector-atm button.active:hover {
+    border-bottom-color: #00BFA5; /* Mantener el borde activo en hover */
+}
+
+
+
+.transaction-form-atm {
+  padding: 20px; 
+  overflow-y: auto; 
+  display: flex;
+  flex-direction: column;
+  gap: 12px; 
+}
+
+.form-group-atm {
+  display: flex;
+  flex-direction: column;
+}
+.form-group-atm label {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.form-group-atm input[type="text"],
+.form-group-atm input[type="number"],
+.form-group-atm input[type="date"],
+.form-group-atm input[type="time"],
+.form-group-atm select,
+.form-group-atm textarea {
+  padding: 9px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #444;
+  height: 38px; 
+  box-sizing: border-box;
+  width: 100%;
+}
+.form-group-atm textarea {
+    height: auto; 
+    min-height: 60px;
+}
+.form-group-atm input:focus,
+.form-group-atm select:focus,
+.form-group-atm textarea:focus {
+  border-color: #00BFA5;
+  box-shadow: 0 0 0 1px rgba(0, 191, 165, 0.2);
+  outline: none;
+}
+.form-group-atm select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23B0B0B0' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px;
+  padding-right: 30px;
+}
+
+.form-row-atm {
+  display: flex;
+  gap: 12px;
+}
+.form-row-atm .form-group-atm {
+  flex: 1;
+}
+.amount-group-atm { flex-grow: 2 !important; } 
+.currency-group-atm { flex-basis: 100px !important; flex-grow: 0 !important; }
+
+.installments-section-atm {
+  margin-top: 5px;
+  padding-top: 10px;
+  border-top: 1px dashed #eee;
+}
+.checkbox-group-atm {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.checkbox-group-atm input[type="checkbox"] {
+  width: auto;
+  height: auto; 
+  accent-color: #00BFA5;
+  transform: scale(1.1);
+}
+.checkbox-group-atm .checkbox-label-inline-atm {
+  margin-bottom: 0;
+  font-size: 0.85rem;
+  color: #555;
+  font-weight: normal;
+}
+
+.modal-actions-atm {
+  display: flex;
+  justify-content: space-between; 
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  background-color: #f9f9f9; 
+  border-radius: 0 0 8px 8px; 
+}
+.modal-actions-atm .button {
+  padding: 9px 18px !important;
+  font-size: 0.9rem !important;
+  border-radius: 5px !important;
+  width: auto !important; 
+}
+.button-add-another-atm {
+  background-color: #fff !important;
+  color: #00BFA5 !important;
+  border: 1px solid #00BFA5 !important;
+}
+.button-add-another-atm:hover {
+  background-color: rgba(0, 191, 165, 0.05) !important;
+}
+.button-add-single-atm {
+  background-color: #00BFA5 !important;
+  border-color: #00BFA5 !important;
+}
+.button-add-single-atm:hover {
+  background-color: #00a693 !important;
+}
+
+.error-message.small-error-atm {
+  font-size: 0.8rem;
+  padding: 8px;
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+  border-radius: 4px;
+  text-align: center;
+}

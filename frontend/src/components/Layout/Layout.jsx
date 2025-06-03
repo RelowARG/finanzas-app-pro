@@ -4,15 +4,15 @@ import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import Footer from './Footer';   
 import { useAuth } from '../../contexts/AuthContext';
-import { useModals, MODAL_TYPES } from '../../contexts/ModalContext'; // *** NUEVO IMPORT ***
-import AddAccountModal from '../accounts/AddAccountModal'; // *** NUEVO IMPORT ***
-import PayCreditCardModal from '../accounts/PayCreditCardModal'; // *** NUEVO IMPORT ***
-// Importa otros modales aquí si los globalizas
+import { useModals, MODAL_TYPES } from '../../contexts/ModalContext';
+import AddAccountModal from '../accounts/AddAccountModal'; 
+import PayCreditCardModal from '../accounts/PayCreditCardModal'; 
+import AddTransactionModal from '../transactions/AddTransactionModal'; // *** NUEVO IMPORT ***
 import './Layout.css';
 
 const Layout = ({ children, showChrome = true }) => {
   const { user } = useAuth();
-  const { modalType, modalProps, closeModal } = useModals(); // *** USAR EL CONTEXTO DE MODALES ***
+  const { modalType, modalProps, closeModal } = useModals();
   const [isSidebarHovered, setIsSidebarHovered] = useState(false); 
 
   let appLayoutClasses = "app-layout";
@@ -48,24 +48,29 @@ const Layout = ({ children, showChrome = true }) => {
       
       {showChrome && <Footer />} 
 
-      {/* *** RENDERIZAR MODALES GLOBALES AQUÍ *** */}
       {modalType === MODAL_TYPES.ADD_ACCOUNT && (
         <AddAccountModal
-          isOpen={true} // Siempre es true si modalType coincide
+          isOpen={true}
           onClose={closeModal}
-          onAccountCreated={modalProps.onAccountCreated} // Pasa el callback
+          onAccountCreated={modalProps.onAccountCreated} 
         />
       )}
       {modalType === MODAL_TYPES.PAY_CREDIT_CARD && (
         <PayCreditCardModal
           isOpen={true}
           onClose={closeModal}
-          creditCardAccount={modalProps.creditCardAccount}
-          payingAccounts={modalProps.payingAccounts}
-          onPaymentSuccess={modalProps.onPaymentSuccess}
+          {...modalProps} // Pasa todas las props necesarias
         />
       )}
-      {/* Añadir otros modales aquí */}
+      {/* *** RENDERIZAR MODAL DE TRANSACCIONES *** */}
+      {modalType === MODAL_TYPES.ADD_TRANSACTION && (
+        <AddTransactionModal
+          isOpen={true}
+          onClose={closeModal}
+          onTransactionCreated={modalProps.onTransactionCreated}
+          initialTypeFromButton={modalProps.initialTypeFromButton || 'egreso'}
+        />
+      )}
     </div>
   );
 };

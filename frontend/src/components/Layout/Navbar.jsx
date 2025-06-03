@@ -17,26 +17,22 @@ const Navbar = () => {
 
   const isUserMenuConfigComingSoon = true; 
 
-  const handleLogout = () => {
+  const handleLogout = () => { /* ... (sin cambios) ... */ 
     logout(); 
     navigate('/'); 
   };
-
   const homeLinkPath = user ? "/dashboard" : "/";
-
-  const toggleAddMenu = (event) => {
+  const toggleAddMenu = (event) => { /* ... (sin cambios) ... */ 
     event.stopPropagation();
     setShowAddMenu(prev => !prev);
     setShowUserMenu(false); 
   };
-
-  const toggleUserMenu = (event) => { 
+  const toggleUserMenu = (event) => { /* ... (sin cambios) ... */ 
     event.stopPropagation();
     setShowUserMenu(prev => !prev);
     setShowAddMenu(false); 
   };
-
-  useEffect(() => {
+  useEffect(() => { /* ... (sin cambios) ... */ 
     const handleClickOutside = (event) => {
       if (addMenuRef.current && !addMenuRef.current.contains(event.target)) {
         setShowAddMenu(false);
@@ -51,14 +47,15 @@ const Navbar = () => {
     };
   }, []);
 
-  const handleAccountCreatedFromModal = (newAccount) => {
-    console.log("Nueva cuenta creada desde el modal de Navbar:", newAccount);
+  const handleGenericModalClose = () => {
+    // Podría usarse como callback si el modal de transacción necesita hacer algo en la navbar
+    console.log("Modal de transacción cerrado/creado desde Navbar.");
   };
-
 
   return (
     <nav className="navbar new-style">
       <div className="nav-container">
+        {/* ... (logo y links principales sin cambios) ... */}
         <Link to={homeLinkPath} className="nav-logo">
           FinanzasApp
         </Link>
@@ -100,21 +97,39 @@ const Navbar = () => {
                 </button>
                 {showAddMenu && (
                   <div className="add-menu-dropdown">
-                    <Link to="/transactions/add?type=ingreso" className="add-menu-item" onClick={() => setShowAddMenu(false)}>
-                      Registrar Ingreso
-                    </Link>
-                    <Link to="/transactions/add?type=egreso" className="add-menu-item" onClick={() => setShowAddMenu(false)}>
-                      Registrar Gasto
-                    </Link>
-                    {/* *** CLASE MODIFICADA AQUÍ *** */}
+                    {/* *** BOTONES PARA ABRIR MODAL DE TRANSACCIÓN *** */}
                     <button 
                         onClick={() => {
-                            openModal(MODAL_TYPES.ADD_ACCOUNT, { 
-                                onAccountCreated: handleAccountCreatedFromModal
+                            openModal(MODAL_TYPES.ADD_TRANSACTION, { 
+                                onTransactionCreated: handleGenericModalClose,
+                                initialTypeFromButton: 'ingreso' 
                             });
                             setShowAddMenu(false);
                         }}
-                        className="add-menu-item" // Cambiado de "add-menu-button-action" a "add-menu-item"
+                        className="add-menu-item"
+                    >
+                      Registrar Ingreso
+                    </button>
+                    <button 
+                        onClick={() => {
+                            openModal(MODAL_TYPES.ADD_TRANSACTION, { 
+                                onTransactionCreated: handleGenericModalClose,
+                                initialTypeFromButton: 'egreso' 
+                            });
+                            setShowAddMenu(false);
+                        }}
+                        className="add-menu-item"
+                    >
+                      Registrar Gasto
+                    </button>
+                    <button 
+                        onClick={() => {
+                            openModal(MODAL_TYPES.ADD_ACCOUNT, { 
+                                onAccountCreated: handleGenericModalClose
+                            });
+                            setShowAddMenu(false);
+                        }}
+                        className="add-menu-item"
                     >
                       Nueva Cuenta
                     </button>
@@ -124,7 +139,7 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
-
+              {/* ... (menú de usuario sin cambios) ... */}
               <div className="nav-item nav-item-user-menu" ref={userMenuRef}>
                 <button onClick={toggleUserMenu} className="nav-user-button">
                   <span className="nav-user-avatar">{user.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
@@ -167,6 +182,7 @@ const Navbar = () => {
               </div>
             </>
           ) : (
+             /* ... (botones de login/register sin cambios) ... */
             <>
               <Link to="/" className="button button-secondary nav-button-action">
                 Iniciar Sesión

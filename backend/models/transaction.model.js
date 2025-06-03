@@ -10,7 +10,7 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true 
     },
-    amount: { // Este monto se guardará negativo para egresos/transferencias salientes, positivo para ingresos/transferencias entrantes
+    amount: { 
       type: DataTypes.DECIMAL(15, 2), 
       allowNull: false
     },
@@ -25,21 +25,31 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
       defaultValue: Sequelize.NOW
     },
     type: { 
-      // *** AÑADIDO 'transferencia' AL ENUM ***
       type: DataTypes.ENUM('ingreso', 'egreso', 'transferencia'),
       allowNull: false
     },
-    // *** NUEVO CAMPO OPCIONAL para identificar la contraparte de una transferencia ***
-    relatedAccountId: { // Para transferencias, ID de la cuenta de destino/origen
+    relatedAccountId: { 
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-            model: 'accounts', // Nombre de la tabla de cuentas
+            model: 'accounts', 
             key: 'id'
         },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL' // O 'RESTRICT' si no quieres que se eliminen transacciones si se borra la cuenta relacionada
+        onDelete: 'SET NULL' 
     },
+    // *** CAMBIO AQUÍ ***
+    categoryId: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // Permitir NULL para transferencias
+      references: {
+        model: 'categories', 
+        key: 'id'
+      },
+      onDelete: 'SET NULL', // Si se borra una categoría, poner categoryId a NULL en la transacción
+      onUpdate: 'CASCADE'
+    },
+    // *** FIN CAMBIO ***
     notes: {
       type: DataTypes.TEXT,
       allowNull: true
@@ -69,7 +79,7 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
         { fields: ['accountId'] },
         { fields: ['categoryId'] },
         { fields: ['date'] },
-        { fields: ['type'] }, // *** AÑADIR ÍNDICE AL NUEVO TIPO SI ES NECESARIO ***
+        { fields: ['type'] },
         { fields: ['relatedAccountId'] },
         { fields: ['isInstallment'] } 
     ],
@@ -89,20 +99,28 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
                 transaction.currentInstallment = null;
                 transaction.totalInstallments = null;
             }
-            // Si es transferencia, la categoría podría ser opcional o una especial
-            if (transaction.type === 'transferencia' && !transaction.categoryId) {
-                // Podrías asignar una categoría por defecto para transferencias aquí
-                // o permitir que sea nula y manejarlo en la lógica de negocio/UI.
-            }
+            // Validación de categoryId se mueve al controlador para ser condicional
+            // if (transaction.type !== 'transferencia' && !transaction.categoryId) {
+            //     throw new Error('La categoría es requerida para ingresos y egresos.');
+            // }
         },
         beforeSave: (transaction, options) => { 
             const numericAmount = Math.abs(parseFloat(transaction.amount) || 0);
 
-            if (transaction.type === 'egreso' || (transaction.type === 'transferencia' && transaction.amount < 0) ) {
+            if (transaction.type === 'egreso') {
                 transaction.amount = -numericAmount; 
-            } else if (transaction.type === 'ingreso' || (transaction.type === 'transferencia' && transaction.amount >= 0) ) {
+            } else if (transaction.type === 'ingreso') {
                 transaction.amount = numericAmount; 
             }
+            // Para transferencias, el signo se maneja en el controlador al crear las dos transacciones
+            // (una negativa para la cuenta origen, una positiva para la cuenta destino).
+            // Este hook beforeSave general podría interferir si no se ajusta.
+            // Si el controlador ya asigna el signo correcto, este hook podría simplificarse o
+            // ser más específico. Por ahora, lo dejamos así, asumiendo que el controlador
+            // pasará el monto con el signo correcto antes de llegar aquí para el caso de 'transferencia'.
+            // O, mejor aún, el controlador es el responsable final del signo para las transferencias.
+            // La transacción 'outgoing' de una transferencia ya se crea con monto negativo en el controller.
+            // La transacción 'incoming' de una transferencia ya se crea con monto positivo en el controller.
         }
     }
   });

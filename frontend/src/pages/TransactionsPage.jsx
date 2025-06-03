@@ -1,11 +1,12 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/TransactionsPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import transactionService from '../services/transactions.service'; // [cite: finanzas-app-pro/frontend/src/services/transactions.service.js]
-import TransactionList from '../components/transactions/TransactionList'; // [cite: finanzas-app-pro/frontend/src/components/transactions/TransactionList.jsx]
-import TransactionFilter from '../components/transactions/TransactionFilter'; // [cite: finanzas-app-pro/frontend/src/components/transactions/TransactionFilter.jsx]
-import { formatCurrency } from '../utils/formatters'; // Importar la función formatCurrency
-import './TransactionsPage.css'; // [cite: finanzas-app-pro/frontend/src/pages/TransactionsPage.css]
+// import { Link } from 'react-router-dom'; // Ya no se necesita Link para el botón de agregar
+import transactionService from '../services/transactions.service'; 
+import TransactionList from '../components/transactions/TransactionList'; 
+import TransactionFilter from '../components/transactions/TransactionFilter'; 
+import { formatCurrency } from '../utils/formatters'; 
+import { useModals, MODAL_TYPES } from '../contexts/ModalContext'; // *** NUEVO IMPORT ***
+import './TransactionsPage.css'; 
 
 const ITEMS_PER_PAGE = 15; 
 
@@ -18,7 +19,6 @@ const TransactionsPage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalTransactions, setTotalTransactions] = useState(0);
 
-  // *** NUEVOS ESTADOS PARA LOS TOTALES FILTRADOS ***
   const [totalIncomeFiltered, setTotalIncomeFiltered] = useState(0);
   const [totalExpensesFiltered, setTotalExpensesFiltered] = useState(0);
   const [totalNetFiltered, setTotalNetFiltered] = useState(0);
@@ -34,6 +34,8 @@ const TransactionsPage = () => {
 
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'DESC' });
 
+  const { openModal } = useModals(); // *** USAR EL CONTEXTO DE MODALES ***
+
   const fetchTransactions = useCallback(async (filters, page = 1, currentSortConfig) => {
     setLoading(true);
     setError('');
@@ -45,15 +47,13 @@ const TransactionsPage = () => {
         sortBy: currentSortConfig.key,      
         sortOrder: currentSortConfig.direction 
       };
-      const data = await transactionService.getAllTransactions(paramsToFetch); // [cite: finanzas-app-pro/frontend/src/services/transactions.service.js]
+      const data = await transactionService.getAllTransactions(paramsToFetch);
       
-      // Asegurarse de que los valores sean numéricos y tengan defaults
       setTransactions(data.transactions || []);
-      setTotalPages(Number(data.totalPages) || 0); // Convertir a número y default a 0
-      setCurrentPage(Number(data.currentPage) || 1); // Convertir a número y default a 1
-      setTotalTransactions(Number(data.totalTransactions) || 0); // Convertir a número y default a 0
+      setTotalPages(Number(data.totalPages) || 0); 
+      setCurrentPage(Number(data.currentPage) || 1); 
+      setTotalTransactions(Number(data.totalTransactions) || 0); 
 
-      // *** ASIGNAR LOS NUEVOS TOTALES FILTRADOS ***
       setTotalIncomeFiltered(Number(data.totalIncomeFiltered) || 0);
       setTotalExpensesFiltered(Number(data.totalExpensesFiltered) || 0);
       setTotalNetFiltered(Number(data.totalNetFiltered) || 0);
@@ -62,9 +62,7 @@ const TransactionsPage = () => {
       setError(err.response?.data?.message || err.message || 'Error al cargar los movimientos.');
       setTransactions([]);
       setTotalPages(0);
-      setCurrentPage(1); // Resetear a 1 en caso de error
-      setTotalTransactions(0);
-      // *** RESETEAR LOS TOTALES FILTRADOS EN CASO DE ERROR ***
+      setCurrentPage(1); 
       setTotalIncomeFiltered(0);
       setTotalExpensesFiltered(0);
       setTotalNetFiltered(0);
@@ -94,16 +92,15 @@ const TransactionsPage = () => {
   };
   
   const handleDeleteTransaction = async (transactionId) => {
+    // ... (lógica de borrado sin cambios)
     if (window.confirm('¿Estás seguro de que quieres eliminar este movimiento? Esta acción no se puede deshacer y afectará el saldo de la cuenta asociada.')) {
       try {
         setLoading(true); 
         setError('');
-        await transactionService.deleteTransaction(transactionId); // [cite: finanzas-app-pro/frontend/src/services/transactions.service.js]
+        await transactionService.deleteTransaction(transactionId);
         if (transactions.length === 1 && currentPage > 1) {
           setCurrentPage(currentPage - 1); 
         } else {
-          // Volver a llamar a fetchTransactions explícitamente en lugar de depender solo del cambio de estado
-          // para asegurar que se recargue con los parámetros correctos.
           fetchTransactions(activeFilters, currentPage, sortConfig); 
         }
       } catch (err) {
@@ -113,23 +110,18 @@ const TransactionsPage = () => {
     }
   };
   
-  // *** ESTOS TOTALES YA NO SON NECESARIOS SI VIENEN DEL BACKEND ***
-  // const totals = React.useMemo(() => {
-  //   return transactions.reduce((acc, tx) => {
-  //     const amount = parseFloat(tx.amount) || 0;
-  //     if (tx.type === 'ingreso') acc.ingresos += amount;
-  //     if (tx.type === 'egreso') acc.egresos += amount; 
-  //     return acc;
-  //   }, { ingresos: 0, egresos: 0 });
-  // }, [transactions]);
-
+  // *** FUNCIÓN PARA MANEJAR LA CREACIÓN EXITOSA DESDE EL MODAL ***
+  const handleTransactionCreatedFromModal = () => {
+    fetchTransactions(activeFilters, 1, sortConfig); // Volver a la página 1 y recargar
+  };
 
   const getPaginationNumbers = () => {
+    // ... (lógica de paginación sin cambios)
     const pageNumbers = [];
     const maxPagesToShow = 5; 
     const halfPagesToShow = Math.floor(maxPagesToShow / 2);
 
-    if (totalPages <= 0) return []; // Si no hay páginas, no mostrar nada
+    if (totalPages <= 0) return []; 
 
     if (totalPages <= maxPagesToShow) {
       for (let i = 1; i <= totalPages; i++) {
@@ -163,16 +155,22 @@ const TransactionsPage = () => {
     return pageNumbers;
   };
   
-  // Generar los números de página una sola vez por render
   const paginationItems = getPaginationNumbers();
 
   return (
     <div className="page-container transactions-page">
       <div className="transactions-page-header">
         <h1>Movimientos</h1>
-        <Link to="/transactions/add" className="button button-primary">
+        {/* *** BOTÓN MODIFICADO PARA ABRIR EL MODAL *** */}
+        <button 
+          onClick={() => openModal(MODAL_TYPES.ADD_TRANSACTION, { 
+            onTransactionCreated: handleTransactionCreatedFromModal,
+            initialTypeFromButton: 'egreso' // O el tipo por defecto que prefieras
+          })} 
+          className="button button-primary"
+        >
           <span className="icon-add">➕</span> Nuevo Movimiento
-        </Link>
+        </button>
       </div>
 
       {error && <p className="error-message" style={{marginBottom: '15px'}}>{error}</p>}
@@ -182,7 +180,7 @@ const TransactionsPage = () => {
         initialFilters={activeFilters} 
       />
 
-      {!loading && !error && (totalIncomeFiltered > 0 || totalExpensesFiltered > 0) && ( // Mostrar si hay algún total
+      {!loading && !error && (totalIncomeFiltered > 0 || totalExpensesFiltered > 0) && (
         <div className="transactions-summary">
           <span>
             Ingresos (filtrado): 
@@ -212,10 +210,10 @@ const TransactionsPage = () => {
         />
       )}
       
-      {/* Renderizado de Paginación */}
       {!loading && totalPages > 0 && (
         <>
           <div className="pagination-controls">
+            {/* ... (botones de paginación sin cambios) ... */}
             <button 
               onClick={() => handlePageChange(currentPage - 1)} 
               disabled={currentPage === 1}
@@ -254,6 +252,7 @@ const TransactionsPage = () => {
           </p>
         </>
       )}
+      {/* El AddTransactionModal se renderiza globalmente desde Layout.jsx */}
     </div>
   );
 };
