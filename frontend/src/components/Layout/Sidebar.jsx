@@ -16,8 +16,8 @@ const GoalsIcon = () => <span role="img" aria-label="Metas">🏆</span>; // *** 
 const CategoriesIcon = () => <span role="img" aria-label="Categorías">🏷️</span>;
 const RecurringIcon = () => <span role="img" aria-label="Recurrentes">🔁</span>;
 const ExchangeRateIcon = () => <span role="img" aria-label="Tasas de Cambio">💲</span>;
-const AdminIcon = () => <span role="img" aria-label="Administración">👑</span>;
-const PermissionsIcon = () => <span role="img" aria-label="Permisos">🔑</span>;
+const AdminIcon = () => <span role="img" aria-label="Administración">👑</span>; // Mantener por si se usa en otro lado
+const PermissionsIcon = () => <span role="img" aria-label="Permisos">🔑</span>; // Mantener por si se usa en otro lado
 
 
 const Sidebar = () => {
@@ -28,7 +28,7 @@ const Sidebar = () => {
   }
 
   return (
-    <aside className="sidebar new-look">  {/* */}
+    <aside className="sidebar new-look">
       <nav className="sidebar-nav">
         <ul>
           <li>
@@ -73,7 +73,6 @@ const Sidebar = () => {
               <span>Deudas y Préstamos</span>
             </NavLink>
           </li>
-          {/* *** NUEVO ENLACE PARA METAS *** */}
           <li>
             <NavLink to="/goals" className={({ isActive }) => "sidebar-link" + (isActive ? " active" : "")}>
               <GoalsIcon />
@@ -103,35 +102,8 @@ const Sidebar = () => {
             </NavLink>
           </li>
 
-          {user && user.role === 'admin' && (hasPermission('admin_view_all_users') || hasPermission('admin_manage_permissions_config')) && (
-            <>
-              <li className="sidebar-separator"></li>
-              <li className="sidebar-nav-header"><span>ADMINISTRACIÓN</span></li>
-              
-              {hasPermission('admin_view_all_users') && (
-                <li>
-                  <NavLink 
-                    to="/admin/users" 
-                    className={({ isActive }) => "sidebar-link sidebar-link-admin" + (isActive ? " active" : "")}
-                  >
-                    <AdminIcon />
-                    <span>Admin Usuarios</span>
-                  </NavLink>
-                </li>
-              )}
-              {hasPermission('admin_manage_permissions_config') && (
-                 <li>
-                  <NavLink 
-                    to="/admin/config/permissions" 
-                    className={({ isActive }) => "sidebar-link sidebar-link-admin" + (isActive ? " active" : "")}
-                  >
-                    <PermissionsIcon />
-                    <span>Admin Permisos</span>
-                  </NavLink>
-                </li>
-              )}
-            </>
-          )}
+          {/* *** SECCIÓN DE ADMINISTRACIÓN ELIMINADA DEL SIDEBAR *** */}
+          {/* Ya no se renderiza aquí */}
         </ul>
       </nav>
     </aside>

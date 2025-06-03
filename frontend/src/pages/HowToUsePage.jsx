@@ -13,7 +13,7 @@ const FeatureSection = ({ title, description, imageUrl, imageAlt, reverseOrder =
         {children} {/* Para listas u otros detalles */}
       </div>
       <div className="htu-feature-image">
-        <img src={imageUrl || "https://placehold.co/400x300.png?text=Pantalla+de+App"} alt={imageAlt || title} />
+        <img src={imageUrl || "https://placehold.co/400x300/e0e6ed/3498db?text=Pantalla+de+App"} alt={imageAlt || title} />
       </div>
     </article>
   );
@@ -52,75 +52,104 @@ const HowToUsePage = () => {
 
           <h3 className="htu-subsection-title">1.1. Registro e Inicio de Sesión</h3>
           <p>
-            Si es tu primera vez, haz clic en "Regístrate" en la página de inicio. Completa tu nombre, email y una contraseña segura. Si ya tienes una cuenta, ingresa tus credenciales en la página de inicio o en <Link to="/login">/login</Link>. Recuerda que la aplicación tiene un temporizador de inactividad por seguridad.
+            Si es tu primera vez, haz clic en "Regístrate" en la página de inicio. Completa tu nombre, email y una contraseña segura. Si ya tienes
+            una cuenta, ingresa tus credenciales en la página de inicio o en <Link to="/login">/login</Link>. Recuerda que la aplicación tiene un temporizador de inactividad
+            por seguridad.
           </p>
 
           <h3 className="htu-subsection-title">1.2. Tu Primer Día con FinanzasApp Pro</h3>
           <p>
-            Una vez que inicies sesión por primera vez, el dashboard podría aparecer vacío o con datos de ejemplo. ¡No te preocupes, es el momento de darle vida a tus finanzas! Te recomendamos seguir estos sencillos pasos:
+            Una vez que inicies sesión por primera vez, el dashboard podría aparecer vacío o con datos de ejemplo. ¡No te preocupes, es el
+            momento de darle vida a tus finanzas! Te recomendamos seguir estos sencillos pasos:
           </p>
 
-          <div className="htu-first-steps-grid">
-            <div className="htu-step-card">
-              <div className="htu-step-number">1</div>
-              <h4>Crea tu Primera Cuenta (Tu Punto de Partida)</h4>
-              <p>
-                Antes de registrar cualquier movimiento, necesitas un lugar donde ese dinero reside. Tus cuentas son la base de todo tu seguimiento financiero.
-              </p>
-              <p>
-                **Cómo hacerlo:** Dirígete a la sección **"Cuentas"**. Haz clic en **"Agregar Cuenta"** y crea tu primera cuenta (efectivo, bancaria, tarjeta de crédito, etc.).
-              </p>
-              <p>
-                **Beneficio:** Tendrás una visión clara de dónde está tu dinero.
-              </p>
-              <img src="https://placehold.co/400x250/e0e6ed/3498db?text=Página+Cuentas" alt="Página de Cuentas con botón Agregar Cuenta" className="htu-step-image" />
-            </div>
+          {/* Paso 1 */}
+          <FeatureSection
+            title="1. Crea tu Primera Cuenta (Tu Punto de Partida)"
+            description="Antes de registrar cualquier movimiento, necesitas un lugar donde ese dinero reside. Tus cuentas son la base de todo tu seguimiento financiero."
+            imageUrl="https://placehold.co/400x250/e0e6ed/3498db?text=Página+Cuentas"
+            imageAlt="Página de Cuentas con botón Agregar Cuenta"
+          >
+            <p>
+              <strong>Cómo hacerlo:</strong> Dirígete a la sección <strong>"Cuentas"</strong>. Haz clic en
+              <strong>"Agregar Cuenta"</strong> y crea tu
+              primera cuenta (efectivo, bancaria,
+              tarjeta de crédito, etc.).
+            </p>
+            <p>
+              <strong>Beneficio:</strong> Tendrás una visión
+              clara de dónde está tu dinero.
+            </p>
+          </FeatureSection>
 
-            <div className="htu-step-card">
-              <div className="htu-step-number">2</div>
-              <h4>Registra tus Primeros Movimientos (Dale Vida a tus Finanzas)</h4>
-              <p>
-                Cada ingreso y cada gasto cuenta. Registrar tus transacciones te permite ver exactamente a dónde va tu dinero y de dónde viene.
-              </p>
-              <p>
-                **Cómo hacerlo:** Una vez que tengas al menos una cuenta, ve a la sección **"Movimientos"** o utiliza el botón **"+ Registros"**. Empieza a añadir tus ingresos (ej. tu sueldo) y tus gastos (ej. la compra del supermercado).
-              </p>
-              <p>
-                **Beneficio:** Empezarás a entender tus hábitos de gasto y a identificar patrones.
-              </p>
-              <img src="https://placehold.co/400x250/e0e6ed/3498db?text=Formulario+Movimiento" alt="Formulario para añadir una nueva transacción" className="htu-step-image" />
-            </div>
+          {/* Paso 2 */}
+          <FeatureSection
+            title="2. Registra tus Primeros Movimientos (Dale Vida a tus Finanzas)"
+            description="Cada ingreso y cada gasto cuenta. Registrar tus transacciones te permite ver exactamente a dónde va tu dinero y de dónde viene."
+            imageUrl="https://placehold.co/400x250/e0e6ed/3498db?text=Formulario+Movimiento"
+            imageAlt="Formulario para añadir una nueva transacción"
+            reverseOrder={true}
+          >
+            <p>
+              <strong>Cómo hacerlo:</strong> Una vez que
+              tengas al menos una cuenta, ve a la
+              sección <strong>"Movimientos"</strong> o utiliza el
+              botón <strong>"+ Registros"</strong>. Empieza a
+              añadir tus ingresos (ej. tu sueldo) y
+              tus gastos (ej. la compra del
+              supermercado).
+            </p>
+            <p>
+              <strong>Beneficio:</strong> Empezarás a
+              entender tus hábitos de gasto y a
+              identificar patrones.
+            </p>
+          </FeatureSection>
 
-            <div className="htu-step-card">
-              <div className="htu-step-number">3</div>
-              <h4>Visualiza tu Resumen en el Dashboard (La Imagen Completa)</h4>
-              <p>
-                El Dashboard es el corazón de tu control financiero. Con tus cuentas y movimientos registrados, verás cómo tus finanzas cobran vida.
-              </p>
-              <p>
-                **Cómo hacerlo:** Vuelve a la sección **"Dashboard"**. Observa cómo los widgets como "Finanzas del Mes Actual" y "Últimos Registros" empiezan a mostrar información relevante basada en los datos que acabas de ingresar.
-              </p>
-              <p>
-                **Beneficio:** Obtendrás un resumen visual inmediato de tu estado financiero.
-              </p>
-              <img src="https://placehold.co/400x250/e0e6ed/3498db?text=Dashboard+Completo" alt="Dashboard con widgets poblados" className="htu-step-image" />
-            </div>
+          {/* Paso 3 */}
+          <FeatureSection
+            title="3. Visualiza tu Resumen en el Dashboard (La Imagen Completa)"
+            description="El Dashboard es el corazón de tu control financiero. Con tus cuentas y movimientos registrados, verás cómo tus finanzas cobran vida."
+            imageUrl="https://placehold.co/400x250/e0e6ed/3498db?text=Dashboard+Completo"
+            imageAlt="Dashboard con widgets poblados"
+          >
+            <p>
+              <strong>Cómo hacerlo:</strong> Vuelve a la
+              sección <strong>"Dashboard"</strong>. Observa
+              cómo los widgets como "Finanzas
+              del Mes Actual" y "Últimos
+              Registros" empiezan a mostrar
+              información relevante basada en los
+              datos que acabas de ingresar.
+            </p>
+            <p>
+              <strong>Beneficio:</strong> Obtendrás un
+              resumen visual inmediato de tu
+              estado financiero.
+            </p>
+          </FeatureSection>
 
-            <div className="htu-step-card">
-              <div className="htu-step-number">4</div>
-              <h4>Personaliza y Profundiza (Toma el Control Total)</h4>
-              <p>
-                FinanzasApp Pro es flexible. Puedes adaptarla a tus necesidades específicas para un control aún mayor.
-              </p>
-              <p>
-                **Cómo hacerlo:** Define categorías, crea presupuestos, y registra inversiones o deudas en sus respectivas secciones.
-              </p>
-              <p>
-                **Beneficio:** La aplicación se adaptará a ti, ofreciéndote insights más precisos y un control financiero sin precedentes.
-              </p>
-              <img src="https://placehold.co/400x250/e0e6ed/3498db?text=Personalización+Widgets" alt="Modal de selección de widgets o página de categorías" className="htu-step-image" />
-            </div>
-          </div>
+          {/* Paso 4 */}
+          <FeatureSection
+            title="4. Personaliza y Profundiza (Toma el Control Total)"
+            description="FinanzasApp Pro es flexible. Puedes adaptarla a tus necesidades específicas para un control aún mayor."
+            imageUrl="https://placehold.co/400x250/e0e6ed/3498db?text=Personalización+Widgets"
+            imageAlt="Modal de selección de widgets o página de categorías"
+            reverseOrder={true}
+          >
+            <p>
+              <strong>Cómo hacerlo:</strong> Define
+              categorías, crea presupuestos, y
+              registra inversiones o deudas en sus
+              respectivas secciones.
+            </p>
+            <p>
+              <strong>Beneficio:</strong> La aplicación se
+              adaptará a ti, ofreciéndote insights
+              más precisos y un control financiero
+              sin precedentes.
+            </p>
+          </FeatureSection>
         </section>
 
         <section className="htu-section">
@@ -129,23 +158,22 @@ const HowToUsePage = () => {
             Una vez que inicies sesión, verás la interfaz principal, que consta de:
           </p>
           <ul>
-            <li>**Barra de Navegación Superior (Navbar):** Contiene el logo de la aplicación, enlaces rápidos a secciones principales (Dashboard, Cuentas, Informes, Configurar) y botones de acción rápida (+ Registros) y Cerrar Sesión.</li>
-            <li>**Barra Lateral (Sidebar):** Ubicada a la izquierda, proporciona acceso rápido a todas las secciones de la aplicación, incluyendo las de configuración y administración (si eres administrador). Se expande al pasar el ratón sobre ella.</li>
-            <li>**Contenido Principal:** El área central donde se muestra la información de cada sección.</li>
-            <li>**Pie de Página (Footer):** Contiene información de derechos de autor y enlaces a los Términos de Servicio y Política de Privacidad.</li>
+            <li><strong>Barra de Navegación Superior (Navbar):</strong> Contiene el logo de la aplicación, enlaces rápidos a secciones principales (Dashboard, Cuentas, Informes, Categorías) y botones de acción rápida (+ Registros) y Cerrar Sesión.</li>
+            <li><strong>Barra Lateral (Sidebar):</strong> Ubicada a la izquierda, proporciona acceso rápido a todas las secciones de la aplicación, incluyendo las de configuración y administración (si eres administrador). Se expande al pasar el ratón sobre ella.</li>
+            <li><strong>Contenido Principal:</strong> El área central donde se muestra la información de cada sección.</li>
+            <li><strong>Pie de Página (Footer):</strong> Contiene información de derechos de autor y enlaces a los Términos de Servicio y Política de Privacidad.</li>
           </ul>
         </section>
 
         <section className="htu-section">
           <h2>2. Funcionalidades Principales (Para Usuarios)</h2>
-          {/* Aquí el resto de las secciones, siguiendo el formato FeatureSection o h3/p */}
           <FeatureSection
             title="2.1. Dashboard"
             description="El Dashboard es tu centro de control financiero. Aquí verás un resumen visual de tu estado actual a través de widgets personalizables como Finanzas del Mes Actual, Últimos Registros, Resumen de Inversiones, y más."
             imageUrl="https://placehold.co/400x300/e0e6ed/3498db?text=Dashboard+Widgets"
             imageAlt="Dashboard con varios widgets"
           >
-            <p>Puedes **personalizar los widgets** haciendo clic en el icono `⊕` o arrastrándolos y soltándolos para reordenarlos.</p>
+            <p>Puedes <strong>personalizar los widgets</strong> haciendo clic en el icono `⊕` o arrastrándolos y soltándolos para reordenarlos.</p>
           </FeatureSection>
 
           <FeatureSection
@@ -156,9 +184,9 @@ const HowToUsePage = () => {
             reverseOrder={true}
           >
             <ul>
-              <li>**Ver Cuentas:** Listado con saldo, tipo, moneda.</li>
-              <li>**Agregar/Editar/Eliminar:** Control total sobre tus cuentas.</li>
-              <li>**Pagar Resumen de Tarjeta:** Funcionalidad específica para tarjetas de crédito.</li>
+              <li><strong>Ver Cuentas:</strong> Listado con saldo, tipo, moneda.</li>
+              <li><strong>Agregar/Editar/Eliminar:</strong> Control total sobre tus cuentas.</li>
+              <li><strong>Pagar Resumen de Tarjeta:</strong> Funcionalidad específica para tarjetas de crédito.</li>
             </ul>
           </FeatureSection>
 
@@ -169,9 +197,9 @@ const HowToUsePage = () => {
             imageAlt="Tabla de movimientos"
           >
             <ul>
-              <li>**Totales Filtrados:** Resumen de ingresos, egresos y neto según tus filtros.</li>
-              <li>**Filtrar y Ordenar:** Busca por descripción, tipo, cuenta, categoría, fecha, y ordena las columnas.</li>
-              <li>**Compras en Cuotas:** Registra gastos a plazos y gestiona sus cuotas.</li>
+              <li><strong>Totales Filtrados:</strong> Resumen de ingresos, egresos y neto según tus filtros.</li>
+              <li><strong>Filtrar y Ordenar:</strong> Busca por descripción, tipo, cuenta, categoría, fecha, y ordena las columnas.</li>
+              <li><strong>Compras en Cuotas:</strong> Registra gastos a plazos y gestiona sus cuotas.</li>
             </ul>
           </FeatureSection>
 
@@ -183,9 +211,9 @@ const HowToUsePage = () => {
             reverseOrder={true}
           >
             <ul>
-              <li>**Nuevo Presupuesto:** Define monto, moneda y período (mensual, anual, personalizado).</li>
-              <li>**Seguimiento Visual:** Barras de progreso para ver tu gasto actual vs. lo presupuestado.</li>
-              <li>**Ver Gastos:** Accede directamente a las transacciones de un presupuesto.</li>
+              <li><strong>Nuevo Presupuesto:</strong> Define monto, moneda y período (mensual, anual, personalizado).</li>
+              <li><strong>Seguimiento Visual:</strong> Barras de progreso para ver tu gasto actual vs. lo presupuestado.</li>
+              <li><strong>Ver Gastos:</strong> Accede directamente a las transacciones de un presupuesto.</li>
             </ul>
           </FeatureSection>
 
@@ -196,9 +224,9 @@ const HowToUsePage = () => {
             imageAlt="Gráficos de informes"
           >
             <ul>
-              <li>**Gastos por Categoría:** Gráfico de torta para ver la distribución de tus egresos.</li>
-              <li>**Ingresos vs. Egresos:** Gráfico de barras/líneas para comparar flujos de dinero en el tiempo.</li>
-              <li>**Filtros Avanzados:** Personaliza por rango de fechas y moneda de visualización.</li>
+              <li><strong>Gastos por Categoría:</strong> Gráfico de torta para ver la distribución de tus egresos.</li>
+              <li><strong>Ingresos vs. Egresos:</strong> Gráfico de barras/líneas para comparar flujos de dinero en el tiempo.</li>
+              <li><strong>Filtros Avanzados:</strong> Personaliza por rango de fechas y moneda de visualización.</li>
             </ul>
           </FeatureSection>
 
@@ -210,9 +238,9 @@ const HowToUsePage = () => {
             reverseOrder={true}
           >
             <ul>
-              <li>**Valor Actual y Rendimiento:** Visualiza ganancias/pérdidas y el porcentaje de rendimiento.</li>
-              <li>**Búsqueda de Símbolos:** Encuentra tickers para acciones y criptomonedas.</li>
-              <li>**Actualización de Cotizaciones:** Refresca los valores de tus activos de mercado.</li>
+              <li><strong>Valor Actual y Rendimiento:</strong> Visualiza ganancias/pérdidas y el porcentaje de rendimiento.</li>
+              <li><strong>Búsqueda de Símbolos:</strong> Encuentra tickers para acciones y criptomonedas.</li>
+              <li><strong>Actualización de Cotizaciones:</strong> Refresca los valores de tus activos de mercado.</li>
             </ul>
           </FeatureSection>
 
@@ -223,9 +251,9 @@ const HowToUsePage = () => {
             imageAlt="Listado de deudas y préstamos"
           >
             <ul>
-              <li>**Tipos de Registro:** Define si es una deuda (tú debes) o un préstamo (te deben).</li>
-              <li>**Pagos en Cuotas:** Soporte para préstamos de tarjeta a terceros o préstamos directos con devolución en cuotas.</li>
-              <li>**Registrar Pagos/Cobros:** Actualiza el estado de tus obligaciones con un solo clic.</li>
+              <li><strong>Tipos de Registro:</strong> Define si es una deuda (tú debes) o un préstamo (te deben).</li>
+              <li><strong>Pagos en Cuotas:</strong> Soporte para préstamos de tarjeta a terceros o préstamos directos con devolución en cuotas.</li>
+              <li><strong>Registrar Pagos/Cobros:</strong> Actualiza el estado de tus obligaciones con un solo clic.</li>
             </ul>
           </FeatureSection>
 
@@ -237,8 +265,8 @@ const HowToUsePage = () => {
             reverseOrder={true}
           >
             <ul>
-              <li>**Monto Objetivo y Actual:** Visualiza cuánto te falta para alcanzar cada meta.</li>
-              <li>**Prioridad y Estado:** Organiza tus metas por importancia y sigue su estado (activa, pausada, completada).</li>
+              <li><strong>Monto Objetivo y Actual:</strong> Visualiza cuánto te falta para alcanzar cada meta.</li>
+              <li><strong>Prioridad y Estado:</strong> Organiza tus metas por importancia y sigue su estado (activa, pausada, completada).</li>
             </ul>
           </FeatureSection>
 
@@ -249,9 +277,9 @@ const HowToUsePage = () => {
             imageAlt="Listado de movimientos recurrentes"
           >
             <ul>
-              <li>**Frecuencias Flexibles:** Configura transacciones diarias, semanales, mensuales, anuales, etc.</li>
-              <li>**Registro Manual:** Opción para registrar un movimiento recurrente de forma inmediata, incluso si no es su fecha de ejecución.</li>
-              <li>**Activar/Desactivar:** Controla fácilmente qué movimientos recurrentes están activos.</li>
+              <li><strong>Frecuencias Flexibles:</strong> Configura transacciones diarias, semanales, mensuales, anuales, etc.</li>
+              <li><strong>Registro Manual:</strong> Opción para registrar un movimiento recurrente de forma inmediata, incluso si no es su fecha de ejecución.</li>
+              <li><strong>Activar/Desactivar:</strong> Controla fácilmente qué movimientos recurrentes están activos.</li>
             </ul>
           </FeatureSection>
 
@@ -263,24 +291,26 @@ const HowToUsePage = () => {
             reverseOrder={true}
           >
             <ul>
-              <li>**Registro Mensual:** Define la tasa de USD a ARS para cada mes.</li>
-              <li>**Historial:** Consulta las tasas registradas previamente.</li>
+              <li><strong>Registro Mensual:</strong> Define la tasa de USD a ARS para cada mes.</li>
+              <li><strong>Historial:</strong> Consulta las tasas registradas previamente.</li>
             </ul>
           </FeatureSection>
         </section>
+
         <section className="htu-section htu-tips-section">
-          <h2>4. Consejos y Mejores Prácticas</h2>
+          <h2>3. Consejos y Mejores Prácticas</h2>
           <p>Para aprovechar al máximo FinanzasApp Pro, considera estos consejos:</p>
           <ul>
-            <li>**Registro Consistente:** La clave para unas finanzas claras es registrar todos tus movimientos de manera consistente.</li>
-            <li>**Categorización:** Utiliza las categorías de forma efectiva para entender a dónde va tu dinero. Crea categorías personalizadas si las necesitas.</li>
-            <li>**Presupuestos Realistas:** Establece presupuestos que sean desafiantes pero alcanzables. Revisa tu progreso regularmente.</li>
-            <li>**Actualiza Tasas de Cambio:** Si manejas múltiples monedas, asegúrate de actualizar las tasas de cambio mensualmente para que tus reportes sean precisos.</li>
-            <li>**Explora el Dashboard:** Personaliza tu dashboard para que muestre la información más relevante para ti de un vistazo.</li>
-            <li>**Reportes:** Utiliza los reportes para identificar tendencias, áreas de mejora y evaluar tu salud financiera general.</li>
-            <li>**Fondo de Emergencia:** Prioriza construir un fondo de emergencia que cubra varios meses de gastos.</li>
+            <li><strong>Registro Consistente:</strong> La clave para unas finanzas claras es registrar todos tus movimientos de manera consistente.</li>
+            <li><strong>Categorización:</strong> Utiliza las categorías de forma efectiva para entender a dónde va tu dinero. Crea categorías personalizadas si las necesitas.</li>
+            <li><strong>Presupuestos Realistas:</strong> Establece presupuestos que sean desafiantes pero alcanzables. Revisa tu progreso regularmente.</li>
+            <li><strong>Actualiza Tasas de Cambio:</strong> Si manejas múltiples monedas, asegúrate de actualizar las tasas de cambio mensualmente para que tus reportes sean precisos.</li>
+            <li><strong>Explora el Dashboard:</strong> Personaliza tu dashboard para que muestre la información más relevante para ti de un vistazo.</li>
+            <li><strong>Reportes:</strong> Utiliza los reportes para identificar tendencias, áreas de mejora y evaluar tu salud financiera general.</li>
+            <li><strong>Fondo de Emergencia:</strong> Prioriza construir un fondo de emergencia que cubra varios meses de gastos.</li>
           </ul>
         </section>
+
         <section className="htu-cta-final">
           <h2>¿Listo para tomar el control de tus finanzas?</h2>
           <Link to="/register" className="button button-primary button-xlarge">

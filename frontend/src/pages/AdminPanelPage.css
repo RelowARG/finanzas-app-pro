@@ -1,0 +1,121 @@
+/* Ruta: frontend/src/pages/AdminPanelPage.css */
+
+.admin-panel-page {
+  /* Estilos generales para la página contenedora del panel de administración */
+  background-color: var(--background-color);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 20px;
+}
+
+.admin-page-header-title {
+  margin: 0 0 25px 0;
+  font-size: 2rem;
+  color: var(--dark-color);
+  text-align: center;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--primary-color); /* Línea divisoria */
+}
+
+.admin-tabs-navigation {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0; /* Línea base para las pestañas */
+}
+
+.admin-tabs-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center; /* Centrar las pestañas */
+  gap: 15px; /* Espacio entre pestañas */
+}
+
+.admin-tab-item {
+  flex-shrink: 0; /* Evitar que las pestañas se encojan */
+}
+
+.admin-tab-link {
+  display: block;
+  padding: 10px 15px;
+  text-decoration: none;
+  color: #6c757d; /* Color de texto para pestañas inactivas */
+  font-weight: 500;
+  font-size: 1rem;
+  border-bottom: 3px solid transparent; /* Borde inferior para el indicador de activa */
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap; /* Evitar que el texto de la pestaña se rompa */
+}
+
+.admin-tab-link:hover {
+  color: var(--primary-color);
+  background-color: #f8f9fa; /* Fondo sutil al pasar el mouse */
+  border-color: rgba(var(--primary-rgb), 0.3); /* Borde más claro al pasar el mouse */
+}
+
+.admin-tab-link.active {
+  color: var(--primary-color);
+  font-weight: 600;
+  border-color: var(--primary-color); /* Borde sólido para la pestaña activa */
+  background-color: #ffffff; /* Fondo blanco para la pestaña activa */
+  /* Ajustar si quieres que la pestaña activa tenga un fondo diferente */
+}
+
+.admin-content-area {
+  padding: 20px 0; /* Espacio entre las pestañas y el contenido real */
+}
+
+/* Ocultar los encabezados individuales de las páginas de usuarios/permisos
+   cuando se renderizan dentro de AdminPanelPage, ya que AdminPanelPage
+   ya tiene un título principal. */
+.admin-panel-page .admin-users-page .admin-page-header,
+.admin-panel-page .admin-permissions-page .admin-page-header {
+    display: none;
+}
+
+/* Asegurar que el contenido de las páginas hijas no tenga padding/margin duplicado */
+.admin-panel-page .admin-users-page,
+.admin-panel-page .admin-permissions-page {
+    padding: 0; /* Eliminar padding del page-container si se renderizan directamente */
+    box-shadow: none; /* Eliminar sombra duplicada */
+    border: none; /* Eliminar borde duplicado */
+    background-color: transparent; /* Fondo transparente */
+    margin: 0; /* Eliminar margen */
+}
+
+/* Mensajes de información */
+.info-message {
+    background-color: #e0f7fa; /* Azul claro */
+    color: #006064; /* Azul oscuro */
+    padding: 15px;
+    border-radius: var(--border-radius);
+    border: 1px solid #b2ebf2;
+}
+
+/* Media Queries para responsividad */
+@media (max-width: 768px) {
+  .admin-tabs-list {
+    flex-direction: column; /* Apilar pestañas en pantallas pequeñas */
+    align-items: stretch; /* Estirar para ocupar el ancho */
+    gap: 5px; /* Menos espacio entre pestañas apiladas */
+  }
+  .admin-tab-link {
+    text-align: center;
+    padding: 12px 10px; /* Más padding vertical */
+    border-bottom: none; /* Eliminar borde inferior en elementos apilados */
+    border-radius: var(--border-radius); /* Bordes redondeados para cada elemento */
+  }
+  .admin-tab-link.active {
+    border-bottom: none; /* También para el activo */
+    background-color: var(--primary-color); /* Fondo sólido para activo */
+    color: white;
+  }
+  .admin-tab-link:hover {
+    border-color: transparent; /* Eliminar borde de hover si es apilado */
+    background-color: rgba(var(--primary-rgb), 0.15);
+  }
+  .admin-tab-link.active:hover {
+    background-color: var(--primary-color-dark, #0056b3); /* Hover para activo */
+  }
+}

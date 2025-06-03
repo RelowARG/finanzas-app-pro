@@ -1,4 +1,4 @@
-// Ruta: finanzas-app-pro/frontend/src/components/reports/IncomeVsExpensesChart.jsx
+// Ruta: frontend/src/components/reports/IncomeVsExpensesChart.jsx
 import React from 'react';
 import { Bar, Line } from 'react-chartjs-2';
 import {
@@ -13,7 +13,7 @@ import {
   Legend,
   Filler
 } from 'chart.js';
-import './IncomeVsExpensesChart.css';
+import './IncomeVsExpensesChart.css'; // [cite: finanzas-app-pro/frontend/src/components/reports/IncomeVsExpensesChart.css]
 
 ChartJS.register(
   CategoryScale,
@@ -31,13 +31,22 @@ const IncomeVsExpensesChart = ({ chartData, chartType = 'bar', reportSummary }) 
 
   const currencyToDisplay = reportSummary?.currencyReported || 'ARS';
 
+  // Función para formatear montos a moneda, incluyendo el signo y el formato local
   const formatCurrencyForChart = (value) => {
-    return new Intl.NumberFormat('es-AR', { 
-        style: 'currency', 
+    // Asegurar que el valor sea un número
+    const numValue = Number(value);
+    if (isNaN(numValue)) return '';
+
+    // Utilizar Intl.NumberFormat para el formato local
+    const formatted = new Intl.NumberFormat('es-AR', {
+        style: 'currency',
         currency: currencyToDisplay,
-        minimumFractionDigits: 2, // Mostrar siempre 2 decimales en tooltips y resumen
+        minimumFractionDigits: 2, // Mostrar siempre 2 decimales
         maximumFractionDigits: 2
-    }).format(value);
+    }).format(Math.abs(numValue)); // Formatear el valor absoluto primero
+
+    // Añadir el signo manualmente si es negativo
+    return numValue < 0 ? `-${formatted}` : formatted;
   };
   
   if (!chartData || !chartData.labels || chartData.labels.length === 0) {
@@ -74,7 +83,7 @@ const IncomeVsExpensesChart = ({ chartData, chartType = 'bar', reportSummary }) 
               label += ': ';
             }
             if (context.parsed.y !== null) {
-              label += formatCurrencyForChart(context.parsed.y);
+              label += formatCurrencyForChart(context.parsed.y); // Usar la función de formato
             }
             return label;
           }
@@ -83,17 +92,15 @@ const IncomeVsExpensesChart = ({ chartData, chartType = 'bar', reportSummary }) 
     },
     scales: {
       x: {
-        stacked: chartType === 'bar', 
+        stacked: false, // << CAMBIO CLAVE: Deshabilitar apilamiento para barras agrupadas
       },
       y: {
-        stacked: chartType === 'bar',
+        stacked: false, // << CAMBIO CLAVE: Deshabilitar apilamiento para barras agrupadas
         beginAtZero: true,
         ticks: {
           callback: function(value) {
-            return new Intl.NumberFormat('es-AR', { 
-                minimumFractionDigits: 0, 
-                maximumFractionDigits: 0 
-            }).format(value); // Solo número para el eje Y
+            // Formatear los ticks del eje Y como moneda
+            return formatCurrencyForChart(value);
           }
         }
       }
