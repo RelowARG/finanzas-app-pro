@@ -8,9 +8,9 @@ import {
   Legend,
   Title,
 } from 'chart.js';
-import WidgetLoader from './WidgetLoader'; //
-import WidgetInfoIcon from './WidgetInfoIcon'; //
-import './DashboardComponents.css'; //
+import WidgetLoader from './WidgetLoader'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/WidgetLoader.jsx]
+import WidgetInfoIcon from './WidgetInfoIcon'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/WidgetInfoIcon.jsx]
+import './DashboardComponents.css'; // [cite: finanzas-app-pro/frontend/src/components/dashboard/DashboardComponents.css]
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
@@ -36,10 +36,11 @@ const SpendingChart = ({ chartData: chartDataFromHook, loading, error, widgetDes
 
   const options = {
     responsive: true,
-    maintainAspectRatio: false, 
+    maintainAspectRatio: false, // Permite que el gráfico no mantenga su relación de aspecto original
     plugins: {
       legend: { 
-        position: 'bottom', 
+        position: 'right', // <<-- CAMBIO CLAVE: Posicionar la leyenda a la derecha
+        align: 'center', // Alinear al centro verticalmente en la derecha
         labels: { 
           boxWidth: 15, 
           padding: 10, 
@@ -74,7 +75,7 @@ const SpendingChart = ({ chartData: chartDataFromHook, loading, error, widgetDes
 
   const renderContent = () => {
     if (loading) {
-      return <WidgetLoader message="Cargando gráfico de gastos..." />;
+      return <WidgetLoader message="Cargando gráfico de gastos..." />; // [cite: finanzas-app-pro/frontend/src/components/dashboard/WidgetLoader.jsx]
     }
     if (error) {
       return <p className="error-message" style={{textAlign: 'center'}}>

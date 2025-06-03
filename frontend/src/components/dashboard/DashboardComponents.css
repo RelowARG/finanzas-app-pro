@@ -44,7 +44,7 @@
 /* Contenedor del contenido principal del widget (después del título) */
 .dashboard-widget-content {
   flex-grow: 1; /* Permite que esta área ocupe el espacio restante */
-  overflow-y: auto; /* Scroll vertical si el contenido excede la altura */
+  overflow: hidden; /* Oculta el contenido que se desborda */
   min-height: 0; /* Necesario para que flex-grow funcione correctamente en algunos navegadores */
   display: flex; /* Para centrar el WidgetLoader si es el único hijo */
   flex-direction: column;
@@ -102,7 +102,7 @@
 }
 
 .control-panel-item-value {
-  font-size: 1.1rem; 
+  font-size: 1.5rem; 
   font-weight: 700;
   color: #2d3748;
   line-height: 1.1;
@@ -114,7 +114,6 @@
   color: #718096;
   margin-left: 4px;
   font-weight: 500;
-  word-break: break-all;
 }
 
 .control-panel-item-subvalue {
@@ -145,6 +144,29 @@
   box-sizing: border-box;
 }
 
+/* Ajustes específicos para el widget de Gastos del Mes */
+.spending-chart-widget .chart-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1; /* Permite que el wrapper ocupe el espacio disponible */
+  width: 100%;
+  height: 100%; /* Asegura que el wrapper use toda la altura disponible en .dashboard-widget-content */
+}
+
+.spending-chart-widget .total-expenses-display {
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 10px;
+  text-align: center;
+}
+.spending-chart-widget .total-expenses-display strong {
+  font-size: 1.1rem;
+  color: var(--dark-color);
+}
+
+
 .chart-container {
   position: relative;
   flex-grow: 1;
@@ -152,13 +174,15 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 0;
+  min-height: 0; /* Permite que el contenedor se encoja si es necesario */
   min-width: 0;
-  overflow: hidden;
+  overflow: hidden; /* Mantiene el recorte */
 }
 .chart-container canvas {
   max-width: 100% !important;
   max-height: 100% !important;
+  height: auto !important; /* Permite que la altura se ajuste automáticamente */
+  width: auto !important; /* Permite que el ancho se ajuste automáticamente */
   object-fit: contain;
 }
 
@@ -279,7 +303,7 @@
   line-height: 1; 
   color: var(--primary-color);
 }
-.dashboard-widget.add-card-placeholder div:not([style*="font-size: 3rem"]) { 
+.dashboard-widget.add-card-placeholder div:not(.add-account-icon) { 
   font-size: 1rem; 
   font-weight: 500; 
   color: var(--primary-color);
@@ -290,6 +314,39 @@
   margin-top: 10px;
   max-width: 80%;
   text-align: center;
+}
+
+.button-customize-placeholder {
+  background-color: transparent !important;
+  color: #555 !important; 
+  border: 1px solid #ccc !important;
+  padding: 2px 5px !important;
+  font-size: 0.6rem !important;
+  margin-top: 3px;
+  line-height: 1.1;
+  border-radius: 3px !important; 
+  width: auto !important;
+  white-space: nowrap;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  cursor: pointer; 
+}
+.button-customize-placeholder:hover {
+  background-color: #e9ecef !important; 
+  color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.add-widget-placeholder { 
+  border-color: var(--primary-color-light, #a0cff9) !important; 
+}
+
+.add-widget-placeholder:hover {
+  border-color: var(--primary-color) !important; 
+  background-color: rgba(var(--primary-rgb), 0.05) !important; 
+}
+
+.add-widget-placeholder div[style*="font-size: 3rem"] { 
+  line-height: 1; 
 }
 
 .text-positive { color: var(--secondary-color, #2ecc71) !important; }
@@ -554,7 +611,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center; 
-  text-decoration: none;
+  text-decoration: none; 
   color: inherit; 
   width: 100%;
   margin-bottom: 4px;
@@ -565,7 +622,7 @@
   font-size: 1.5rem;
   margin-bottom: 3px;
   color: var(--primary-color); 
-  line-height: 1; 
+  line-height: 1;
 }
 .add-account-card-container div:not(.add-account-icon) { 
   font-weight: 500;
@@ -604,46 +661,4 @@
 
 .add-widget-placeholder div[style*="font-size: 3rem"] { 
   line-height: 1; 
-}
-
-/* Add or modify these styles for the SpendingChart widget */
-.spending-chart-widget .chart-wrapper {
-    flex-grow: 1; /* Allow it to take available vertical space */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center; /* Center content vertically */
-    padding: 5px; /* Adjust as needed */
-    box-sizing: border-box;
-    min-height: 0; /* Necessary for flex-grow to work */
-}
-
-.spending-chart-widget .chart-container {
-    position: relative;
-    width: 100%; /* Take full width of parent */
-    flex-grow: 1; /* Allow it to take available vertical space within chart-wrapper */
-    min-height: 150px; /* Minimum height for the chart to be visible */
-    max-height: 200px; /* Maximum height to limit its size */
-    margin-bottom: 5px; /* Space between chart and legend/summary if needed */
-    overflow: hidden; /* Ensure no overflow */
-}
-
-/* Adjust the total expenses display if it's pushing the chart */
-.spending-chart-widget .total-expenses-display {
-    font-size: 0.9rem; /* Adjust font size */
-    margin-bottom: 8px; /* Space above the chart */
-    padding-bottom: 5px;
-    border-bottom: 1px dashed #e0e0e0; /* Optional separator */
-    width: 100%; /* Occupy full width for centering */
-    text-align: center;
-}
-
-/* Adjust legend size if needed */
-.spending-chart-widget .chartjs-render-monitor {
-    width: 100% !important; /* Ensure canvas fills container */
-    height: 100% !important; /* Ensure canvas fills container */
-}
-
-.spending-chart-widget .dashboard-widget-content {
-    padding: 5px; /* Add some padding to the content wrapper */
 }
