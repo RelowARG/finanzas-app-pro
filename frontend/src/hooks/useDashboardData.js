@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext'; //
 import dashboardService from '../services/dashboard.service'; //
 import accountService from '../services/accounts.service'; //
-import goalsService from '../services/goals.service.js'; // *** NUEVA IMPORTACIÓN ***
+import goalsService from '../services/goals.service.js'; //
 
 const initialApiDataState = {
   investmentHighlights: null,
@@ -14,8 +14,9 @@ const initialApiDataState = {
   balanceTrendData: null,
   saludFinancieraData: null,
   upcomingEvents: [],
-  recentTransactions: [], // *** NUEVO ESTADO PARA TRANSACCIONES RECIENTES ***
-  savingsGoals: [], // *** NUEVO ESTADO PARA METAS ***
+  recentTransactions: [],
+  spendingChart: null, // << AÑADIDO: Estado para los datos del gráfico de gastos
+  savingsGoals: [],
   // Estados de carga individuales
   loadingAccounts: true,
   loadingInvestments: true,
@@ -25,8 +26,9 @@ const initialApiDataState = {
   loadingBalanceTrend: true,
   loadingSaludFinanciera: true,
   loadingUpcomingEvents: true,
-  loadingRecentTransactions: true, // *** NUEVO ESTADO DE CARGA PARA TRANSACCIONES RECIENTES ***
-  loadingSavingsGoals: true, // *** NUEVO ESTADO DE CARGA PARA METAS ***
+  loadingRecentTransactions: true,
+  loadingSpendingChart: true, // << AÑADIDO: Estado de carga para el gráfico de gastos
+  loadingSavingsGoals: true,
 };
 
 const shallowEqual = (objA, objB) => {
@@ -86,21 +88,22 @@ export const useDashboardData = () => {
         dashboardService.getBalanceTrendData({ months: 6 }), // 5
         dashboardService.getSaludFinancieraData(), // 6
         dashboardService.getUpcomingEvents(15), // 7
-        dashboardService.getRecentTransactions(5), // 8: Nueva promesa para transacciones recientes
-        goalsService.getAllGoals({ statusFilter: 'active' }), // 9: Metas (su índice se movió)
+        dashboardService.getRecentTransactions(5), // 8
+        dashboardService.getMonthlySpendingByCategory({ currency: 'ARS' }), // 9 <-- Gastos del Mes
+        goalsService.getAllGoals({ statusFilter: 'active' }), // 10
       ]);
 
       const errorMessages = {};
-      // Actualizar el array de keys para que coincida con el orden de las promesas
+      // **MUY IMPORTANTE: El orden de estas 'keys' DEBE coincidir con el orden de las promesas arriba.**
       const keys = [
         'investmentHighlights', 'monthlyFinancialStatus', 'allUserAccounts', 'balanceSummary',
         'globalBudgetStatus', 'balanceTrendData', 'saludFinancieraData', 'upcomingEvents',
-        'recentTransactions', 'savingsGoals' // <-- ORDEN ACTUALIZADO
+        'recentTransactions', 'spendingChart', 'savingsGoals' 
       ];
       results.forEach((result, index) => {
           if (result.status === 'rejected') {
               errorMessages[keys[index]] = result.reason?.response?.data?.message || result.reason?.message || `Error en ${keys[index]}`;
-              console.warn(`[useDashboardData] Error fetching ${keys[index]}:`, errorMessages[keys[index]]);
+              console.warn(`[useDashboardData] Error fetching ${keys[index]}:`, errorMessages[keys[index] ]);
           }
       });
       if (Object.keys(errorMessages).length > 0) {
@@ -113,8 +116,9 @@ export const useDashboardData = () => {
           loadingAccounts: false, loadingInvestments: false, loadingMonthlyStatus: false,
           loadingBalanceSummary: false, loadingGlobalBudget: false, loadingBalanceTrend: false,
           loadingSaludFinanciera: false, loadingUpcomingEvents: false,
-          loadingRecentTransactions: false, // *** NUEVO ESTADO DE CARGA ***
-          loadingSavingsGoals: false, // *** NUEVO ESTADO DE CARGA ***
+          loadingRecentTransactions: false, 
+          loadingSpendingChart: false, // <-- Carga para SpendingChart
+          loadingSavingsGoals: false, 
         };
 
         const newFetchedData = {
@@ -126,8 +130,9 @@ export const useDashboardData = () => {
           balanceTrendData: results[5].status === 'fulfilled' ? results[5].value : prevApiDataNow.balanceTrendData,
           saludFinancieraData: results[6].status === 'fulfilled' ? results[6].value : prevApiDataNow.saludFinancieraData,
           upcomingEvents: results[7].status === 'fulfilled' ? (results[7].value || []) : prevApiDataNow.upcomingEvents,
-          recentTransactions: results[8].status === 'fulfilled' ? (results[8].value || []) : prevApiDataNow.recentTransactions, // <-- ÍNDICE ACTUALIZADO
-          savingsGoals: results[9].status === 'fulfilled' ? (results[9].value || []) : prevApiDataNow.savingsGoals, // <-- ÍNDICE ACTUALIZADO
+          recentTransactions: results[8].status === 'fulfilled' ? (results[8].value || []) : prevApiDataNow.recentTransactions, 
+          spendingChart: results[9].status === 'fulfilled' ? results[9].value : prevApiDataNow.spendingChart, // << Asignación de SpendingChart
+          savingsGoals: results[10].status === 'fulfilled' ? (results[10].value || []) : prevApiDataNow.savingsGoals, // << Asignación de SavingsGoals
         };
         
         let hasDataChanged = false;
@@ -158,7 +163,13 @@ export const useDashboardData = () => {
     } catch (err) { 
       setDataError(prev => ({ ...prev, general: 'Error crítico al cargar datos del dashboard.' }));
       console.error("[useDashboardData] Error crítico en fetchDashboardData:", err);
-      setApiData(prev => ({ ...initialApiDataState, loadingAccounts: false, loadingInvestments: false, loadingMonthlyStatus: false, loadingBalanceSummary: false, loadingGlobalBudget: false, loadingBalanceTrend: false, loadingSaludFinanciera: false, loadingUpcomingEvents: false, loadingRecentTransactions: false, loadingSavingsGoals: false }));
+      setApiData(prev => ({ ...initialApiDataState, 
+        loadingAccounts: false, loadingInvestments: false, loadingMonthlyStatus: false, 
+        loadingBalanceSummary: false, loadingGlobalBudget: false, loadingBalanceTrend: false, 
+        loadingSaludFinanciera: false, loadingUpcomingEvents: false, loadingRecentTransactions: false,
+        loadingSpendingChart: false, // << Asegurar que se setea a false en caso de error
+        loadingSavingsGoals: false 
+      }));
     }
   }, [user]); 
 
@@ -176,8 +187,9 @@ export const useDashboardData = () => {
     const isLoadingOverall = apiData.loadingAccounts || apiData.loadingInvestments || apiData.loadingMonthlyStatus ||
                          apiData.loadingBalanceSummary || apiData.loadingGlobalBudget || apiData.loadingBalanceTrend ||
                          apiData.loadingSaludFinanciera || apiData.loadingUpcomingEvents ||
-                         apiData.loadingRecentTransactions || // *** AÑADIDO loadingRecentTransactions ***
-                         apiData.loadingSavingsGoals; // *** AÑADIDO loadingSavingsGoals ***
+                         apiData.loadingRecentTransactions || 
+                         apiData.loadingSpendingChart || // << Incluido en la carga general
+                         apiData.loadingSavingsGoals; 
     return {
       accounts: apiData.loadingAccounts,
       investments: apiData.loadingInvestments,
@@ -187,16 +199,18 @@ export const useDashboardData = () => {
       balanceTrend: apiData.loadingBalanceTrend,
       saludFinanciera: apiData.loadingSaludFinanciera,
       upcomingEvents: apiData.loadingUpcomingEvents,
-      recentTransactions: apiData.loadingRecentTransactions, // *** AÑADIDO ***
-      savingsGoals: apiData.loadingSavingsGoals, // *** AÑADIDO ***
+      recentTransactions: apiData.loadingRecentTransactions, 
+      spendingChart: apiData.loadingSpendingChart, // << Estado individual
+      savingsGoals: apiData.loadingSavingsGoals, 
       overall: isLoadingOverall,
     };
   }, [ 
     apiData.loadingAccounts, apiData.loadingInvestments, apiData.loadingMonthlyStatus,
     apiData.loadingBalanceSummary, apiData.loadingGlobalBudget, apiData.loadingBalanceTrend,
     apiData.loadingSaludFinanciera, apiData.loadingUpcomingEvents,
-    apiData.loadingRecentTransactions, // *** AÑADIDO ***
-    apiData.loadingSavingsGoals // *** AÑADIDO ***
+    apiData.loadingRecentTransactions, 
+    apiData.loadingSpendingChart, // << Incluido en dependencias
+    apiData.loadingSavingsGoals 
   ]);
 
   useEffect(() => {
