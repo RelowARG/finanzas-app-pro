@@ -30,7 +30,7 @@ const InvestmentCard = ({ investment, onDeleteInvestment }) => {
   const getInvestmentTypeLabel = (type) => {
     const labels = {
       plazo_fijo: 'Plazo Fijo',
-      acciones: 'Acciones',
+      acciones: 'CEDEAR',
       criptomonedas: 'Cripto',
       fci: 'FCI',
       obligaciones: 'ON',

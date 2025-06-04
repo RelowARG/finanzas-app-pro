@@ -38,7 +38,7 @@ const AddInvestmentPage = () => {
   const [showSearchResults, setShowSearchResults] = useState(false);
 
   const investmentTypeOptions = [
-    { value: 'acciones', label: 'Acciones', icon: '📊' },
+    { value: 'acciones', label: 'CEDEAR', icon: '📊' },
     { value: 'criptomonedas', label: 'Criptomonedas', icon: '₿' },
     { value: 'plazo_fijo', label: 'Plazo Fijo', icon: '📜' },
     { value: 'fci', label: 'Fondo Común de Inversión', icon: '💰' },
@@ -221,7 +221,7 @@ const AddInvestmentPage = () => {
                   id="searchKeyword"
                   value={searchKeyword}
                   onChange={(e) => { setSearchKeyword(e.target.value); setShowSearchResults(true); }}
-                  placeholder="Ej: GGAL.BA, AAPL, BTC-USD, ETH-ARS"
+                  placeholder="Ej: GGAL.BA, PAMP.BA, BTC-USD, ETH-ARS"
                   autoComplete="off"
                 />
               </div>

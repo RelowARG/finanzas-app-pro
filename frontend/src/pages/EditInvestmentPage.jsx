@@ -36,7 +36,7 @@ const EditInvestmentPage = () => {
 
   const investmentTypeOptions = [
     { value: 'plazo_fijo', label: 'Plazo Fijo', icon: '📜' },
-    { value: 'acciones', label: 'Acciones', icon: '📊' },
+    { value: 'acciones', label: 'CEDEAR', icon: '📊' },
     { value: 'criptomonedas', label: 'Criptomonedas', icon: '₿' },
     { value: 'fci', label: 'Fondo Común de Inversión', icon: '💰' },
     { value: 'obligaciones', label: 'Obligaciones Negociables', icon: '📄' },
