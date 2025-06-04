@@ -1,5 +1,5 @@
 // Ruta: backend/services/accountTrend.service.js
-console.log('DEBUG: accountTrend.service.js started loading');
+//console.log('DEBUG: accountTrend.service.js started loading');
 const db = require('../models');
 const { Op, Sequelize } = require('sequelize');
 
@@ -98,11 +98,11 @@ const convertItemAmount = (amount, currency, dateStr, ratesMap, targetCurrency =
 
 
 const getAccountBalanceTrend = async (userId, accountId, numberOfMonths = 6, targetCurrency = 'ARS') => {
-  console.log(`[AccountTrendService] Calculating Balance Trend for Account ID: ${accountId} for ${numberOfMonths} months (User: ${userId})`);
+  //console.log(`[AccountTrendService] Calculating Balance Trend for Account ID: ${accountId} for ${numberOfMonths} months (User: ${userId})`);
   try {
     const account = await db.Account.findOne({ where: { id: accountId, userId: userId }, raw: true });
     if (!account) {
-      console.log(`[AccountTrendService] Account with ID ${accountId} not found for user ${userId}.`);
+      //console.log(`[AccountTrendService] Account with ID ${accountId} not found for user ${userId}.`);
       return { labels: [], datasets: [], summary: { currentBalance: 0, currency: targetCurrency, changeVsPreviousPeriodPercent: 0 }, conversionNotes: [`Account with ID ${accountId} not found.`] };
     }
 

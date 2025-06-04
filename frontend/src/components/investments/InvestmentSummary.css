@@ -1,62 +1,83 @@
 /* Ruta: finanzas-app-pro/frontend/src/components/investments/InvestmentSummary.css */
-/* ACTUALIZA ESTE ARCHIVO */
 .investment-summary-widget {
-  background-color: #e9f5ff; /* Un azul muy claro */
-  padding: 15px 20px; /* Reducido el padding */
+  background-color: #ffffff; /* ESTO YA ES BLANCO */
+  padding: 20px; 
   border-radius: var(--border-radius, 8px);
-  margin-bottom: 25px; /* Reducido un poco el margen inferior */
-  border: 1px solid #bde0fe; /* Borde azul claro */
-  box-shadow: var(--box-shadow, 0 2px 4px rgba(0,0,0,0.06)); /* Sombra más sutil, como las cards */
+  margin-bottom: 25px;
+  border: 1px solid #e9ecef; 
+  box-shadow: var(--box-shadow, 0 2px 4px rgba(0,0,0,0.06)); 
 }
 
 .summary-title {
   margin-top: 0;
-  margin-bottom: 15px; /* Reducido */
-  color: var(--primary-color, #007bff);
+  margin-bottom: 20px; 
+  color: var(--dark-color); 
   text-align: center;
-  font-size: 1.25rem; /* Reducido, similar al nombre de InvestmentCard */
+  font-size: 1.25rem; 
   font-weight: 600;
 }
 
+.summary-currency-blocks-container {
+  display: block; 
+}
+
 .summary-currency-block {
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed #cce5ff;
+  background-color: #ffffff; /* ESTOS BLOQUES INTERNOS TAMBIÉN SON BLANCOS */
+  border: 1px solid #e0e0e0; 
+  border-radius: var(--border-radius);
+  padding: 15px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+  margin-bottom: 20px; 
+  box-sizing: border-box;
 }
 .summary-currency-block:last-child {
   margin-bottom: 0;
-  border-bottom: none;
-  padding-bottom: 0;
 }
 
 .summary-currency-block h4 {
   margin-top: 0;
-  margin-bottom: 8px; /* Reducido */
-  color: var(--dark-color, #343a40);
-  font-size: 1rem; /* Reducido */
-  font-weight: 500;
+  margin-bottom: 12px; 
+  color: var(--primary-color);
+  font-size: 1rem; 
+  font-weight: 600;
+  border-bottom: 1px solid #f0f0f0; 
+  padding-bottom: 8px;
+}
+
+.summary-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+  gap: 5px 15px; 
+  margin-bottom: 8px;
 }
 
 .summary-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0; /* Reducido el padding vertical */
-  font-size: 0.9rem; /* Reducido */
+  justify-content: space-between; 
+  align-items: baseline; 
+  padding: 5px 0; 
+  font-size: 0.9rem; /* Ajustado para más compacidad */
+  border-bottom: none; /* Quitado, ya que el grid maneja la separación */
 }
 
 .summary-label {
-  color: #495057;
+  color: #555;
+  margin-right: 8px; 
+  white-space: nowrap;
+  font-weight: 500; 
 }
 
 .summary-value {
-  font-weight: 600;
+  font-weight: normal; 
   color: var(--dark-color, #343a40);
+  text-align: right; 
+  white-space: nowrap;
 }
 
 .summary-value.value-prominent {
-  font-size: 1.05em; /* Relativo al nuevo font-size de .summary-item */
-  color: var(--primary-color, #007bff);
+  font-size: 1em; 
+  font-weight: 600; 
+  color: var(--primary-color);
 }
 
 .summary-value.profit-positive {
@@ -68,16 +89,17 @@
 }
 
 .summary-count {
-    font-size: 0.75rem; /* Reducido */
-    color: #6c757d;
+    font-size: 0.75rem; /* Ajustado */
+    color: #777;
     text-align: right;
-    margin-top: 3px; /* Reducido */
+    margin-top: 10px; 
 }
 
 .summary-note {
-    font-size: 0.75rem; /* Reducido */
+    font-size: 0.75rem; 
     color: #6c757d;
     text-align: center;
-    margin-top: 10px;
+    margin-top: 20px; 
+    width: 100%; 
     font-style: italic;
 }

@@ -1,62 +1,90 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/InvestmentsPage.jsx
-// ACTUALIZA ESTE ARCHIVO
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import investmentsService from '../services/investments.service';
 import InvestmentCard from '../components/investments/InvestmentCard';
 import InvestmentSummary from '../components/investments/InvestmentSummary';
+import { alertService } from '../utils/alert.service';
 import './InvestmentsPage.css';
 
 const InvestmentsPage = () => {
   const [investments, setInvestments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Para la carga inicial de la página
   const [error, setError] = useState('');
-  const [lastUpdated, setLastUpdated] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null); // Hora de la última carga de datos locales
+  const [isUpdatingQuotes, setIsUpdatingQuotes] = useState(false); // Para el spinner del botón de actualizar cotizaciones
 
-  const fetchInvestments = useCallback(async () => {
+  const fetchInvestments = useCallback(async (showPageLoader = false) => {
+    if (showPageLoader) {
+      setLoading(true); // Mostrar loader de página completa solo si se indica
+    }
+    setError('');
     try {
-      setLoading(true);
-      setError('');
       const data = await investmentsService.getAllInvestments();
       setInvestments(data || []);
-      setLastUpdated(new Date());
+      setLastUpdated(new Date()); 
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Error al cargar las inversiones.');
       setInvestments([]);
     } finally {
-      setLoading(false);
+      if (showPageLoader) {
+        setLoading(false);
+      }
     }
   }, []); 
 
   useEffect(() => {
-    fetchInvestments();
+    fetchInvestments(true); // Mostrar loader de página en la carga inicial
   }, [fetchInvestments]);
 
-  const handleRefreshClick = () => {
-    fetchInvestments(); 
-  };
-
-  const handleDeleteInvestment = async (investmentId) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta inversión? Esta acción no se puede deshacer.')) {
-      try {
-        setLoading(true); // O un estado de carga específico para la eliminación
-        setError('');
-        await investmentsService.deleteInvestment(investmentId);
-        // Mostrar mensaje de éxito (ej: con un toast/notificación)
-        fetchInvestments(); // Volver a cargar la lista de inversiones
-      } catch (err) {
-        setError(err.response?.data?.message || err.message || 'Error al eliminar la inversión.');
-        console.error("Error deleting investment:", err.response?.data || err);
-        setLoading(false); 
-      }
+  const handleRefreshQuotes = async () => { // Cambiado el nombre de la función
+    setIsUpdatingQuotes(true); 
+    setError('');
+    try {
+      const updateResult = await investmentsService.triggerUpdateQuotes();
+      alertService.showSuccessToast('Cotizaciones Actualizadas', updateResult.message || 'Los precios de mercado han sido actualizados.');
+      // Después de actualizar cotizaciones en el backend, volvemos a pedir las inversiones
+      await fetchInvestments(false); // No mostrar loader de página completa para este refresh
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || 'Error al actualizar las cotizaciones desde el mercado.';
+      setError(errorMessage); // Mostrar error en la página
+      alertService.showErrorAlert('Error de Actualización', errorMessage);
+    } finally {
+      setIsUpdatingQuotes(false); 
     }
   };
 
-  if (loading && investments.length === 0) { 
+  const handleDeleteInvestment = async (investmentId) => {
+    const result = await alertService.showConfirmationDialog({
+        title: 'Confirmar Eliminación',
+        text: '¿Estás seguro de que quieres eliminar esta inversión? Esta acción no se puede deshacer.',
+        confirmButtonText: 'Sí, eliminar',
+        icon: 'warning', // Puedes usar 'error' o 'warning'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            setIsUpdatingQuotes(true); // Usar el mismo estado para indicar actividad
+            setError('');
+            await investmentsService.deleteInvestment(investmentId);
+            alertService.showSuccessToast('Eliminada', 'Inversión eliminada correctamente.');
+            await fetchInvestments(false); 
+        } catch (err) {
+            const deleteError = err.response?.data?.message || err.message || 'Error al eliminar la inversión.';
+            setError(deleteError);
+            alertService.showErrorAlert('Error al Eliminar', deleteError);
+        } finally {
+            setIsUpdatingQuotes(false);
+        }
+    }
+  };
+
+  if (loading) { // Mostrar loader de página completa solo durante la carga inicial
     return (
       <div className="page-container investments-page">
         <div className="investments-page-header">
           <h1>Mis Inversiones</h1>
+          {/* No mostrar botones de acción mientras carga inicialmente */}
         </div>
         <p className="loading-text">Cargando inversiones...</p>
       </div>
@@ -68,21 +96,26 @@ const InvestmentsPage = () => {
       <div className="investments-page-header">
         <h1>Mis Inversiones</h1>
         <div className="header-actions">
-          <button onClick={handleRefreshClick} className="button button-secondary" disabled={loading} style={{marginRight: '10px'}}>
-            {loading ? 'Actualizando...' : 'Refrescar Datos'}
+          <button 
+            onClick={handleRefreshQuotes} 
+            className="button button-secondary" 
+            disabled={isUpdatingQuotes} 
+            style={{marginRight: '10px'}}
+          >
+            {isUpdatingQuotes ? 'Actualizando Cotizaciones...' : 'Refrescar Cotizaciones'}
           </button>
-          <Link to="/investments/add" className="button button-primary">
+          <Link to="/investments/add" className={`button button-primary ${isUpdatingQuotes ? 'disabled-link' : ''}`} aria-disabled={isUpdatingQuotes}>
             <span className="icon-add">➕</span> Registrar Inversión
           </Link>
         </div>
       </div>
-      {lastUpdated && !loading && (
+      {lastUpdated && (
         <p className="last-updated-notice">
-          Datos cargados a las: {lastUpdated.toLocaleTimeString('es-AR')}
+          Datos locales cargados a las: {lastUpdated.toLocaleTimeString('es-AR')}
         </p>
       )}
 
-      {error && <p className="error-message">{error}</p>}
+      {error && <p className="error-message" style={{textAlign: 'center', marginBottom: '15px'}}>{error}</p>}
 
       <InvestmentSummary investments={investments} />
 
@@ -92,12 +125,12 @@ const InvestmentsPage = () => {
             <InvestmentCard 
               key={investment.id} 
               investment={investment} 
-              onDeleteInvestment={handleDeleteInvestment} // Pasar la función
+              onDeleteInvestment={handleDeleteInvestment}
             />
           ))}
         </div>
       ) : (
-        !loading && !error && <p className="no-investments-message">Aún no has registrado ninguna inversión.</p>
+        !isUpdatingQuotes && !error && <p className="no-investments-message">Aún no has registrado ninguna inversión.</p>
       )}
     </div>
   );

@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === 'production') {
             sequelizeOptions.dialectOptions = {
                 ssl: { ca: caCert }
             };
-            console.log('Certificado SSL CA cargado desde:', process.env.DB_SSL_CA_PATH);
+            //console.log('Certificado SSL CA cargado desde:', process.env.DB_SSL_CA_PATH);
         } catch (e) {
             console.error('Error crítico al leer el certificado CA:', e.message);
         }
@@ -40,7 +40,7 @@ if (process.env.NODE_ENV === 'production') {
     try {
         const caCert = fs.readFileSync(process.env.DB_SSL_CA_PATH).toString();
         sequelizeOptions.dialectOptions = { ssl: { ca: caCert } };
-        console.log('Certificado SSL CA cargado (desarrollo) desde:', process.env.DB_SSL_CA_PATH);
+        //console.log('Certificado SSL CA cargado (desarrollo) desde:', process.env.DB_SSL_CA_PATH);
     } catch (e) {
         console.error('Error al leer el certificado CA (desarrollo):', e.message);
     }

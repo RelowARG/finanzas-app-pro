@@ -137,7 +137,7 @@ const createTransaction = async (req, res, next) => {
       (async () => { 
         try {
           // ... (lógica de creación de cuotas recurrentes, sin cambios)
-          console.log(`[InstallmentAutomation] Generando ${outgoingTransaction.totalInstallments - 1} cuotas futuras para la transacción ID: ${outgoingTransaction.id}`);
+          //console.log(`[InstallmentAutomation] Generando ${outgoingTransaction.totalInstallments - 1} cuotas futuras para la transacción ID: ${outgoingTransaction.id}`);
           const baseDateForInstallments = new Date(outgoingTransaction.date + 'T00:00:00Z');
           for (let i = 2; i <= outgoingTransaction.totalInstallments; i++) {
             const nextInstallmentDateObj = new Date(baseDateForInstallments);
@@ -169,7 +169,7 @@ const createTransaction = async (req, res, next) => {
               categoryId: outgoingTransaction.categoryId, 
             });
           }
-          console.log("[InstallmentAutomation] Cuotas futuras programadas como transacciones recurrentes.");
+          //console.log("[InstallmentAutomation] Cuotas futuras programadas como transacciones recurrentes.");
         } catch (installmentError) {
           console.error("[InstallmentAutomation] Error creando las cuotas futuras programadas:", installmentError);
         }

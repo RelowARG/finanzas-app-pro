@@ -100,12 +100,12 @@ const convertItemAmount = (amount, currency, dateStr, ratesMap, targetCurrency =
 
 
 const getDashboardSummary = async (userId) => {
-  console.log('[DEBUG] Backend Service: Entering getDashboardSummary for userId:', userId);
+  //console.log('[DEBUG] Backend Service: Entering getDashboardSummary for userId:', userId);
   try {
     const accounts = await db.Account.findAll({ 
         where: { userId: userId } 
     }); 
-    console.log('[DEBUG] Backend Service: Fetched accounts for summary:', accounts.length);
+    //console.log('[DEBUG] Backend Service: Fetched accounts for summary:', accounts.length);
 
     let totalBalanceARS = 0;
     let totalBalanceUSD = 0;
@@ -168,7 +168,7 @@ const getDashboardSummary = async (userId) => {
 };
 
 const getMonthlySpendingByCategory = async (userId, filters = {}) => {
-  console.log('[DashboardService Backend] Fetching MonthlySpendingByCategory for userId:', userId, 'Filters:', filters);
+  //console.log('[DashboardService Backend] Fetching MonthlySpendingByCategory for userId:', userId, 'Filters:', filters);
   try {
     const currentMonthRange = getMonthDateRange(filters.dateFrom ? new Date(filters.dateFrom + 'T00:00:00Z') : new Date()); 
     const dateFrom = filters.dateFrom || currentMonthRange.dateFrom;
@@ -176,7 +176,7 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
     // Usa 'currency' del filtro si está, sino 'ARS'. El frontend lo enviará como `currency`.
     const targetCurrency = filters.currency || 'ARS'; 
 
-    console.log(`[DashboardService Backend] SpendingChart: Filtering from ${dateFrom} to ${dateTo} for currency ${targetCurrency}`);
+    //console.log(`[DashboardService Backend] SpendingChart: Filtering from ${dateFrom} to ${dateTo} for currency ${targetCurrency}`);
 
     const transactionWhereClause = {
       userId,
@@ -191,10 +191,10 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
       nest: true,
     });
 
-    console.log(`[DashboardService Backend] SpendingChart: Found ${transactions.length} raw transactions.`);
+    //console.log(`[DashboardService Backend] SpendingChart: Found ${transactions.length} raw transactions.`);
 
     if (transactions.length === 0) {
-      console.log('[DashboardService Backend] SpendingChart: No transactions found for period or type. Returning empty data.');
+      //console.log('[DashboardService Backend] SpendingChart: No transactions found for period or type. Returning empty data.');
       return {
         labels: [],
         datasets: [{ label: `Gastos (${targetCurrency})`, data: [], backgroundColor: [], borderColor: [], borderWidth: 1 }],
@@ -237,7 +237,7 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
     const data = sortedExpenses.map(item => parseFloat(item.totalAmount.toFixed(2))); // Formatear a 2 decimales para consistencia
     const baseColors = ['rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)', 'rgba(200, 100, 150, 0.7)', 'rgba(100, 200, 150, 0.7)', 'rgba(150, 100, 200, 0.7)', 'rgba(255, 0, 0, 0.7)']; // Más colores
 
-    console.log(`[DashboardService Backend] SpendingChart: Prepared data for chart: Labels=${labels.length}, Total=${totalExpensesConverted}`);
+    //console.log(`[DashboardService Backend] SpendingChart: Prepared data for chart: Labels=${labels.length}, Total=${totalExpensesConverted}`);
 
     return {
       labels: labels,
@@ -262,7 +262,7 @@ const getMonthlySpendingByCategory = async (userId, filters = {}) => {
 };
 
 const getInvestmentHighlights = async (userId, topN = 3) => {
-  console.log('[DashboardService Backend] getInvestmentHighlights for userId:', userId);
+  //console.log('[DashboardService Backend] getInvestmentHighlights for userId:', userId);
   try {
     const allInvestments = await db.Investment.findAll({ where: { userId }});
     if (!allInvestments || allInvestments.length === 0) {
@@ -291,12 +291,12 @@ const getInvestmentHighlights = async (userId, topN = 3) => {
 };
 
 const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') => {
-  console.log('\n[DashService-MonthlyStatus] =================================================');
-  console.log('[DashService-MonthlyStatus] INICIO getCurrentMonthFinancialStatus para user:', userId);
+  //console.log('\n[DashService-MonthlyStatus] =================================================');
+  //console.log('[DashService-MonthlyStatus] INICIO getCurrentMonthFinancialStatus para user:', userId);
   const currentServerDate = new Date();
   const currentMonthRange = getMonthDateRange(currentServerDate); 
   const { dateFrom, dateTo, monthName, year, monthNumber } = currentMonthRange; 
-  console.log(`[DashService-MonthlyStatus] Rango del mes actual (servidor): ${dateFrom} a ${dateTo} (${monthName} ${year})`);
+  //console.log(`[DashService-MonthlyStatus] Rango del mes actual (servidor): ${dateFrom} a ${dateTo} (${monthName} ${year})`);
   
   try {
     const currentMonthTransactions = await db.Transaction.findAll({
@@ -306,7 +306,7 @@ const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') =>
         },
         raw: true
     });
-    console.log(`[DashService-MonthlyStatus] Transacciones encontradas para junio 2025: ${currentMonthTransactions.length}`);
+    //console.log(`[DashService-MonthlyStatus] Transacciones encontradas para junio 2025: ${currentMonthTransactions.length}`);
     
     const { rates, notes: rateConversionNotes } = await getRatesForItems(userId, currentMonthTransactions, targetCurrency);
     let conversionNotes = [...rateConversionNotes];
@@ -366,7 +366,7 @@ const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') =>
     const usdRateForMonthKey = `${year}-${monthNumber}-USD`;
     const rateUsedForUSD = (targetCurrency === 'ARS' && rates[usdRateForMonthKey]) ? rates[usdRateForMonthKey] : null;
 
-    console.log('[DashService-MonthlyStatus] FIN getCurrentMonthFinancialStatus ======================================');
+    //console.log('[DashService-MonthlyStatus] FIN getCurrentMonthFinancialStatus ======================================');
 
     return {
       statusByCurrency,
@@ -390,7 +390,7 @@ const getCurrentMonthFinancialStatus = async (userId, targetCurrency = 'ARS') =>
 };
 
 const getGlobalBudgetStatus = async (userId, targetCurrency = 'ARS') => {
-  console.log('[DashboardService Backend] Calculating Global Budget Status for user:', userId);
+  //console.log('[DashboardService Backend] Calculating Global Budget Status for user:', userId);
   const currentServerDate = new Date();
   const { dateFrom, dateTo, monthName, year } = getMonthDateRange(currentServerDate);
 
@@ -469,7 +469,7 @@ const getGlobalBudgetStatus = async (userId, targetCurrency = 'ARS') => {
 
 // MODIFICACIÓN: getBalanceTrend ahora calcula la tendencia de saldo de la cuenta específica
 const getBalanceTrend = async (userId, numberOfMonths = 6, targetCurrency = 'ARS', accountId = null) => {
-  console.log(`[DashboardService Backend] Calculating Balance Trend for ${numberOfMonths} months for user: ${userId}${accountId ? ` (Account ID: ${accountId})` : ''}`);
+  //console.log(`[DashboardService Backend] Calculating Balance Trend for ${numberOfMonths} months for user: ${userId}${accountId ? ` (Account ID: ${accountId})` : ''}`);
   try {
     let relevantAccounts = [];
     if (accountId) {
@@ -732,7 +732,7 @@ const calculateFinancialHealth = async (userId, targetCurrency = 'ARS') => {
 };
 
 const getUpcomingEvents = async (userId, daysInFuture = 15) => {
-  console.log(`[F-DashboardService] Getting upcoming events for the next ${daysInFuture} days.`);
+  //console.log(`[F-DashboardService] Getting upcoming events for the next ${daysInFuture} days.`);
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
 
@@ -894,7 +894,7 @@ const getUpcomingEvents = async (userId, daysInFuture = 15) => {
 
 // NUEVA FUNCIÓN: Obtener transacciones más recientes
 const getRecentTransactions = async (userId, limit = 5) => {
-  console.log(`[DashboardService Backend] Fetching recent transactions for userId: ${userId}`);
+  //console.log(`[DashboardService Backend] Fetching recent transactions for userId: ${userId}`);
   try {
     const transactions = await db.Transaction.findAll({
       where: {
@@ -917,7 +917,7 @@ const getRecentTransactions = async (userId, limit = 5) => {
     
     return formattedTransactions;
   } catch (error) {
-    console.error("[DashboardService Backend] Error fetching recent transactions:", error);
+    //console.error("[DashboardService Backend] Error fetching recent transactions:", error);
     return [];
   }
 };

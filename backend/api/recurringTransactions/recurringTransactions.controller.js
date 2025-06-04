@@ -303,7 +303,7 @@ const processRecurringTransactionManually = async (req, res, next) => {
         // Esto asegura que la transacción se registre con la fecha que correspondía o la fecha adelantada.
         const processingDate = new Date(recurringTx.nextRunDate + 'T00:00:00Z'); // Usar siempre la nextRunDate del recurrente
 
-        console.log(`[ControllerManualProcess] Solicitud para procesar manualmente Recurrente ID: ${recurringTx.id} con fecha de transacción: ${processingDate.toISOString().split('T')[0]}`);
+        //console.log(`[ControllerManualProcess] Solicitud para procesar manualmente Recurrente ID: ${recurringTx.id} con fecha de transacción: ${processingDate.toISOString().split('T')[0]}`);
 
         if (!recurringTx.isActive) {
             console.warn(`[ControllerManualProcess] Advirtiendo: Recurrente ID: ${recurringTx.id} está INACTIVO pero se procesará manualmente.`);

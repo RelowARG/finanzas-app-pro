@@ -11,7 +11,7 @@ const processSingleRecurringTransaction = async (recurringTx, processingDate) =>
   const t = await db.sequelize.transaction();
   try {
     const processingDateString = processingDate.toISOString().split('T')[0];
-    console.log(`[Processor] Iniciando procesamiento para Recurrente ID: ${recurringTx.id} ("${recurringTx.description}") con fecha de transacción: ${processingDateString}`);
+    //console.log(`[Processor] Iniciando procesamiento para Recurrente ID: ${recurringTx.id} ("${recurringTx.description}") con fecha de transacción: ${processingDateString}`);
 
     const account = await Account.findOne({ 
         where: { id: recurringTx.accountId, userId: recurringTx.userId },
@@ -39,7 +39,7 @@ const processSingleRecurringTransaction = async (recurringTx, processingDate) =>
         throw new Error(errorMsg);
     }
 
-    console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Cuenta: ${account.name}, Categoría: ${category.name}`);
+    //console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Cuenta: ${account.name}, Categoría: ${category.name}`);
     
     const newTransaction = await Transaction.create({
       description: recurringTx.description,
@@ -54,12 +54,12 @@ const processSingleRecurringTransaction = async (recurringTx, processingDate) =>
       categoryId: recurringTx.categoryId,
     }, { transaction: t });
 
-    console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Transacción creada ID: ${newTransaction.id}`);
+    //console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Transacción creada ID: ${newTransaction.id}`);
 
     const transactionAmountForBalance = parseFloat(newTransaction.amount);
     const newBalance = parseFloat(account.balance) + transactionAmountForBalance;
     await account.update({ balance: newBalance }, { transaction: t });
-    console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Saldo de cuenta ${account.id} actualizado a: ${newBalance}`);
+    //console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Saldo de cuenta ${account.id} actualizado a: ${newBalance}`);
 
     // La nueva nextRunDate se calcula basada en la fecha en que la transacción DEBIÓ ocurrir (processingDateString)
     const baseDateForNextCalculation = new Date(processingDateString + 'T00:00:00Z');
@@ -72,7 +72,7 @@ const processSingleRecurringTransaction = async (recurringTx, processingDate) =>
         false 
     );
     
-    console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Nueva nextRunDate calculada: ${newNextRunDate}`);
+    //console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Nueva nextRunDate calculada: ${newNextRunDate}`);
 
     const updatePayload = {
       lastRunDate: processingDateString, // Se procesó en esta fecha
@@ -81,13 +81,13 @@ const processSingleRecurringTransaction = async (recurringTx, processingDate) =>
     
     if (recurringTx.endDate && new Date(newNextRunDate) > new Date(recurringTx.endDate  + 'T00:00:00Z')) {
       updatePayload.isActive = false;
-      console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Desactivado por superar fecha de fin.`);
+      //console.log(`[Processor] Recurrente ID: ${recurringTx.id} - Desactivado por superar fecha de fin.`);
     }
 
     await recurringTx.update(updatePayload, { transaction: t });
 
     await t.commit();
-    console.log(`[Processor] Movimiento recurrente ID: ${recurringTx.id} procesado exitosamente. Próxima ejecución: ${newNextRunDate}, Última ejecución: ${processingDateString}`);
+    //console.log(`[Processor] Movimiento recurrente ID: ${recurringTx.id} procesado exitosamente. Próxima ejecución: ${newNextRunDate}, Última ejecución: ${processingDateString}`);
     return { success: true, transaction: newTransaction, recurringTransaction: recurringTx.toJSON() };
 
   } catch (error) {
@@ -100,7 +100,7 @@ const processSingleRecurringTransaction = async (recurringTx, processingDate) =>
 };
 
 const processAllDueRecurringTransactions = async (isStartupCatchUp = false) => {
-  console.log(`[SchedulerService] Verificando movimientos recurrentes (Catch-up: ${isStartupCatchUp})...`);
+  //console.log(`[SchedulerService] Verificando movimientos recurrentes (Catch-up: ${isStartupCatchUp})...`);
   const today = new Date(); // Hora actual del servidor
   const todayDateString = today.toISOString().split('T')[0]; // Solo la fecha YYYY-MM-DD
 
@@ -112,10 +112,10 @@ const processAllDueRecurringTransactions = async (isStartupCatchUp = false) => {
     yesterday.setDate(today.getDate() - 1);
     const yesterdayDateString = yesterday.toISOString().split('T')[0];
     dateCondition = { [Op.lte]: yesterdayDateString }; // Solo tareas de días anteriores
-    console.log(`[SchedulerService] Catch-up: Buscando tareas con nextRunDate <= ${yesterdayDateString}`);
+    //console.log(`[SchedulerService] Catch-up: Buscando tareas con nextRunDate <= ${yesterdayDateString}`);
   } else {
     dateCondition = { [Op.lte]: todayDateString }; // Tareas de hoy o anteriores
-    console.log(`[SchedulerService] Cron normal: Buscando tareas con nextRunDate <= ${todayDateString}`);
+    //console.log(`[SchedulerService] Cron normal: Buscando tareas con nextRunDate <= ${todayDateString}`);
   }
 
   try {
@@ -131,11 +131,11 @@ const processAllDueRecurringTransactions = async (isStartupCatchUp = false) => {
     });
 
     if (dueRecurringTxs.length === 0) {
-      console.log(`[SchedulerService] No hay movimientos recurrentes ${isStartupCatchUp ? 'atrasados (catch-up)' : 'para procesar hoy'}.`);
+      //console.log(`[SchedulerService] No hay movimientos recurrentes ${isStartupCatchUp ? 'atrasados (catch-up)' : 'para procesar hoy'}.`);
       return;
     }
 
-    console.log(`[SchedulerService] Se encontraron ${dueRecurringTxs.length} movimientos recurrentes para procesar (${isStartupCatchUp ? 'catch-up' : 'cron normal'}).`);
+    //console.log(`[SchedulerService] Se encontraron ${dueRecurringTxs.length} movimientos recurrentes para procesar (${isStartupCatchUp ? 'catch-up' : 'cron normal'}).`);
 
     for (const recurringTxInstance of dueRecurringTxs) {
       try {
@@ -143,16 +143,16 @@ const processAllDueRecurringTransactions = async (isStartupCatchUp = false) => {
         // ya que esa es la fecha en la que DEBIÓ ocurrir.
         const processingDateForTx = new Date(recurringTxInstance.nextRunDate + 'T00:00:00Z'); 
         
-        console.log(`[SchedulerService] Intentando procesar Recurrente ID: ${recurringTxInstance.id} (nextRunDate: ${recurringTxInstance.nextRunDate}) con fecha de transacción: ${processingDateForTx.toISOString().split('T')[0]}`);
+        //console.log(`[SchedulerService] Intentando procesar Recurrente ID: ${recurringTxInstance.id} (nextRunDate: ${recurringTxInstance.nextRunDate}) con fecha de transacción: ${processingDateForTx.toISOString().split('T')[0]}`);
         
         await processSingleRecurringTransaction(recurringTxInstance, processingDateForTx);
       } catch (singleError) {
         console.error(`[SchedulerService] Falló el procesamiento individual del Recurrente ID: ${recurringTxInstance.id}. Mensaje: ${singleError.message}. Continuando con el siguiente.`);
       }
     }
-    console.log(`[SchedulerService] Procesamiento de todos los movimientos recurrentes (${isStartupCatchUp ? 'catch-up' : 'cron normal'}) finalizado.`);
+    //console.log(`[SchedulerService] Procesamiento de todos los movimientos recurrentes (${isStartupCatchUp ? 'catch-up' : 'cron normal'}) finalizado.`);
   } catch (error) {
-      console.error(`[SchedulerService] Error general obteniendo/iterando movimientos recurrentes (${isStartupCatchUp ? 'catch-up' : 'cron normal'}):`, error.message, error.stack);
+    console.error(`[SchedulerService] Error general obteniendo/iterando movimientos recurrentes (${isStartupCatchUp ? 'catch-up' : 'cron normal'}):`, error.message, error.stack);
   }
 };
 

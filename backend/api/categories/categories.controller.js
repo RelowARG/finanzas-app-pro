@@ -43,7 +43,7 @@ const seedDefaultCategories = async () => {
         });
       }
     }
-    console.log('Categorías por defecto sembradas/verificadas.');
+    //console.log('Categorías por defecto sembradas/verificadas.');
   } catch (error) {
     console.error('Error sembrando categorías por defecto:', error);
   }

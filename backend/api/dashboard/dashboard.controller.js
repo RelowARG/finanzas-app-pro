@@ -77,7 +77,7 @@ const getFinancialHealthController = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const targetCurrency = req.query.currency || 'ARS';
-    console.log(`[DashboardController] getFinancialHealthController called for userId: ${userId} in ${targetCurrency}`);
+    //console.log(`[DashboardController] getFinancialHealthController called for userId: ${userId} in ${targetCurrency}`);
     const healthData = await dashboardService.calculateFinancialHealth(userId, targetCurrency);
     res.json(healthData);
   } catch (error) {

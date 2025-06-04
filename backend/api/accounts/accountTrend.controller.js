@@ -1,7 +1,7 @@
 // Ruta: backend/api/accounts/accountTrend.controller.js
-console.log('DEBUG: accountTrend.controller.js started loading');
+//console.log('DEBUG: accountTrend.controller.js started loading');
 const accountTrendService = require('../../services/accountTrend.service');
-console.log('DEBUG: accountTrendService loaded in controller:', typeof accountTrendService.getAccountBalanceTrend);
+//console.log('DEBUG: accountTrendService loaded in controller:', typeof accountTrendService.getAccountBalanceTrend);
 
 
 const getAccountTrendController = async (req, res, next) => {
@@ -22,5 +22,5 @@ const getAccountTrendController = async (req, res, next) => {
 module.exports = {
   getAccountTrendController,
 };
-console.log('DEBUG: accountTrend.controller.js finished loading and exporting getAccountTrendController');
+//console.log('DEBUG: accountTrend.controller.js finished loading and exporting getAccountTrendController');
 

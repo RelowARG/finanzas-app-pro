@@ -41,7 +41,7 @@ const isAdmin = (req, res, next) => {
     next();
   } else {
     // Log para depuración en el backend
-    console.log('[isAdmin Middleware] Acceso denegado. Usuario:', req.user ? { id: req.user.id, role: req.user.role } : 'No user');
+    //console.log('[isAdmin Middleware] Acceso denegado. Usuario:', req.user ? { id: req.user.id, role: req.user.role } : 'No user');
     res.status(403).json({ message: 'Acceso denegado. Se requiere rol de administrador.' });
   }
 };

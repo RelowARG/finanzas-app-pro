@@ -36,7 +36,7 @@ const seedPermissionsAndRoles = async (database) => {
       });
       createdPermissionsMap[perm.name] = p.id;
       if (created) {
-        console.log(`Permiso creado: ${perm.name}`);
+        //console.log(`Permiso creado: ${perm.name}`);
       }
     }
 
@@ -64,7 +64,7 @@ const seedPermissionsAndRoles = async (database) => {
               defaults: { roleName: roleName, permissionId: permissionId },
             });
             if (createdRp) {
-              console.log(`Permiso '${permName}' asignado al rol '${roleName}'.`);
+              //console.log(`Permiso '${permName}' asignado al rol '${roleName}'.`);
             }
           } else {
             console.warn(`Advertencia: El permiso llamado '${permName}' no fue encontrado al intentar asignarlo al rol '${roleName}'.`);
@@ -72,7 +72,7 @@ const seedPermissionsAndRoles = async (database) => {
         }
       }
     }
-    console.log('Permisos de roles asignados/verificados exitosamente.');
+    //console.log('Permisos de roles asignados/verificados exitosamente.');
   } catch (error) {
     console.error('Error crítico sembrando permisos y asignaciones de roles:', error);
   }
@@ -104,10 +104,10 @@ app.use(express.urlencoded({ extended: true }));
 const connectAndSyncDb = async () => {
   try {
     await db.sequelize.authenticate();
-    console.log('Conexión a la base de datos MySQL establecida exitosamente.');
+    //console.log('Conexión a la base de datos MySQL establecida exitosamente.');
 
     await db.sequelize.sync({ force: false }); 
-    console.log('Modelos sincronizados con la base de datos.');
+    //console.log('Modelos sincronizados con la base de datos.');
 
     await seedDefaultCategories();
     await seedPermissionsAndRoles(db); 
@@ -129,28 +129,28 @@ app.use(errorHandler);
 const startServer = async () => {
   await connectAndSyncDb();
 
-  console.log('[Startup] Verificando movimientos recurrentes pendientes al iniciar el servidor...');
+  //console.log('[Startup] Verificando movimientos recurrentes pendientes al iniciar el servidor...');
   try {
     // Pasar 'true' para indicar que es la ejecución de "catch-up" al inicio
     await processAllDueRecurringTransactions(true); // *** MODIFICADO AQUÍ ***
-    console.log('[Startup] Verificación y procesamiento de recurrentes pendientes al inicio, finalizada.');
+    //console.log('[Startup] Verificación y procesamiento de recurrentes pendientes al inicio, finalizada.');
   } catch (startupError) {
     console.error('[Startup] Error procesando movimientos recurrentes pendientes al inicio:', startupError);
   }
 
   app.listen(PORT, HOST, () => {
-    console.log(`Servidor backend escuchando en http://${HOST}:${PORT}`);
+    //console.log(`Servidor backend escuchando en http://${HOST}:${PORT}`);
     if(process.env.NODE_ENV === 'production'){
-        console.log(`Permitiendo CORS para el origen: ${process.env.FRONTEND_URL}`);
+        //console.log(`Permitiendo CORS para el origen: ${process.env.FRONTEND_URL}`);
     } else {
-        console.log(`Permitiendo CORS para los orígenes: ${uniqueAllowedOrigins.join(', ')}`);
+        //console.log(`Permitiendo CORS para los orígenes: ${uniqueAllowedOrigins.join(', ')}`);
     }
 
     const cronSchedule = process.env.RECURRING_TX_CRON_SCHEDULE || '0 3 * * *';
 
     if (cron.validate(cronSchedule)) {
       cron.schedule(cronSchedule, () => {
-        console.log(`[CronJob] Ejecutando tarea programada de movimientos recurrentes a las ${new Date().toLocaleString('es-AR')} (hora del servidor)...`);
+        //console.log(`[CronJob] Ejecutando tarea programada de movimientos recurrentes a las ${new Date().toLocaleString('es-AR')} (hora del servidor)...`);
         // Pasar 'false' o no pasar argumento para la ejecución normal del cron
         processAllDueRecurringTransactions(false).catch(err => { // *** MODIFICADO AQUÍ ***
           console.error('[CronJob] Error durante la ejecución de processAllDueRecurringTransactions:', err);
@@ -159,7 +159,7 @@ const startServer = async () => {
         scheduled: true,
         // timezone: "America/Argentina/Buenos_Aires" 
       });
-      console.log(`[CronJob] Tarea de movimientos recurrentes programada con la expresión: "${cronSchedule}"`);
+      //console.log(`[CronJob] Tarea de movimientos recurrentes programada con la expresión: "${cronSchedule}"`);
     } else {
       console.error(`[CronJob] Expresión cron inválida en RECURRING_TX_CRON_SCHEDULE: "${cronSchedule}". La tarea no se programará.`);
     }
