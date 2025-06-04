@@ -1,0 +1,193 @@
+/* Ruta: frontend/src/components/recurring/RecurringTransactionModal.css */
+
+/* Estilos base del modal (pueden estar en AddTransactionModal.css y ser heredados) */
+.modal-overlay-atm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 20px;
+}
+
+.modal-content-atm { /* Clase base para el contenido del modal */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  color: #333;
+  max-height: 90vh; 
+}
+
+.modal-header-atm {
+  display: flex;
+  align-items: center; 
+  padding: 0 15px; 
+  border-bottom: 1px solid #eee;
+  height: 48px; 
+  box-sizing: border-box;
+  position: relative; 
+  flex-shrink: 0; /* Para que el header no se encoja si el contenido es grande */
+}
+
+.modal-header-atm h3 {
+  margin: 0;
+  font-size: 1rem; 
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #555;
+  white-space: nowrap; 
+  flex-grow: 1; 
+  padding-right: 40px; 
+  text-align: left; 
+}
+
+.close-modal-button-atm {
+  background: none !important; 
+  border: none !important; 
+  font-size: 1.8rem; 
+  color: #B0B0B0 !important;  
+  cursor: pointer;
+  line-height: 1;
+  padding: 0; 
+  outline: none !important; 
+  box-shadow: none !important; 
+  position: absolute; 
+  top: 50%; 
+  right: 15px; 
+  transform: translateY(-50%); 
+}
+.close-modal-button-atm:hover {
+  color: #777 !important; 
+}
+
+/* Estilos específicos para el modal de recurrentes */
+.recurring-tx-modal-content.modal-content-atm {
+  max-width: 700px; /* Ancho del modal */
+}
+
+.recurring-tx-modal-content .transaction-form-atm { /* La clase del <form> */
+  padding: 15px 20px; /* Padding interno del formulario */
+  overflow-y: auto; /* Habilitar scroll si el contenido aún es muy largo */
+  flex-grow: 1; /* Para que el formulario ocupe el espacio disponible */
+}
+
+.recurring-tx-modal-content .form-group-atm {
+  margin-bottom: 10px; /* Reducir margen entre grupos de formulario */
+}
+
+.recurring-tx-modal-content .form-row-atm {
+  gap: 12px; /* Reducir espacio en filas */
+}
+
+/* === AJUSTES PARA REDUCIR ESPACIO === */
+.recurring-tx-modal-content .form-separator-atm {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 10px 0; /* Reducir significativamente el margen vertical del separador */
+}
+
+.recurring-tx-modal-content .form-section-title-atm {
+  font-size: 0.95rem; /* Título de sección un poco más pequeño */
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-top: 8px;    /* Reducir margen superior del título de sección */
+  margin-bottom: 12px; /* Reducir margen inferior del título de sección */
+}
+/* === FIN DE AJUSTES PARA REDUCIR ESPACIO === */
+
+
+.recurring-tx-modal-content .form-group-atm label {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.recurring-tx-modal-content .form-group-atm input[type="text"],
+.recurring-tx-modal-content .form-group-atm input[type="number"],
+.recurring-tx-modal-content .form-group-atm input[type="date"],
+.recurring-tx-modal-content .form-group-atm select,
+.recurring-tx-modal-content .form-group-atm textarea {
+  padding: 9px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #444;
+  height: 38px; 
+  box-sizing: border-box;
+  width: 100%;
+}
+.recurring-tx-modal-content .form-group-atm textarea {
+    height: auto; 
+    min-height: 60px;
+}
+.recurring-tx-modal-content .form-group-atm input:focus,
+.recurring-tx-modal-content .form-group-atm select:focus,
+.recurring-tx-modal-content .form-group-atm textarea:focus {
+  border-color: #8e44ad; /* Color temático de recurrentes (púrpura) */
+  box-shadow: 0 0 0 1px rgba(142, 68, 173, 0.2); /* Sombra de foco más sutil */
+  outline: none;
+}
+.recurring-tx-modal-content .form-group-atm select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23B0B0B0' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px;
+  padding-right: 30px;
+}
+.recurring-tx-modal-content .amount-group-atm { flex-grow: 2 !important; } 
+.recurring-tx-modal-content .currency-group-atm { flex-basis: 100px !important; flex-grow: 0 !important; }
+
+
+.recurring-tx-modal-content .modal-actions-atm {
+  display: flex;
+  justify-content: space-between; 
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  background-color: #f9f9f9; 
+  border-radius: 0 0 7px 7px; /* Redondear solo abajo si el modal-content tiene borde redondeado */
+  flex-shrink: 0; /* Para que el footer no se encoja */
+}
+.recurring-tx-modal-content .modal-actions-atm .button {
+  padding: 9px 18px !important;
+  font-size: 0.9rem !important;
+  border-radius: 5px !important;
+  width: auto !important; 
+}
+.recurring-tx-modal-content .button-add-another-atm {
+  background-color: #fff !important;
+  color: #00BFA5 !important;
+  border: 1px solid #00BFA5 !important;
+}
+.recurring-tx-modal-content .button-add-another-atm:hover {
+  background-color: rgba(0, 191, 165, 0.05) !important;
+}
+.recurring-tx-modal-content .button-add-single-atm {
+  background-color: #00BFA5 !important;
+  border-color: #00BFA5 !important;
+  color: white !important;
+}
+.recurring-tx-modal-content .button-add-single-atm:hover {
+  background-color: #00a693 !important;
+}
+
+.recurring-tx-modal-content .error-message.small-error-atm {
+  font-size: 0.8rem;
+  padding: 8px;
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+  border-radius: 4px;
+  text-align: center;
+  margin-bottom: 10px; /* Para separarlo de los campos */
+}

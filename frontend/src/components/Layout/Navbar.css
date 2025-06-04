@@ -125,6 +125,8 @@
   padding: 8px 0;
   overflow: hidden;
 }
+
+/* === ESTILOS MODIFICADOS/AÑADIDOS PARA .add-menu-item === */
 .navbar.new-style .add-menu-item {
   display: block;
   padding: 10px 18px;
@@ -132,35 +134,40 @@
   text-decoration: none;
   font-size: 0.9rem;
   white-space: nowrap;
-  width: 100%; /* Para que el botón ocupe todo el ancho */
-  text-align: left; /* Alinear texto a la izquierda */
-  background: none; /* Quitar fondo de botón por defecto */
-  border: none; /* Quitar borde de botón por defecto */
-  cursor: pointer; /* Mostrar cursor de puntero */
+  width: 100%; 
+  text-align: left; 
+  background: none; 
+  border: none; 
+  cursor: pointer; 
+  font-family: inherit; /* Asegurar misma fuente */
+  font-weight: 500;    /* Estandarizar font-weight (ajusta este valor según el de .nav-links si quieres) */
+  line-height: 1.5;    /* Estandarizar altura de línea */
+  margin: 0;           /* Resetear cualquier margen por defecto del botón */
+  box-sizing: border-box; /* Asegurar que el padding se incluya en el width/height */
+  outline: none;       /* Quitar outline por defecto en botones */
 }
 .navbar.new-style .add-menu-item:hover {
   background-color: rgba(var(--primary-rgb), 0.08);
   color: var(--primary-color);
 }
+/* === FIN DE ESTILOS MODIFICADOS/AÑADIDOS PARA .add-menu-item === */
 
-/* *** NUEVO ESTILO PARA EL BOTÓN "NUEVA CUENTA" DENTRO DEL MENÚ *** */
+
 .navbar.new-style .add-menu-button-action {
-  background-color: var(--primary-color) !important; /* Color de fondo como el botón +Registros */
+  background-color: var(--primary-color) !important; 
   color: white !important;
   font-weight: 500 !important;
-  margin: 4px 8px !important; /* Añadir un poco de margen para que no ocupe todo el ancho del dropdown */
-  width: calc(100% - 16px) !important; /* Ajustar ancho con el margen */
-  border-radius: 4px !important; /* Bordes un poco redondeados */
-  padding: 8px 12px !important; /* Padding ajustado */
+  margin: 4px 8px !important; 
+  width: calc(100% - 16px) !important; 
+  border-radius: 4px !important; 
+  padding: 8px 12px !important; 
   text-align: center !important;
 }
 .navbar.new-style .add-menu-button-action:hover {
   background-color: var(--primary-color-dark, #0056b3) !important;
-  color: white !important; /* Mantener color de texto en hover */
+  color: white !important; 
 }
 
-
-/* --- ESTILOS PARA EL MENÚ DE USUARIO --- */
 .navbar.new-style .nav-item-user-menu {
   position: relative;
   margin-left: 10px;

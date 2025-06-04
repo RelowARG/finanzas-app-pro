@@ -1,0 +1,150 @@
+/* Ruta: frontend/src/pages/SettingsPage.css */
+
+.settings-page {
+  /* Estilos generales para la página contenedora de configuración */
+  background-color: var(--background-color);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-page-header-title {
+  margin: 0 0 25px 0;
+  font-size: 2rem;
+  color: var(--dark-color);
+  text-align: center;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--primary-color); /* Línea divisoria */
+}
+
+.settings-content-wrapper {
+  display: flex;
+  gap: 30px; /* Espacio entre el sidebar interno y el contenido */
+  align-items: flex-start; /* Alinear el contenido al inicio */
+  flex-grow: 1; /* Permite que el wrapper ocupe el espacio restante */
+}
+
+/* Sub-Sidebar de Navegación */
+.settings-sidebar {
+  flex: 0 0 220px; /* Ancho fijo para el sub-sidebar */
+  background-color: #ffffff; /* Fondo blanco */
+  padding: 15px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08); /* Sombra sutil */
+  border: 1px solid #e9ecef;
+  box-sizing: border-box;
+}
+
+.settings-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.settings-nav-item {
+  margin-bottom: 5px;
+}
+
+.settings-nav-link {
+  display: block;
+  padding: 10px 12px;
+  text-decoration: none;
+  color: #6c757d; /* Color de texto para enlaces inactivos */
+  font-weight: 500;
+  font-size: 0.95rem;
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease-in-out;
+}
+
+.settings-nav-link:hover {
+  background-color: #f0f2f5; /* Fondo sutil al pasar el mouse */
+  color: var(--primary-color);
+}
+
+.settings-nav-link.active {
+  background-color: rgba(var(--primary-rgb), 0.1); /* Fondo más claro para el activo */
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Área de Contenido Principal de Configuración */
+.settings-main-content-area {
+  flex: 1; /* Ocupa el espacio restante */
+  background-color: #ffffff; /* Fondo blanco para el contenido */
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border: 1px solid #e9ecef;
+  box-sizing: border-box;
+}
+
+/* Ocultar los encabezados individuales de las páginas hijas
+   cuando se renderizan dentro de SettingsPage, ya que SettingsPage
+   ya tiene un título principal. */
+.settings-main-content-area .categories-page-header,
+.settings-main-content-area .recurring-transactions-page .page-header,
+.settings-main-content-area .exchange-rates-page .page-header {
+    display: none;
+}
+
+/* Asegurar que el contenido de las páginas hijas no tenga padding/margin duplicado */
+.settings-main-content-area .categories-page,
+.settings-main-content-area .recurring-transactions-page,
+.settings-main-content-area .exchange-rates-page {
+    padding: 0; /* Eliminar padding del page-container si se renderizan directamente */
+    box-shadow: none; /* Eliminar sombra duplicada */
+    border: none; /* Eliminar borde duplicado */
+    background-color: transparent; /* Fondo transparente */
+    margin: 0; /* Eliminar margen */
+}
+
+/* Media Queries para responsividad */
+@media (max-width: 992px) {
+  .settings-content-wrapper {
+    flex-direction: column; /* Apilar sidebar y contenido en pantallas medianas */
+    gap: 25px;
+  }
+  .settings-sidebar {
+    flex: none; /* Eliminar el ancho fijo */
+    width: 100%; /* Ocupar todo el ancho */
+    flex-direction: row; /* Poner enlaces en fila si es necesario */
+    justify-content: center; /* Centrar enlaces */
+    padding: 10px;
+  }
+  .settings-nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .settings-nav-link {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+  .settings-main-content-area {
+    padding: 15px; /* Reducir padding en móvil */
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-page-header-title {
+    font-size: 1.8rem;
+  }
+  .settings-sidebar {
+    flex-direction: column; /* Apilar enlaces en columnas en pantallas pequeñas */
+    align-items: stretch;
+  }
+  .settings-nav-list {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .settings-nav-item {
+    margin-bottom: 0; /* Eliminar margen entre items apilados */
+  }
+  .settings-nav-link {
+    text-align: center;
+  }
+}

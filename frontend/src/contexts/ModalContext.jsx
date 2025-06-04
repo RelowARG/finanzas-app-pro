@@ -5,16 +5,19 @@ const ModalContext = createContext(null);
 
 export const useModals = () => useContext(ModalContext);
 
-export const MODAL_TYPES = { // Definir tipos de modales para evitar strings mágicos
+export const MODAL_TYPES = {
   ADD_ACCOUNT: 'ADD_ACCOUNT',
   PAY_CREDIT_CARD: 'PAY_CREDIT_CARD',
-  // Añadir otros tipos de modales aquí en el futuro
+  ADD_TRANSACTION: 'ADD_TRANSACTION',
+  // *** NUEVOS TIPOS DE MODAL PARA RECURRENTES ***
+  ADD_RECURRING_TRANSACTION: 'ADD_RECURRING_TRANSACTION',
+  EDIT_RECURRING_TRANSACTION: 'EDIT_RECURRING_TRANSACTION',
 };
 
 export const ModalProvider = ({ children }) => {
   const [modalState, setModalState] = useState({
-    type: null, // Qué modal mostrar, ej: MODAL_TYPES.ADD_ACCOUNT
-    props: {},  // Props adicionales para el modal, ej: { creditCardAccount: {}, payingAccounts: [] }
+    type: null, 
+    props: {},  
   });
 
   const openModal = useCallback((type, props = {}) => {

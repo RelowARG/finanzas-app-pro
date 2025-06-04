@@ -7,7 +7,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useModals, MODAL_TYPES } from '../../contexts/ModalContext';
 import AddAccountModal from '../accounts/AddAccountModal'; 
 import PayCreditCardModal from '../accounts/PayCreditCardModal'; 
-import AddTransactionModal from '../transactions/AddTransactionModal'; // *** NUEVO IMPORT ***
+import AddTransactionModal from '../transactions/AddTransactionModal';
+import AddRecurringTransactionModal from '../recurring/AddRecurringTransactionModal';
+// *** NUEVO IMPORT PARA MODAL DE EDITAR RECURRENTES ***
+import EditRecurringTransactionModal from '../recurring/EditRecurringTransactionModal'; 
 import './Layout.css';
 
 const Layout = ({ children, showChrome = true }) => {
@@ -59,16 +62,31 @@ const Layout = ({ children, showChrome = true }) => {
         <PayCreditCardModal
           isOpen={true}
           onClose={closeModal}
-          {...modalProps} // Pasa todas las props necesarias
+          {...modalProps}
         />
       )}
-      {/* *** RENDERIZAR MODAL DE TRANSACCIONES *** */}
       {modalType === MODAL_TYPES.ADD_TRANSACTION && (
         <AddTransactionModal
           isOpen={true}
           onClose={closeModal}
           onTransactionCreated={modalProps.onTransactionCreated}
           initialTypeFromButton={modalProps.initialTypeFromButton || 'egreso'}
+        />
+      )}
+      {modalType === MODAL_TYPES.ADD_RECURRING_TRANSACTION && (
+        <AddRecurringTransactionModal
+          isOpen={true}
+          onClose={closeModal}
+          onRecurringTransactionCreated={modalProps.onRecurringTransactionCreated}
+        />
+      )}
+      {/* *** RENDERIZAR MODAL DE EDITAR RECURRENTE *** */}
+      {modalType === MODAL_TYPES.EDIT_RECURRING_TRANSACTION && (
+        <EditRecurringTransactionModal
+          isOpen={true}
+          onClose={closeModal}
+          onRecurringTransactionUpdated={modalProps.onRecurringTransactionUpdated}
+          recurringTransactionData={modalProps.recurringTransactionData} // Asegúrate de pasar los datos aquí
         />
       )}
     </div>

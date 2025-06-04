@@ -1,95 +1,104 @@
-/* Ruta: finanzas-app-pro/frontend/src/pages/RecurringTransactionsPage.css */
-/* ARCHIVO NUEVO */
-.recurring-tx-page .page-header {
+/* Ruta: frontend/src/pages/RecurringTransactionsPage.css */
+.recurring-transactions-page .page-header { /* Corregido a .recurring-transactions-page */
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 25px;
   padding-bottom: 15px;
-  border-bottom: 2px solid #8e44ad; /* Un color púrpura para recurrentes */
+  border-bottom: 2px solid #8e44ad; 
 }
 
-.recurring-tx-page .page-header h1 {
+.recurring-transactions-page .page-header h1 {
   margin: 0;
   font-size: 2rem;
 }
 
-.recurring-tx-page .button-primary {
+.recurring-transactions-page .button-primary {
   background-color: #8e44ad !important;
   border-color: #8e44ad !important;
 }
-.recurring-tx-page .button-primary:hover {
+.recurring-transactions-page .button-primary:hover {
   background-color: #732d91 !important;
 }
 
-.recurring-tx-list {
+.recurring-transactions-page-loading { 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.recurring-actions-bar {
+  margin-bottom: 20px;
+}
+
+.recurring-actions-bar .button.button-primary-action-bar {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background-color: var(--primary-color); 
+  color: white;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.recurring-actions-bar .button.button-primary-action-bar:hover {
+  background-color: var(--primary-color-dark, #2980b9); 
+}
+
+.recurring-actions-bar .button.button-primary-action-bar .icon-add {
+  margin-right: 8px;
+}
+
+.recurring-transactions-page .filter-controls {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.recurring-transactions-page .filter-controls label {
+  font-weight: 500;
+}
+
+.recurring-transactions-page .filter-select {
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccc;
+  min-width: 180px;
+}
+
+.recurring-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.recurring-tx-item-placeholder {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: var(--border-radius);
-  padding: 15px;
-  box-shadow: var(--box-shadow);
+.recurring-transactions-page .loading-text,
+.recurring-transactions-page .no-items-message { /* Cambiado de no-data-message */
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1rem;
+  color: #666;
+}
+.recurring-transactions-page .error-message.main-error { /* Para el error principal de la página */
+    margin-bottom: 15px;
 }
 
-.recurring-tx-item-placeholder .info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed #eee;
-}
-.recurring-tx-item-placeholder .info .icon {
-  font-size: 1.5rem;
-}
-.recurring-tx-item-placeholder .info .desc {
-  font-weight: 600;
-  flex-grow: 1;
-}
-.recurring-tx-item-placeholder .info .amount {
-  font-weight: bold;
-}
-.recurring-tx-item-placeholder .info .amount.ingreso {
-  color: var(--secondary-color);
-}
-.recurring-tx-item-placeholder .info .amount.egreso {
-  color: var(--danger-color);
-}
-
-.recurring-tx-item-placeholder .details {
-  font-size: 0.85rem;
-  color: #555;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 5px 10px;
-  margin-bottom: 10px;
-}
-.recurring-tx-item-placeholder .details span {
-    background-color: #f8f9fa;
-    padding: 3px 6px;
-    border-radius: 3px;
-}
-
-
-.recurring-tx-item-placeholder .actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
-}
-.recurring-tx-item-placeholder .actions .button-small {
-    font-size: 0.8rem !important;
-    padding: 5px 10px !important;
-}
-
-.no-data-message {
+.no-data-message { /* Estilo general para cuando no hay datos, usado también por CategoriesPage */
   text-align: center;
   padding: 20px;
   font-style: italic;
   color: #666;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+  margin-top: 10px;
 }

@@ -1,24 +1,14 @@
 // Ruta: finanzas-app-pro/frontend/src/components/recurring/RecurringTransactionItem.jsx
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { formatDateDMY, formatCurrency } from '../../utils/formatters'; // Asumiendo que tienes estos formatters
-import './RecurringTransactionItem.css'; //
+// import { Link } from 'react-router-dom'; // Ya no se usa Link para editar
+import { formatDateDMY, formatCurrency } from '../../utils/formatters';
+import './RecurringTransactionItem.css';
 
-const RecurringTransactionItem = ({ transaction, onDelete, onToggleActive, onProcessNow }) => {
+// *** AÑADIR onEdit COMO PROP ***
+const RecurringTransactionItem = ({ transaction, onDelete, onToggleActive, onProcessNow, onEdit }) => {
   const {
-    id,
-    description,
-    amount,
-    currency,
-    type,
-    frequency,
-    nextRunDate,
-    lastRunDate,
-    isActive,
-    notes,
-    account, // Objeto de cuenta anidado
-    category, // Objeto de categoría anidado
-    icon
+    id, description, amount, currency, type, frequency,
+    nextRunDate, lastRunDate, isActive, notes, account, category, icon
   } = transaction;
 
   const amountColor = type === 'ingreso' ? 'amount-positive' : 'amount-negative';
@@ -26,27 +16,23 @@ const RecurringTransactionItem = ({ transaction, onDelete, onToggleActive, onPro
   const displayIcon = icon || category?.icon || defaultIcon;
 
   const handleToggle = () => {
-    if (onToggleActive) {
-      onToggleActive(id, !isActive);
-    }
+    if (onToggleActive) onToggleActive(id, !isActive);
   };
 
   const handleDelete = () => {
-    if (onDelete) {
-      onDelete(id);
-    }
+    if (onDelete) onDelete(id);
   };
 
-  // *** NUEVO MANEJADOR ***
   const handleProcessNow = () => {
-    if (onProcessNow) {
-        onProcessNow(id);
-    }
+    if (onProcessNow) onProcessNow(id);
   };
 
-  // Determinar si el botón "Registrar Ahora" debe estar habilitado
-  // Podría estar deshabilitado si !isActive, o si nextRunDate es muy lejana en el futuro (opcional)
-  const canProcessNow = isActive; // Lógica simple por ahora
+  // *** NUEVO MANEJADOR PARA EDITAR ***
+  const handleEdit = () => {
+    if (onEdit) onEdit(transaction); // Pasar el objeto completo de la transacción
+  };
+
+  const canProcessNow = isActive;
 
   return (
     <div className={`recurring-item ${!isActive ? 'inactive' : ''} ${type}`}>
@@ -73,13 +59,13 @@ const RecurringTransactionItem = ({ transaction, onDelete, onToggleActive, onPro
         </p>
       </div>
       <div className="recurring-item-actions">
-        <Link to={`/settings/recurring-transactions/edit/${id}`} className="button button-edit button-small">
+        {/* *** BOTÓN DE EDITAR MODIFICADO *** */}
+        <button onClick={handleEdit} className="button button-edit button-small">
           Editar
-        </Link>
+        </button>
         <button onClick={handleDelete} className="button button-danger button-small">
           Eliminar
         </button>
-        {/* *** NUEVO BOTÓN *** */}
         <button 
             onClick={handleProcessNow} 
             className="button button-secondary button-small"

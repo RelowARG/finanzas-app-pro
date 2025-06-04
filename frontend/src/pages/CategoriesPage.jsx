@@ -1,9 +1,8 @@
-// Ruta: finanzas-app-pro/frontend/src/pages/CategoriesPage.jsx
-// ARCHIVO NUEVO
+// Ruta: frontend/src/pages/CategoriesPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import categoriesService from '../services/categories.service';
 import CategoryListItem from '../components/categories/CategoryListItem';
-import CategoryForm from '../components/categories/CategoryForm'; // Asumimos que este componente se creará
+import CategoryForm from '../components/categories/CategoryForm';
 import './CategoriesPage.css';
 
 const CategoriesPage = () => {
@@ -12,15 +11,13 @@ const CategoriesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null); // Para la edición futura
+  const [editingCategory, setEditingCategory] = useState(null);
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
       const allCategoriesData = await categoriesService.getAllCategories();
-      // El backend devuelve {ingreso: [...], egreso: [...]}
-      // y cada categoría tiene un userId (null para globales)
       
       const userIngreso = allCategoriesData.ingreso.filter(cat => cat.userId !== null);
       const userEgreso = allCategoriesData.egreso.filter(cat => cat.userId !== null);
@@ -45,6 +42,7 @@ const CategoriesPage = () => {
   const handleCategoryCreated = (newCategory) => {
     setUserCategories(prev => [...prev, newCategory].sort((a,b) => a.name.localeCompare(b.name)));
     setShowAddForm(false);
+    setEditingCategory(null);
   };
 
   const handleCategoryUpdated = (updatedCategory) => {
@@ -53,12 +51,12 @@ const CategoriesPage = () => {
         .sort((a,b) => a.name.localeCompare(b.name))
     );
     setEditingCategory(null);
-    setShowAddForm(false); // Ocultar formulario si se estaba usando para editar
+    setShowAddForm(false);
   };
   
   const handleEditCategory = (category) => {
     setEditingCategory(category);
-    setShowAddForm(true); // Reutilizar el formulario para editar
+    setShowAddForm(true);
   };
 
   const handleDeleteCategory = async (categoryId) => {
@@ -66,7 +64,6 @@ const CategoriesPage = () => {
       try {
         await categoriesService.deleteCategory(categoryId);
         setUserCategories(prev => prev.filter(cat => cat.id !== categoryId));
-        // Mostrar mensaje de éxito (toast)
       } catch (err) {
         setError(err.response?.data?.message || 'Error al eliminar la categoría.');
         console.error("Error deleting category:", err);
@@ -75,18 +72,35 @@ const CategoriesPage = () => {
   };
 
   if (loading) {
-    return <div className="page-container"><p className="loading-text">Cargando categorías...</p></div>;
+    return <div className="page-container categories-page-loading"><p className="loading-text">Cargando categorías...</p></div>;
   }
 
   return (
     <div className="page-container categories-page">
-      <div className="categories-page-header">
+      {/* El header original se oculta por SettingsPage.css cuando está dentro de SettingsPage */}
+      <div className="categories-page-header" style={{ display: 'none' }}>
         <h1>Gestionar Categorías</h1>
+      </div>
+
+      {/* Barra de acciones para el botón */}
+      <div className="categories-actions-bar">
         <button 
-          onClick={() => { setShowAddForm(!showAddForm); setEditingCategory(null); }} 
-          className="button button-primary"
+          onClick={() => { 
+            if (showAddForm && editingCategory) { 
+                 setShowAddForm(false); 
+                 setEditingCategory(null);
+            } else if (showAddForm && !editingCategory) { 
+                setShowAddForm(false);
+            } else { 
+                setEditingCategory(null);
+                setShowAddForm(true);
+            }
+          }} 
+          // Se aplica la clase 'button-primary' para que tome los estilos de la barra azul
+          // y 'button-secondary' si es un estado de "cancelar"
+          className={`button ${showAddForm && !editingCategory ? 'button-secondary-cancel-form' : 'button-primary-action-bar'}`}
         >
-          {showAddForm && !editingCategory ? 'Cancelar' : '➕ Nueva Categoría Personalizada'}
+          {showAddForm && !editingCategory ? 'Cancelar Creación de Categoría' : (editingCategory ? 'Cancelar Edición': '➕ Nueva Categoría')}
         </button>
       </div>
 
@@ -115,7 +129,7 @@ const CategoriesPage = () => {
             ))}
           </ul>
         ) : (
-          !showAddForm && <p>Aún no has creado categorías personalizadas.</p>
+          !showAddForm && <p className="no-data-message">Aún no has creado categorías personalizadas.</p>
         )}
       </div>
 
@@ -128,7 +142,7 @@ const CategoriesPage = () => {
             ))}
           </ul>
         ) : (
-          <p>No hay categorías globales disponibles.</p>
+          <p className="no-data-message">No hay categorías globales disponibles.</p>
         )}
       </div>
     </div>

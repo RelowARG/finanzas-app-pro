@@ -1,5 +1,4 @@
-/* Ruta: finanzas-app-pro/frontend/src/pages/CategoriesPage.css */
-/* ARCHIVO NUEVO */
+/* Ruta: frontend/src/pages/CategoriesPage.css */
 .categories-page {
   /* Estilos para la página de gestión de categorías */
 }
@@ -10,7 +9,7 @@
   align-items: center;
   margin-bottom: 25px;
   padding-bottom: 15px;
-  border-bottom: 2px solid var(--primary-color); /* O un color temático para configuración */
+  border-bottom: 2px solid var(--primary-color);
 }
 
 .categories-page-header h1 {
@@ -19,8 +18,57 @@
 }
 
 .categories-page-header .button-primary {
-  width: auto !important; /* Para que no ocupe todo el ancho */
+  width: auto !important; 
   font-size: 0.9rem !important;
+}
+
+.categories-page-loading { 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.categories-actions-bar {
+  margin-bottom: 20px;
+}
+
+.categories-actions-bar .button.button-primary-action-bar {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background-color: var(--primary-color); 
+  color: white;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.categories-actions-bar .button.button-primary-action-bar:hover {
+  background-color: var(--primary-color-dark, #2980b9); 
+}
+
+.categories-actions-bar .button.button-secondary-cancel-form {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background-color: #6c757d; 
+  color: white;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.categories-actions-bar .button.button-secondary-cancel-form:hover {
+  background-color: #5a6268; 
 }
 
 .categories-section {
@@ -41,10 +89,9 @@
 }
 
 .global-categories-section {
-    background-color: #f8f9fa; /* Un fondo ligeramente diferente para las globales */
+    background-color: #f8f9fa; 
     border-color: #e9ecef;
 }
-
 
 .category-list {
   list-style: none;
@@ -53,9 +100,19 @@
 }
 
 .loading-text,
-.categories-page p { /* Estilo para mensajes de "no hay categorías" */
+.categories-page p:not(.error-message) { 
   color: #666;
 }
 .categories-page .error-message {
     margin-bottom: 15px;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+  color: #666;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+  margin-top: 10px;
 }

@@ -15,24 +15,27 @@ const Navbar = () => {
   const addMenuRef = useRef(null);
   const userMenuRef = useRef(null); 
 
-  const isUserMenuConfigComingSoon = true; 
+  const isUserMenuConfigComingSoon = false; 
 
-  const handleLogout = () => { /* ... (sin cambios) ... */ 
+  const handleLogout = () => { 
     logout(); 
     navigate('/'); 
   };
   const homeLinkPath = user ? "/dashboard" : "/";
-  const toggleAddMenu = (event) => { /* ... (sin cambios) ... */ 
+  
+  const toggleAddMenu = (event) => { 
     event.stopPropagation();
     setShowAddMenu(prev => !prev);
     setShowUserMenu(false); 
   };
-  const toggleUserMenu = (event) => { /* ... (sin cambios) ... */ 
+  
+  const toggleUserMenu = (event) => { 
     event.stopPropagation();
     setShowUserMenu(prev => !prev);
     setShowAddMenu(false); 
   };
-  useEffect(() => { /* ... (sin cambios) ... */ 
+  
+  useEffect(() => { 
     const handleClickOutside = (event) => {
       if (addMenuRef.current && !addMenuRef.current.contains(event.target)) {
         setShowAddMenu(false);
@@ -48,14 +51,15 @@ const Navbar = () => {
   }, []);
 
   const handleGenericModalClose = () => {
-    // Podría usarse como callback si el modal de transacción necesita hacer algo en la navbar
-    console.log("Modal de transacción cerrado/creado desde Navbar.");
+    console.log("Modal cerrado/creado desde Navbar.");
+    // Podrías querer forzar una recarga de datos del dashboard aquí si es necesario.
+    // Por ejemplo, si fetchDashboardData estuviera disponible vía contexto:
+    // if (typeof fetchDashboardData === 'function') fetchDashboardData();
   };
 
   return (
     <nav className="navbar new-style">
       <div className="nav-container">
-        {/* ... (logo y links principales sin cambios) ... */}
         <Link to={homeLinkPath} className="nav-logo">
           FinanzasApp
         </Link>
@@ -70,11 +74,6 @@ const Navbar = () => {
             </li>
             <li className="nav-item">
               <NavLink to="/reports" className={({ isActive }) => "nav-links" + (isActive ? " active" : "")}>Informes</NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink to="/settings/categories" className={({ isActive }) => "nav-links" + (isActive ? " active" : "")}>
-                Categorías
-              </NavLink>
             </li>
           </ul>
         ) : (
@@ -97,11 +96,10 @@ const Navbar = () => {
                 </button>
                 {showAddMenu && (
                   <div className="add-menu-dropdown">
-                    {/* *** BOTONES PARA ABRIR MODAL DE TRANSACCIÓN *** */}
                     <button 
                         onClick={() => {
                             openModal(MODAL_TYPES.ADD_TRANSACTION, { 
-                                onTransactionCreated: handleGenericModalClose,
+                                onTransactionCreated: handleGenericModalClose, // O una función más específica
                                 initialTypeFromButton: 'ingreso' 
                             });
                             setShowAddMenu(false);
@@ -125,7 +123,7 @@ const Navbar = () => {
                     <button 
                         onClick={() => {
                             openModal(MODAL_TYPES.ADD_ACCOUNT, { 
-                                onAccountCreated: handleGenericModalClose
+                                onAccountCreated: handleGenericModalClose 
                             });
                             setShowAddMenu(false);
                         }}
@@ -136,10 +134,22 @@ const Navbar = () => {
                     <Link to="/investments/add" className="add-menu-item" onClick={() => setShowAddMenu(false)}>
                       Nueva Inversión
                     </Link>
+                    {/* *** BOTÓN DE NUEVO RECURRENTE MODIFICADO *** */}
+                    <button 
+                        onClick={() => {
+                            openModal(MODAL_TYPES.ADD_RECURRING_TRANSACTION, { 
+                                onRecurringTransactionCreated: handleGenericModalClose // O una func. específica
+                            });
+                            setShowAddMenu(false);
+                        }}
+                        className="add-menu-item"
+                    >
+                      Nuevo Recurrente
+                    </button>
                   </div>
                 )}
               </div>
-              {/* ... (menú de usuario sin cambios) ... */}
+              
               <div className="nav-item nav-item-user-menu" ref={userMenuRef}>
                 <button onClick={toggleUserMenu} className="nav-user-button">
                   <span className="nav-user-avatar">{user.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
@@ -160,7 +170,7 @@ const Navbar = () => {
                         <span className="menu-item-icon">⚙️</span> Configuración
                       </span>
                     ) : (
-                      <Link to="/settings/categories" className="user-menu-item" onClick={() => setShowUserMenu(false)}>
+                      <Link to="/settings" className="user-menu-item" onClick={() => setShowUserMenu(false)}>
                         <span className="menu-item-icon">⚙️</span> Configuración
                       </Link>
                     )}
@@ -169,7 +179,7 @@ const Navbar = () => {
                       <span className="menu-item-icon">❓</span> Ayuda
                     </Link>
                     {user.role === 'admin' && (
-                      <Link to="/admin/users" className="user-menu-item" onClick={() => setShowUserMenu(false)}>
+                      <Link to="/admin" className="user-menu-item" onClick={() => setShowUserMenu(false)}>
                         <span className="menu-item-icon">👑</span> Admin Panel
                       </Link>
                     )}
@@ -182,9 +192,8 @@ const Navbar = () => {
               </div>
             </>
           ) : (
-             /* ... (botones de login/register sin cambios) ... */
             <>
-              <Link to="/" className="button button-secondary nav-button-action">
+              <Link to="/login" className="button button-secondary nav-button-action">
                 Iniciar Sesión
               </Link>
               <Link to="/register" className="button button-primary nav-button-action">
