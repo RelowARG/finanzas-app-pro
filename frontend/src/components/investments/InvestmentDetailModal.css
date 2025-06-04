@@ -1,0 +1,170 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/investments/InvestmentDetailModal.css */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); 
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1050; padding: 20px;
+}
+
+/* Tema blanco para el modal de detalle */
+.investment-detail-modal-content.white-theme-modal {
+  background-color: #ffffff; /* Fondo blanco */
+  color: var(--dark-color, #212529); /* Texto oscuro */
+  padding: 0;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15); 
+  width: 100%;
+  max-width: 480px; 
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; 
+}
+
+.investment-detail-modal-content.white-theme-modal .investment-detail-modal-header {
+  display: flex;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e9ecef; /* Borde claro */
+}
+.investment-detail-modal-content.white-theme-modal .modal-icon {
+  font-size: 2rem;
+  margin-right: 15px;
+  color: var(--primary-color); 
+}
+.investment-detail-modal-content.white-theme-modal .modal-title-group h3 {
+  color: var(--dark-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin:0 0 2px 0;
+}
+.investment-detail-modal-content.white-theme-modal .modal-title-group .modal-subtitle {
+  color: #6c757d; 
+  font-size: 0.8rem;
+}
+.investment-detail-modal-content.white-theme-modal .close-modal-button {
+  background: #f0f2f5; 
+  color: #6c757d; 
+  border: none;
+  font-size: 1.4rem;
+  font-weight: bold;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+.investment-detail-modal-content.white-theme-modal .close-modal-button:hover {
+  background-color: #e4e7eb;
+  color: var(--dark-color);
+}
+
+.investment-detail-modal-content.white-theme-modal .investment-detail-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.investment-detail-modal-content.white-theme-modal .detail-section h4 {
+  color: var(--primary-color); 
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin: 0 0 10px 0;
+  letter-spacing: 0.5px;
+}
+
+.investment-detail-modal-content.white-theme-modal .detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.investment-detail-modal-content.white-theme-modal .detail-grid-item {
+  background-color: #f8f9fa; 
+  border: 1px solid #e9ecef; 
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+.investment-detail-modal-content.white-theme-modal .detail-grid-item .label {
+  color: #6c757d; 
+  font-size: 0.75rem;
+   margin-bottom: 3px;
+  display: block;
+}
+.investment-detail-modal-content.white-theme-modal .detail-grid-item .value {
+  color: var(--dark-color); 
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+.investment-detail-modal-content.white-theme-modal .detail-grid-item .value.prominent {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--primary-color); 
+}
+.investment-detail-modal-content.white-theme-modal .profit-positive { color: var(--secondary-color, #2ecc71) !important; }
+.investment-detail-modal-content.white-theme-modal .profit-negative { color: var(--danger-color, #e74c3c) !important; }
+
+.investment-detail-modal-content.white-theme-modal .notes-section p {
+  background-color: #f8f9fa;
+  border-left: 3px solid #ced4da;
+  color: #495057;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding: 10px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+
+.investment-detail-modal-content.white-theme-modal .investment-detail-modal-actions {
+  border-top: 1px solid #e9ecef; 
+  background-color: #f8f9fa; 
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 20px;
+  gap: 10px;
+}
+.investment-detail-modal-content.white-theme-modal .investment-detail-modal-actions .button {
+  width: auto !important;
+  padding: 10px 20px !important;
+  font-size: 0.95rem !important;
+  font-weight: 600;
+}
+.investment-detail-modal-content.white-theme-modal .investment-detail-modal-actions .button-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+.investment-detail-modal-content.white-theme-modal .investment-detail-modal-actions .button-primary:hover {
+  background-color: var(--primary-color-dark) !important;
+}
+.investment-detail-modal-content.white-theme-modal .investment-detail-modal-actions .button-secondary {
+  background-color: #6c757d !important;
+  border-color: #6c757d !important;
+  color: white !important;
+}
+.investment-detail-modal-content.white-theme-modal .investment-detail-modal-actions .button-secondary:hover {
+  background-color: #5a6268 !important;
+}
+
+.investment-detail-modal-content.white-theme-modal .portfolio-chart-placeholder-main {
+  background-color: #f0f4f8;
+  border: 1px dashed #d6dde4;
+  color: #6c757d;
+  border-radius: 8px;
+  padding: 15px;
+  min-height: 150px;
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.investment-detail-modal-content.white-theme-modal .portfolio-chart-placeholder-main p {
+  font-size: 0.85rem;
+}
+.investment-detail-modal-content.white-theme-modal .portfolio-chart-placeholder-main small {
+    font-size: 0.7rem;
+}

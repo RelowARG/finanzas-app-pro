@@ -1,0 +1,141 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/investments/InvestmentListItem.css */
+.investment-list-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: var(--border-radius, 6px); /* Más sutil */
+  margin-bottom: 8px; /* Espacio entre ítems */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.investment-list-item:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+}
+
+.item-main-info {
+  display: flex;
+  align-items: center;
+  flex-grow: 1; /* Ocupa el espacio principal */
+  overflow: hidden; /* Para el ellipsis */
+  margin-right: 15px;
+}
+
+.item-icon {
+  font-size: 1.8rem; /* Similar al de la tarjeta */
+  margin-right: 12px;
+  min-width: 30px;
+  text-align: center;
+  color: var(--primary-color); /* O podrías hacerlo variable */
+}
+
+.item-name-details {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.item-name {
+  font-size: 1rem; /* Similar a la tarjeta */
+  font-weight: 600;
+  color: var(--dark-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-subtitle { /* Para ticker y cantidad, o tipo */
+  font-size: 0.8rem;
+  color: #6c757d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-financials {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  min-width: 150px; /* Ajustar según necesidad */
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.item-current-value {
+  font-size: 1.05rem; /* Ligeramente más pequeño que el valor actual de la tarjeta */
+  font-weight: 600;
+  color: var(--dark-color);
+}
+
+.item-profit-loss {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.item-profit-loss.profit-positive {
+  color: var(--secondary-color, #2ecc71);
+}
+.item-profit-loss.profit-negative {
+  color: var(--danger-color, #e74c3c);
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.item-actions .button-small {
+  padding: 5px 10px !important;
+  font-size: 0.8rem !important;
+  width: auto !important; /* Asegurar que no se estiren */
+}
+
+/* Adaptaciones para móvil */
+@media (max-width: 768px) {
+  .investment-list-item {
+    flex-wrap: wrap; /* Permitir que los elementos se envuelvan */
+    padding: 10px;
+  }
+  .item-main-info {
+    flex-basis: 100%; /* Ocupar todo el ancho inicialmente */
+    margin-right: 0;
+    margin-bottom: 8px; /* Espacio si se envuelven los otros elementos */
+  }
+  .item-financials {
+    flex-basis: calc(60% - 8px); /* Ocupar parte del ancho */
+    text-align: left;
+    align-items: flex-start;
+    min-width: 120px;
+    margin-right: 8px;
+  }
+  .item-actions {
+    flex-basis: calc(40% - 8px); /* Ocupar el resto del ancho */
+    justify-content: flex-end;
+  }
+  .item-name {
+    font-size: 0.95rem;
+  }
+  .item-current-value {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+    .item-financials, .item-actions {
+        flex-basis: 100%;
+        margin-right: 0;
+        margin-top: 8px;
+    }
+    .item-financials {
+        align-items: flex-start;
+    }
+    .item-actions {
+        justify-content: flex-start; /* Alinear botones a la izquierda en filas separadas */
+    }
+}.investment-list-item-wrapper {
+  cursor: pointer; /* Indicar que es clickeable */
+}

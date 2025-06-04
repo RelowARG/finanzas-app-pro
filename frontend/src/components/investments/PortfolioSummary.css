@@ -1,0 +1,148 @@
+/* Ruta: finanzas-app-pro/frontend/src/components/investments/PortfolioSummary.css */
+
+/* Estilos generales para el widget con tema blanco */
+.portfolio-summary-main-widget.white-theme {
+  background-color: #ffffff;
+  color: var(--dark-color, #212529);
+  padding: 20px 25px;
+  border-radius: var(--border-radius-large, 10px);
+  margin-bottom: 25px;
+  box-shadow: var(--box-shadow, 0 2px 4px rgba(0,0,0,0.07));
+  border: 1px solid #e9ecef;
+}
+
+.portfolio-summary-main-widget.white-theme .portfolio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Para mejor alineación vertical del toggle y el texto */
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.portfolio-summary-main-widget.white-theme .portfolio-total-value .value-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 2px;
+  display: block;
+}
+.portfolio-summary-main-widget.white-theme .portfolio-total-value .value-amount {
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1.1;
+  color: var(--dark-color);
+}
+
+/* --- INICIO DE CAMBIOS PARA BOTONES ARS/USD --- */
+.portfolio-summary-main-widget.white-theme .currency-toggle-main {
+  display: flex;
+  border-radius: 6px; /* Bordes redondeados para el grupo de botones */
+  overflow: hidden; /* Para que los bordes redondeados se apliquen bien */
+  /* No es necesario un borde general aquí si los botones lo simulan */
+  /* border: 1px solid #ced4da; */ 
+  align-self: center; /* Centrar verticalmente con el texto del valor total si es necesario */
+}
+
+.portfolio-summary-main-widget.white-theme .currency-toggle-main button {
+  background-color: #e9ecef; /* Fondo gris claro para el botón inactivo (tema blanco) */
+  color: #495057; /* Texto oscuro para el botón inactivo */
+  border: 1px solid #d0d7de; /* Borde sutil para separar visualmente del fondo blanco */
+  /* Quitar border-right de aquí, se maneja con :not(:last-child) */
+  padding: 5px 12px !important; /* Padding para hacerlos pequeños */
+  font-size: 0.75rem !important; /* Fuente pequeña */
+  font-weight: 500 !important;   
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  line-height: 1.3; /* Ajustar para centrado vertical */
+  /* Asegurar que no haya bordes dobles si el contenedor también tiene uno */
+}
+
+/* Quitar el borde derecho del último botón si el contenedor tiene el borde */
+.portfolio-summary-main-widget.white-theme .currency-toggle-main button:last-child {
+  border-right: 1px solid #d0d7de; /* Mantener el borde derecho para el último botón */
+}
+.portfolio-summary-main-widget.white-theme .currency-toggle-main button:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+   border-right: none; /* El botón inactivo no necesita borde derecho si el activo lo tiene */
+}
+.portfolio-summary-main-widget.white-theme .currency-toggle-main button:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+
+/* Estilo para el botón activo, replicando el azul de la imagen de referencia oscura */
+.portfolio-summary-main-widget.white-theme .currency-toggle-main button.active {
+  background-color: var(--primary-color, #007bff) !important; /* Azul primario */
+  color: white !important;
+  border-color: var(--primary-color, #007bff) !important; /* Borde del mismo color que el fondo */
+  font-weight: 600 !important;
+  position: relative; /* Para que el z-index funcione si es necesario */
+  z-index: 2; /* Para que el borde del activo esté sobre el inactivo si se superponen */
+}
+
+/* Hover para botones inactivos */
+.portfolio-summary-main-widget.white-theme .currency-toggle-main button:not(.active):hover {
+  background-color: #dde1e5; /* Un hover un poco más oscuro */
+  border-color: #b8bfc6;
+}
+
+.portfolio-summary-main-widget.white-theme .currency-toggle-main button:disabled {
+  background-color: #e9ecef;
+  color: #adb5bd;
+  cursor: not-allowed;
+  border-color: #dee2e6;
+}
+/* --- FIN DE CAMBIOS PARA BOTONES ARS/USD --- */
+
+
+.portfolio-summary-main-widget.white-theme .loading-text-small {
+  color: #6c757d;
+}
+.portfolio-summary-main-widget.white-theme .error-message-small {
+  color: var(--danger-color);
+  background-color: rgba(var(--danger-rgb, 220, 53, 69), 0.05);
+  border-left: 3px solid var(--danger-color);
+  padding: 5px 8px;
+  text-align: left;
+}
+
+.portfolio-summary-main-widget.white-theme .portfolio-performance {
+  margin-bottom: 20px;
+}
+.portfolio-summary-main-widget.white-theme .portfolio-performance .performance-label {
+  color: #6c757d;
+}
+
+.portfolio-summary-main-widget.white-theme .portfolio-chart-placeholder-main {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  color: #6c757d;
+  border: 1px dashed #d6dde4;
+  /* ... (otros estilos del placeholder como estaban) ... */
+  padding: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+  min-height: 180px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.portfolio-summary-main-widget.white-theme .portfolio-chart-placeholder-main small {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: #868e96;
+}
+.portfolio-summary-main-widget.white-theme .portfolio-performance .performance-value.profit-positive {
+  color: var(--secondary-color, #2ecc71) !important;
+}
+.portfolio-summary-main-widget.white-theme .portfolio-performance .performance-value.profit-negative {
+  color: var(--danger-color, #e74c3c) !important;
+}
+.portfolio-summary-main-widget.white-theme .portfolio-performance .performance-label {
+  color: #6c757d;
+}
+/* Estilos para el título "Mis Instrumentos" que está en InvestmentsPage.jsx */
+/* (Estos no deberían estar en PortfolioSummary.css) */
