@@ -1,39 +1,49 @@
-// finanzas-app-pro/frontend/src/pages/GoalsPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import goalsService from '../services/goals.service';
-import GoalItem from '../components/goals/GoalItem'; // *** IMPORTAR EL COMPONENTE REAL ***
-import { alertService } from '../utils/alert.service'; //
-import './GoalsPage.css'; //
+import goalsService from '../services/goals.service.js';
+import accountService from '../services/accounts.service.js';
+import GoalItem from '../components/goals/GoalItem.jsx';
+import { alertService } from '../utils/alert.service.js';
+import { useModals, MODAL_TYPES } from '../contexts/ModalContext.jsx';
+import './GoalsPage.css';
 
 const GoalsPage = () => {
   const [goals, setGoals] = useState([]);
+  const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filterStatus, setFilterStatus] = useState(''); 
+  const { openModal } = useModals();
 
-  const fetchGoals = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
       const filters = {};
       if (filterStatus) filters.statusFilter = filterStatus;
-      const data = await goalsService.getAllGoals(filters);
-      setGoals(data || []);
+
+      const [goalsData, accountsData] = await Promise.all([
+        goalsService.getAllGoals(filters),
+        accountService.getAllAccounts()
+      ]);
+      
+      setGoals(goalsData || []);
+      setAccounts(accountsData || []);
+
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Error al cargar las metas.');
+      setError(err.response?.data?.message || err.message || 'Error al cargar datos.');
       setGoals([]);
+      setAccounts([]);
     } finally {
       setLoading(false);
     }
   }, [filterStatus]);
 
   useEffect(() => {
-    fetchGoals();
-  }, [fetchGoals]);
+    fetchData();
+  }, [fetchData]);
 
   const handleDeleteGoal = async (goalId) => {
-    const result = await alertService.showConfirmationDialog({ //
+    const result = await alertService.showConfirmationDialog({
       title: 'Confirmar Eliminación',
       text: '¿Estás seguro de que quieres eliminar esta meta? Esta acción no se puede deshacer.',
       confirmButtonText: 'Sí, eliminar',
@@ -43,41 +53,66 @@ const GoalsPage = () => {
       try {
         setLoading(true); 
         await goalsService.deleteGoal(goalId);
-        alertService.showSuccessToast('Meta Eliminada', 'La meta ha sido eliminada correctamente.'); //
-        fetchGoals(); 
+        alertService.showSuccessToast('Meta Eliminada', 'La meta ha sido eliminada correctamente.');
+        fetchData(); 
       } catch (err) {
         const deleteError = err.response?.data?.message || err.message || 'Error al eliminar la meta.';
         setError(deleteError);
-        alertService.showErrorAlert('Error al Eliminar', deleteError); //
+        alertService.showErrorAlert('Error al Eliminar', deleteError);
         setLoading(false);
       }
     }
   };
   
-  // Placeholder para la función de añadir progreso (se implementará en el futuro si es necesario)
-  const handleAddProgress = (goalId) => {
-    console.log("Añadir progreso a la meta ID:", goalId);
-    // Aquí iría la lógica para abrir un modal o redirigir a una página para añadir progreso
-    alertService.showInfoAlert('Próximamente', 'Funcionalidad para añadir progreso a metas estará disponible pronto.');
+  const handleAddProgress = (goal) => {
+    openModal(MODAL_TYPES.ADD_GOAL_PROGRESS, {
+      goal,
+      accounts,
+      onProgressAdded: handleGoalModified
+    });
   };
 
+  const handleGoalModified = () => {
+    fetchData();
+  };
+  
+  const handleOpenEditModal = (goal) => {
+    openModal(MODAL_TYPES.EDIT_GOAL, {
+      goalData: goal,
+      onGoalUpdated: handleGoalModified
+    });
+  };
+
+  if (loading && goals.length === 0) {
+    return (
+      <div className="page-container goals-page">
+        <div className="goals-page-header">
+          <h1>Mis Metas</h1>
+        </div>
+        <p className="loading-text">Cargando metas...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="page-container goals-page"> {/* */}
-      <div className="goals-page-header"> {/* */}
+    <div className="page-container goals-page">
+      <div className="goals-page-header">
         <h1>Mis Metas</h1>
-        <Link to="/goals/add" className="button button-primary">
+        <button 
+          onClick={() => openModal(MODAL_TYPES.ADD_GOAL, { onGoalCreated: handleGoalModified })} 
+          className="button button-primary"
+        >
           <span className="icon-add">➕</span> Nueva Meta
-        </Link>
+        </button>
       </div>
 
-      <div className="filter-controls" style={{ marginBottom: '20px' }}> {/* */}
-        <label htmlFor="statusFilter" style={{marginRight:'10px'}}>Filtrar por estado: </label>
+      <div className="filter-controls">
+        <label htmlFor="statusFilter">Filtrar por estado: </label>
         <select
           id="statusFilter"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="filter-select" /* */
+          className="filter-select"
         >
           <option value="">Todas</option>
           <option value="active">Activas</option>
@@ -92,20 +127,29 @@ const GoalsPage = () => {
       {loading ? (
         <p className="loading-text">Cargando metas...</p>
       ) : goals.length > 0 ? (
-        <div className="goals-list"> {/* */}
+        <div className="goals-grid">
           {goals.map(goal => (
             <GoalItem
               key={goal.id}
               goal={goal}
               onDelete={handleDeleteGoal}
-              onAddProgress={handleAddProgress} // Pasar la función de añadir progreso
+              onEdit={handleOpenEditModal}
+              onAddProgress={handleAddProgress}
             />
           ))}
         </div>
       ) : (
-        <p className="no-data-message">
-          Aún no has creado ninguna meta {filterStatus ? `con el estado "${filterStatus}"` : ''}. ¡Empieza a planificar tus objetivos!
-        </p>
+        <div className="no-data-message">
+            <div className="no-data-icon">🏆</div>
+            <p>Aún no has creado ninguna meta {filterStatus ? `con el estado "${filterStatus}"` : ''}.</p>
+            <p className="no-data-subtitle">¡Empieza a planificar tus objetivos!</p>
+            <button 
+                onClick={() => openModal(MODAL_TYPES.ADD_GOAL, { onGoalCreated: handleGoalModified })} 
+                className="button button-secondary" style={{marginTop: '10px'}}
+            >
+              Crear mi primera meta
+            </button>
+        </div>
       )}
     </div>
   );

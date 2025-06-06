@@ -1,25 +1,19 @@
-// finanzas-app-pro/frontend/src/components/goals/GoalItem.jsx
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { formatDateDMY, formatCurrency } from '../../utils/formatters'; //
-// import './GoalItem.css'; // Crearemos este archivo CSS a continuación
+import { formatDateDMY, formatCurrency } from '../../utils/formatters.js'; //
+import './GoalItem.css';
 
-const GoalItem = ({ goal, onDelete, onAddProgress }) => {
+const GoalItem = ({ goal, onDelete, onEdit, onAddProgress }) => {
   if (!goal) {
     return null;
   }
 
-  const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
-  const cappedProgress = Math.min(Math.max(progress, 0), 100); // Asegurar que esté entre 0 y 100
+  const progress = goal.targetAmount > 0 ? (parseFloat(goal.currentAmount) / parseFloat(goal.targetAmount)) * 100 : 0;
+  const cappedProgress = Math.min(Math.max(progress, 0), 100);
 
-  let progressBarClass = 'progress-bar-normal';
-  if (cappedProgress >= 100) {
-    progressBarClass = 'progress-bar-completed';
-  } else if (cappedProgress > 75) {
-    progressBarClass = 'progress-bar-good';
-  } else if (cappedProgress > 40) {
-    progressBarClass = 'progress-bar-medium';
-  }
+  let progressBarClass = 'progress-bar-medium';
+  if (cappedProgress >= 100) progressBarClass = 'progress-bar-completed';
+  else if (cappedProgress > 75) progressBarClass = 'progress-bar-good';
+  else if (cappedProgress <= 25) progressBarClass = 'progress-bar-low';
 
   const remainingAmount = parseFloat(goal.targetAmount) - parseFloat(goal.currentAmount);
 
@@ -34,7 +28,7 @@ const GoalItem = ({ goal, onDelete, onAddProgress }) => {
   };
 
   return (
-    <div className={`goal-item-card status-${goal.status}`}> {/* Define .goal-item-card en CSS */}
+    <div className={`goal-item-card status-${goal.status}`}>
       <div className="goal-item-header">
         <span className="goal-item-icon">{goal.icon || '🎯'}</span>
         <h3 className="goal-item-name">{goal.name}</h3>
@@ -45,54 +39,54 @@ const GoalItem = ({ goal, onDelete, onAddProgress }) => {
 
       <div className="goal-item-body">
         <div className="goal-amounts">
-          <p>
-            <strong>Actual:</strong> {formatCurrency(goal.currentAmount, goal.currency || 'ARS')}
-          </p>
-          <p>
-            <strong>Objetivo:</strong> {formatCurrency(goal.targetAmount, goal.currency || 'ARS')}
-          </p>
+          <div className="amount-block">
+            <span className="label">Ahorrado</span>
+            <span className="value">{formatCurrency(goal.currentAmount, goal.currency || 'ARS')}</span>
+          </div>
+          <div className="amount-block target">
+            <span className="label">Objetivo</span>
+            <span className="value">{formatCurrency(goal.targetAmount, goal.currency || 'ARS')}</span>
+          </div>
         </div>
 
-        <div className="goal-progress-bar-container"> {/* Define en CSS */}
+        <div className="goal-progress-bar-container">
           <div
-            className={`goal-progress-bar ${progressBarClass}`} // Define en CSS
+            className={`goal-progress-bar ${progressBarClass}`}
             style={{ width: `${cappedProgress}%` }}
             title={`${cappedProgress.toFixed(1)}% alcanzado`}
           >
-            {cappedProgress > 10 ? `${cappedProgress.toFixed(0)}%` : ''}
+            {cappedProgress > 15 ? `${cappedProgress.toFixed(0)}%` : ''}
           </div>
         </div>
         
-        <p className="goal-remaining">
-          <strong>Restante:</strong> 
-          <span className={remainingAmount <= 0 ? 'text-positive' : 'text-negative'}>
-            {formatCurrency(remainingAmount, goal.currency || 'ARS')}
-          </span>
-        </p>
+        {remainingAmount > 0 && goal.status === 'active' && (
+            <p className="goal-remaining">
+                Faltan: <strong>{formatCurrency(remainingAmount, goal.currency || 'ARS')}</strong>
+            </p>
+        )}
 
         {goal.targetDate && (
           <p className="goal-target-date">
-            <strong>Fecha Límite:</strong> {formatDateDMY(goal.targetDate)}
+            Fecha Límite: <strong>{formatDateDMY(goal.targetDate)}</strong>
           </p>
         )}
         {goal.description && <p className="goal-description"><em>{goal.description}</em></p>}
-        {goal.priority && <p className="goal-priority"><strong>Prioridad:</strong> <span className={`priority-${goal.priority}`}>{goal.priority}</span></p>}
       </div>
 
-      <div className="goal-item-actions"> {/* Define en CSS */}
-        {/* Botón para añadir progreso (funcionalidad futura) */}
-        {goal.status === 'active' && onAddProgress && (
+      {/* *** SECCIÓN DE ACCIONES CORREGIDA *** */}
+      <div className="goal-item-actions">
+        {goal.status === 'active' && (
           <button 
-            onClick={() => onAddProgress(goal.id)} 
-            className="button button-small button-action" // Define en CSS
+            onClick={() => onAddProgress(goal)} 
+            className="button button-small button-action"
             title="Registrar Avance"
           >
             ➕ Avance
           </button>
         )}
-        <Link to={`/goals/edit/${goal.id}`} className="button button-small button-edit">
+        <button onClick={() => onEdit(goal)} className="button button-small button-edit">
           Editar
-        </Link>
+        </button>
         <button onClick={() => onDelete(goal.id)} className="button button-small button-delete">
           Eliminar
         </button>

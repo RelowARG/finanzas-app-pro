@@ -26,7 +26,7 @@ const showErrorAlert = (title = 'Error', text = 'Algo salió mal.') => {
     title,
     text,
     icon: 'error',
-    confirmButtonColor: 'var(--danger-color, #d33)' // Usar variable CSS o color directo
+    confirmButtonColor: 'var(--danger-color, #d33)'
   });
 };
 
@@ -42,13 +42,24 @@ const showConfirmationDialog = (config = {}) => {
     cancelButtonText: 'Cancelar'
   };
   const finalConfig = { ...defaultConfig, ...config };
-  return MySwal.fire(finalConfig); // Retorna la promesa
+  return MySwal.fire(finalConfig);
 };
 
-// Podrías añadir más helpers: showInfo, showWarning, etc.
+// *** INICIO: FUNCIÓN AÑADIDA ***
+const showInfoAlert = (title = 'Información', text = '') => {
+  MySwal.fire({
+    title,
+    text,
+    icon: 'info',
+    confirmButtonColor: 'var(--primary-color, #3085d6)'
+  });
+};
+// *** FIN: FUNCIÓN AÑADIDA ***
+
 
 export const alertService = {
   showSuccessToast,
   showErrorAlert,
-  showConfirmationDialog
+  showConfirmationDialog,
+  showInfoAlert // <<< Exportar la nueva función
 };

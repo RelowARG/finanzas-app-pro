@@ -1,12 +1,9 @@
-// finanzas-app-pro/backend/api/goals/goals.routes.js
 const express = require('express');
 const router = express.Router();
-const goalsController = require('./goals.controller');
-const { protect } = require('../../middleware/authMiddleware'); // O el middleware de permiso que definas
+const goalsController = require('./goals.controller.js');
+const { protect } = require('../../middleware/authMiddleware.js');
 
-// Proteger todas las rutas de metas
 router.use(protect);
-// Podrías añadir un checkPermission específico si lo creas, ej: checkPermission('manage_goals')
 
 router.route('/')
   .post(goalsController.createGoal)
@@ -16,5 +13,8 @@ router.route('/:id')
   .get(goalsController.getGoalById)
   .put(goalsController.updateGoal)
   .delete(goalsController.deleteGoal);
+
+// *** RUTA FALTANTE AÑADIDA AQUÍ ***
+router.post('/:goalId/add-progress', goalsController.addProgressToGoal);
 
 module.exports = router;

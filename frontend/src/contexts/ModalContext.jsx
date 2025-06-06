@@ -1,4 +1,3 @@
-// Ruta: finanzas-app-pro/frontend/src/contexts/ModalContext.jsx
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
 const ModalContext = createContext(null);
@@ -13,6 +12,12 @@ export const MODAL_TYPES = {
   EDIT_RECURRING_TRANSACTION: 'EDIT_RECURRING_TRANSACTION',
   ADD_BUDGET: 'ADD_BUDGET',
   EDIT_BUDGET: 'EDIT_BUDGET',
+  ADD_GOAL: 'ADD_GOAL',
+  EDIT_GOAL: 'EDIT_GOAL',
+  ADD_GOAL_PROGRESS: 'ADD_GOAL_PROGRESS',
+  // *** NUEVOS TIPOS DE MODAL ***
+  ADD_DEBT_LOAN: 'ADD_DEBT_LOAN',
+  EDIT_DEBT_LOAN: 'EDIT_DEBT_LOAN',
 };
 
 export const ModalProvider = ({ children }) => {

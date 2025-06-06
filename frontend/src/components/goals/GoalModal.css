@@ -1,0 +1,23 @@
+/* Ruta: frontend/src/components/goals/GoalModal.css */
+.goal-modal-content.modal-content-atm {
+  max-width: 650px;
+}
+
+.goal-modal-content .goal-form .form-row-atm {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.goal-modal-content .form-group-atm input:focus,
+.goal-modal-content .form-group-atm select:focus,
+.goal-modal-content .form-group-atm textarea:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 1px rgba(var(--secondary-rgb), 0.25);
+}
+
+.goal-modal-content .modal-actions-atm .button-primary {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+}
+.goal-modal-content .modal-actions-atm .button-primary:hover {
+  background-color: #27ae60 !important;
+}
