@@ -1,28 +1,17 @@
 /* Ruta: finanzas-app-pro/frontend/src/components/dashboard/InvestmentHighlights.css */
 
-.investment-highlights-widget {
-  /* .dashboard-widget ya define height: 300px y overflow: hidden */
-  /* El contenido debe gestionarse para caber aquí */
-}
-
 .investment-highlights-widget .dashboard-widget-content {
   display: flex;
   flex-direction: column;
-  /* overflow: hidden; /* Si se añade aquí, CORTARÁ el contenido abruptamente. Mejor manejarlo en los hijos. */
-}
-
-/* Eliminar el color específico para el h3 para que herede el general */
-.investment-highlights-widget .widget-header-container h3 {
-  /* color: #1abc9c; */ /* Eliminado para usar color por defecto */
 }
 
 .total-investments-value {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1rem; /* Ajustado para consistencia */
-  padding: 8px 0; 
-  margin-bottom: 8px; /* Reducido */
+  font-size: 0.95rem; /* Ajuste de fuente */
+  padding-bottom: 12px; 
+  margin-bottom: 15px; /* Más espacio para separar visualmente */
   border-bottom: 1px dashed #e0e0e0;
   flex-shrink: 0; 
 }
@@ -34,41 +23,35 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    gap: 2px;
 }
 .total-value-currency-item {
   font-weight: bold;
   color: var(--primary-color);
-  font-size: 1.1rem; /* Ajustado */
-  margin-left: 10px; 
-}
-.total-value-currency-item:first-child {
-    margin-left: 0;
+  font-size: 1.2rem;
 }
 
 .top-investments-list {
-  margin-top: 5px; 
-  margin-bottom: 8px; 
-  flex-grow: 1; 
-  overflow-y: hidden; /* Ocultar el scroll de la lista si excede */
-  min-height: 0; 
+  /* Se elimina flex-grow: 1 para que no ocupe espacio extra */
+  margin-bottom: 12px; /* Margen estándar debajo de la lista */
+  flex-shrink: 0;
 }
 
 .top-investments-list h4 {
-  font-size: 0.8rem; /* Más pequeño */
+  font-size: 0.8rem;
   color: #555;
-  margin-bottom: 5px; 
+  margin-top: 0;
+  margin-bottom: 8px;
   font-weight: 600;
-  flex-shrink: 0;
 }
 
 .top-investments-list ul {
   list-style: none;
   padding: 0;
   margin: 0;
-}
-
-.top-investments-list li {
-  margin-bottom: 4px; /* Reducido */
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* Espacio entre cada inversión */
 }
 
 .top-investments-list li a {
@@ -76,10 +59,10 @@
   align-items: center;
   text-decoration: none;
   color: #454545;
-  padding: 4px 6px; /* Reducido */
+  padding: 6px 8px;
   border-radius: var(--border-radius);
   transition: background-color 0.2s ease;
-  font-size: 0.8rem; /* Más pequeño */
+  font-size: 0.85rem;
 }
 
 .top-investments-list li a:hover {
@@ -87,8 +70,8 @@
 }
 
 .inv-icon {
-  margin-right: 6px; 
-  font-size: 1em; 
+  margin-right: 8px; 
+  font-size: 1.1em; 
 }
 
 .inv-name {
@@ -96,34 +79,23 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-right: 8px; /* Espacio para que no se pegue al valor */
 }
 
 .inv-value {
   font-weight: 500;
-  margin-left: 6px; 
+  margin-left: auto; /* Empuja el valor a la derecha */
   white-space: nowrap;
   color: var(--primary-color);
+  flex-shrink: 0; /* Evita que el valor se encoja */
 }
 
-/* Estilo del botón "Ver Todas las Inversiones" para que se parezca a button-primary */
-.button-view-all-investments { /* Nueva clase para evitar conflictos */
-  display: block;
-  width: 100% !important; 
-  margin-top: auto; /* Empujar al final si hay espacio */
-  padding: 8px 15px !important; 
-  font-size: 0.85rem !important; 
-  text-align: center;
-  background-color: var(--primary-color) !important;
-  color: white !important;
-  border: 1px solid var(--primary-color) !important;
-  border-radius: var(--border-radius) !important;
-  text-decoration: none;
-  font-weight: 500;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-  flex-shrink: 0; 
-}
-.button-view-all-investments:hover {
-  background-color: var(--primary-color-dark, #0056b3) !important;
-  border-color: var(--primary-color-dark, #0056b3) !important;
-  color: white !important;
+/* El botón ahora se posiciona justo después de la lista */
+.button-view-all { 
+  margin-top: auto; /* Empuja el botón al fondo del espacio restante */
+  align-self: center;
+  width: auto !important;
+  padding: 6px 20px !important;
+  font-size: 0.8rem !important;
+  flex-shrink: 0;
 }

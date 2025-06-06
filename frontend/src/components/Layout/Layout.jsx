@@ -1,4 +1,4 @@
-// Ruta: finanzas-app-pro/frontend/src/components/Layout/Layout.jsx
+// Ruta: /frontend/src/components/Layout/Layout.jsx
 import React from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';   
@@ -11,9 +11,10 @@ import AddRecurringTransactionModal from '../recurring/AddRecurringTransactionMo
 import EditRecurringTransactionModal from '../recurring/EditRecurringTransactionModal'; 
 import AddBudgetModal from '../budgets/AddBudgetModal';
 import EditBudgetModal from '../budgets/EditBudgetModal';
-// *** NUEVOS IMPORTS PARA MODALES DE METAS ***
 import AddGoalModal from '../goals/AddGoalModal.jsx';
 import EditGoalModal from '../goals/EditGoalModal.jsx';
+import AddInvestmentModal from '../investments/AddInvestmentModal';
+import EditInvestmentModal from '../investments/EditInvestmentModal';
 import './Layout.css';
 
 const Layout = ({ children, showChrome = true }) => {
@@ -37,30 +38,14 @@ const Layout = ({ children, showChrome = true }) => {
       
       {showChrome && <Footer />} 
 
-      {/* ... (renderizado de otros modales existentes) ... */}
-      {modalType === MODAL_TYPES.ADD_ACCOUNT && ( <AddAccountModal isOpen={true} onClose={closeModal} {...modalProps} /> )}
-      {modalType === MODAL_TYPES.PAY_CREDIT_CARD && ( <PayCreditCardModal isOpen={true} onClose={closeModal} {...modalProps} /> )}
-      {modalType === MODAL_TYPES.ADD_TRANSACTION && ( <AddTransactionModal isOpen={true} onClose={closeModal} {...modalProps} /> )}
-      {modalType === MODAL_TYPES.ADD_RECURRING_TRANSACTION && ( <AddRecurringTransactionModal isOpen={true} onClose={closeModal} {...modalProps} /> )}
-      {modalType === MODAL_TYPES.EDIT_RECURRING_TRANSACTION && ( <EditRecurringTransactionModal isOpen={true} onClose={closeModal} {...modalProps} /> )}
-      {modalType === MODAL_TYPES.ADD_BUDGET && ( <AddBudgetModal isOpen={true} onClose={closeModal} {...modalProps} /> )}
-      {modalType === MODAL_TYPES.EDIT_BUDGET && ( <EditBudgetModal isOpen={true} onClose={closeModal} {...modalProps} /> )}
-
-      {/* *** RENDERIZADO DE NUEVOS MODALES DE METAS *** */}
-      {modalType === MODAL_TYPES.ADD_GOAL && (
-        <AddGoalModal
-          isOpen={true}
-          onClose={closeModal}
-          onGoalCreated={modalProps.onGoalCreated}
-        />
+      {/* ... (otros modales) ... */}
+      {modalType === MODAL_TYPES.EDIT_GOAL && ( <EditGoalModal isOpen={true} onClose={closeModal} {...modalProps} /> )}
+      
+      {modalType === MODAL_TYPES.ADD_INVESTMENT && (
+        <AddInvestmentModal isOpen={true} onClose={closeModal} {...modalProps} />
       )}
-      {modalType === MODAL_TYPES.EDIT_GOAL && (
-        <EditGoalModal
-          isOpen={true}
-          onClose={closeModal}
-          onGoalUpdated={modalProps.onGoalUpdated}
-          goalData={modalProps.goalData}
-        />
+      {modalType === MODAL_TYPES.EDIT_INVESTMENT && (
+        <EditInvestmentModal isOpen={true} onClose={closeModal} {...modalProps} />
       )}
     </div>
   );

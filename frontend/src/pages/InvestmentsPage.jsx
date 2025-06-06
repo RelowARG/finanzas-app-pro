@@ -1,27 +1,15 @@
-// Ruta: finanzas-app-pro/frontend/src/pages/InvestmentsPage.jsx
+// Ruta: /frontend/src/pages/InvestmentsPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import investmentsService from '../services/investments.service';
-// import accountService from '../services/accounts.service'; // Ya no se usa aquí directamente
 import InvestmentListItem from '../components/investments/InvestmentListItem';
 import PortfolioSummary from '../components/investments/PortfolioSummary';
 import { alertService } from '../utils/alert.service';
+import { useModals, MODAL_TYPES } from '../contexts/ModalContext';
 import './InvestmentsPage.css';
 import InvestmentDetailModal from '../components/investments/InvestmentDetailModal'; 
 
-// *** RUTA DE IMPORTACIÓN CORREGIDA ***
-// Antes era: import exchangeRatesService from '../../services/exchangeRates.service';
-// Ahora es:
-// No se necesita exchangeRatesService directamente en InvestmentsPage.jsx
-// ya que PortfolioSummary.jsx lo maneja internamente.
-// Si lo necesitaras por alguna otra razón, la ruta correcta sería:
-// import exchangeRatesService from '../services/exchangeRates.service';
-
-
 const InvestmentsPage = () => {
   const [investments, setInvestments] = useState([]);
-  // Ya no necesitamos allUserAccounts aquí si PortfolioSummary no lo recibe
-  // const [allUserAccounts, setAllUserAccounts] = useState([]); 
   const [loadingPage, setLoadingPage] = useState(true);
   const [isUpdatingQuotes, setIsUpdatingQuotes] = useState(false);
   const [error, setError] = useState('');
@@ -29,6 +17,8 @@ const InvestmentsPage = () => {
 
   const [selectedInvestmentForModal, setSelectedInvestmentForModal] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  const { openModal } = useModals();
 
   const fetchAllData = useCallback(async (isInitialLoad = false) => {
     if (isInitialLoad) setLoadingPage(true);
@@ -39,7 +29,6 @@ const InvestmentsPage = () => {
       await investmentsService.triggerUpdateQuotes();
       console.log('[InvestmentsPage] Actualización de cotizaciones del backend completada (o intentada).');
       
-      // Solo obtener inversiones, ya no las cuentas aquí para PortfolioSummary
       const investmentsData = await investmentsService.getAllInvestments();
 
       setInvestments(investmentsData || []);
@@ -85,7 +74,18 @@ const InvestmentsPage = () => {
       }
     }
   };
+
+  const handleInvestmentModified = () => {
+    fetchAllData(false);
+  };
   
+  const handleOpenEditModal = (investment) => {
+    openModal(MODAL_TYPES.EDIT_INVESTMENT, {
+      investmentData: investment,
+      onInvestmentUpdated: handleInvestmentModified
+    });
+  };
+
   const openInvestmentDetailModal = (investment) => {
     setSelectedInvestmentForModal(investment);
     setIsDetailModalOpen(true);
@@ -94,8 +94,6 @@ const InvestmentsPage = () => {
   const closeInvestmentDetailModal = () => {
     setIsDetailModalOpen(false);
     setSelectedInvestmentForModal(null);
-    // Opcional: si el modal puede modificar datos que afecten la lista o el resumen, refrescar.
-    // fetchAllData(false); 
   };
 
   let statusMessage = "";
@@ -124,9 +122,13 @@ const InvestmentsPage = () => {
           >
             {isUpdatingQuotes ? 'Actualizando...' : (loadingPage ? 'Cargando...' : 'Refrescar')}
           </button>
-          <Link to="/investments/add" className={`button button-primary ${isUpdatingQuotes || loadingPage ? 'disabled-link' : ''}`} aria-disabled={isUpdatingQuotes || loadingPage}>
+          <button
+            onClick={() => openModal(MODAL_TYPES.ADD_INVESTMENT, { onInvestmentCreated: handleInvestmentModified })}
+            className={`button button-primary ${isUpdatingQuotes || loadingPage ? 'disabled-link' : ''}`}
+            disabled={isUpdatingQuotes || loadingPage}
+          >
             <span className="icon-add">➕</span> Nueva Inversión
-          </Link>
+          </button>
         </div>
       </div>
       
@@ -138,7 +140,6 @@ const InvestmentsPage = () => {
         </p>
       )}
 
-      {/* PortfolioSummary ya no necesita allUserAccounts */}
       {!loadingPage && (
         <PortfolioSummary investments={investments} /> 
       )}
@@ -155,6 +156,7 @@ const InvestmentsPage = () => {
               investment={investment} 
               onDeleteInvestment={handleDeleteInvestment}
               onItemClick={() => openInvestmentDetailModal(investment)}
+              onEdit={() => handleOpenEditModal(investment)}
             />
           ))}
         </div>
@@ -162,9 +164,9 @@ const InvestmentsPage = () => {
         !loadingPage && !isUpdatingQuotes && !error && (
             <div className="no-investments-message-container"> 
                  <p className="no-investments-message">Aún no has registrado ninguna inversión.</p>
-                 <Link to="/investments/add" className="button button-secondary" style={{marginTop: '15px'}}>
+                 <button onClick={() => openModal(MODAL_TYPES.ADD_INVESTMENT, { onInvestmentCreated: handleInvestmentModified })} className="button button-secondary" style={{marginTop: '15px'}}>
                     Registrar mi primera inversión
-                 </Link>
+                 </button>
             </div>
         )
       )}

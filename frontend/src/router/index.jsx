@@ -8,15 +8,12 @@ import DashboardPage from '../pages/DashboardPage';
 import DashboardWrapper from '../pages/DashboardWrapper';
 import AccountsPage from '../pages/AccountsPage';
 import AccountDetailsPage from '../pages/AccountDetailsPage';
-import EditAccountFormPage from '../pages/EditAccountFormPage'; // Import existente
+import EditAccountFormPage from '../pages/EditAccountFormPage';
 import TransactionsPage from '../pages/TransactionsPage';
 import EditTransactionPage from '../pages/EditTransactionPage';
 import BudgetsPage from '../pages/BudgetsPage';
-// AddBudgetPage y EditBudgetPage ya no se importan
 import ReportsPage from '../pages/ReportsPage';
 import InvestmentsPage from '../pages/InvestmentsPage';
-import AddInvestmentPage from '../pages/AddInvestmentPage';
-import EditInvestmentPage from '../pages/EditInvestmentPage';
 import SettingsPage from '../pages/SettingsPage';
 import CategoriesPage from '../pages/CategoriesPage';
 import RecurringTransactionsPage from '../pages/RecurringTransactionsPage';
@@ -70,14 +67,11 @@ const AppRouter = () => {
         <Route path="/transactions/edit/:transactionId" element={<EditTransactionPage />} />
 
         <Route path="/budgets" element={<BudgetsPage />} />
-        {/* Rutas de Add/Edit Budget eliminadas */}
 
         <Route path="/reports" element={<ReportsPage />} />
         
         <Route path="/investments" element={<InvestmentsPage />} />
-        <Route path="/investments/add" element={<AddInvestmentPage />} />
-        <Route path="/investments/edit/:investmentId" element={<EditInvestmentPage />} />
-
+        
         <Route path="/debts-loans" element={<DebtsAndLoansPage />} />
         <Route path="/debts-loans/add" element={<AddDebtAndLoanPage />} />
         <Route path="/debts-loans/edit/:debtLoanId" element={<EditDebtAndLoanPage />} />
