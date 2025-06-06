@@ -8,21 +8,18 @@ import DashboardPage from '../pages/DashboardPage';
 import DashboardWrapper from '../pages/DashboardWrapper';
 import AccountsPage from '../pages/AccountsPage';
 import AccountDetailsPage from '../pages/AccountDetailsPage';
+import EditAccountFormPage from '../pages/EditAccountFormPage'; // Import existente
 import TransactionsPage from '../pages/TransactionsPage';
-// AddTransactionPage ya no se usa como página, se maneja con modal
 import EditTransactionPage from '../pages/EditTransactionPage';
 import BudgetsPage from '../pages/BudgetsPage';
-import AddBudgetPage from '../pages/AddBudgetPage';
-import EditBudgetPage from '../pages/EditBudgetPage';
+// AddBudgetPage y EditBudgetPage ya no se importan
 import ReportsPage from '../pages/ReportsPage';
 import InvestmentsPage from '../pages/InvestmentsPage';
 import AddInvestmentPage from '../pages/AddInvestmentPage';
 import EditInvestmentPage from '../pages/EditInvestmentPage';
-// Settings Pages Imports (Asegúrate que estos imports estén correctos)
-import SettingsPage from '../pages/SettingsPage'; // *** ASEGÚRATE QUE ESTA LÍNEA EXISTA Y SEA CORRECTA ***
+import SettingsPage from '../pages/SettingsPage';
 import CategoriesPage from '../pages/CategoriesPage';
 import RecurringTransactionsPage from '../pages/RecurringTransactionsPage';
-// AddRecurringTransactionPage y EditRecurringTransactionPage ya no se usan como páginas
 import ExchangeRatesPage from '../pages/ExchangeRatesPage';
 import AdminPanelPage from '../pages/AdminPanelPage.jsx';
 import HowItWorksPage from '../pages/HowItWorksPage';
@@ -33,14 +30,12 @@ import GoalsPage from '../pages/GoalsPage.jsx';
 import AddGoalPage from '../pages/AddGoalPage.jsx';
 import EditGoalPage from '../pages/EditGoalPage.jsx';
 import HowToUsePage from '../pages/HowToUsePage.jsx';
-import DebtsAndLoansPage from '../pages/DebtsAndLoansPage'; // Import faltante
-import AddDebtAndLoanPage from '../pages/AddDebtAndLoanPage'; // Import faltante
-import EditDebtAndLoanPage from '../pages/EditDebtAndLoanPage'; // Import faltante
-
+import DebtsAndLoansPage from '../pages/DebtsAndLoansPage';
+import AddDebtAndLoanPage from '../pages/AddDebtAndLoanPage';
+import EditDebtAndLoanPage from '../pages/EditDebtAndLoanPage';
 
 import PrivateRoute from '../components/Route/PrivateRoute';
 import AdminRoute from '../components/Route/AdminRoute';
-
 import { useAuth } from '../contexts/AuthContext';
 
 export function useDashboardWrapperContext() {
@@ -68,14 +63,14 @@ const AppRouter = () => {
         </Route>
         
         <Route path="/accounts" element={<AccountsPage />} />
-        <Route path="/accounts/edit/:accountId" element={<AccountDetailsPage />} /> 
+        <Route path="/accounts/edit/:accountId" element={<AccountDetailsPage />} />
+        <Route path="/accounts/edit-form/:accountId" element={<EditAccountFormPage />} />
         
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/transactions/edit/:transactionId" element={<EditTransactionPage />} />
 
         <Route path="/budgets" element={<BudgetsPage />} />
-        <Route path="/budgets/add" element={<AddBudgetPage />} />
-        <Route path="/budgets/edit/:budgetId" element={<EditBudgetPage />} />
+        {/* Rutas de Add/Edit Budget eliminadas */}
 
         <Route path="/reports" element={<ReportsPage />} />
         
@@ -91,15 +86,13 @@ const AppRouter = () => {
         <Route path="/goals/add" element={<AddGoalPage />} />
         <Route path="/goals/edit/:goalId" element={<EditGoalPage />} />
 
-        {/* Sección de Configuración Unificada */}
-        <Route path="/settings" element={<SettingsPage />}> {/* Aquí se usa SettingsPage */}
+        <Route path="/settings" element={<SettingsPage />}>
           <Route index element={<Navigate to="categories" replace />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="recurring-transactions" element={<RecurringTransactionsPage />} />
           <Route path="exchange-rates" element={<ExchangeRatesPage />} />
         </Route>
         
-        {/* Sección de Admin */}
         <Route path="/admin" element={<AdminRoute />}>
           <Route index element={<Navigate to="users" replace />} />
           <Route path="users" element={<AdminPanelPage />} />

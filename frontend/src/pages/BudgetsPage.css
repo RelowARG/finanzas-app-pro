@@ -1,11 +1,6 @@
 /* Ruta: finanzas-app-pro/frontend/src/pages/BudgetsPage.css */
-/* ARCHIVO NUEVO */
 
-.budgets-page {
-  /* Estilos para la página de presupuestos */
-}
-
-.budgets-page-header {
+.budgets-page .budgets-page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -14,41 +9,89 @@
   border-bottom: 2px solid #f39c12; /* Color temático para presupuestos (naranja) */
 }
 
-.budgets-page-header h1 {
+.budgets-page .budgets-page-header h1 {
   margin: 0;
   color: var(--dark-color, #333);
   font-size: 2rem;
 }
 
-.budgets-page-header .button-primary {
-  background-color: #f39c12 !important; /* Color temático */
+/* *** INICIO DE LA CORRECCIÓN DE ESTILOS DE BOTÓN *** */
+.budgets-page .budgets-page-header .button-primary {
+  background-color: #f39c12 !important;
   border-color: #f39c12 !important;
   color: white !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* Ajustar padding y font-size para que coincida con otros botones de header */
+  padding: 8px 15px !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  width: auto !important; /* Asegurar que no ocupe todo el ancho */
+  border-radius: var(--border-radius);
 }
-.budgets-page-header .button-primary:hover {
-  background-color: #e67e22 !important; /* Un poco más oscuro */
+.budgets-page .budgets-page-header .button-primary:hover {
+  background-color: #e67e22 !important;
 }
-.budgets-page-header .icon-add {
+.budgets-page .budgets-page-header .icon-add {
   font-size: 0.9em;
 }
 
-.loading-text,
-.no-budgets-message {
+.loading-text {
   text-align: center;
   font-size: 1.1rem;
   color: #666;
   padding: 30px 20px;
-  background-color: #f9f9f9;
+}
+
+.no-budgets-message {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #ffffff;
+  border: 2px dashed #e0e0e0;
   border-radius: var(--border-radius);
+  margin-top: 20px;
+}
+.no-budgets-message .no-data-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    opacity: 0.7;
 }
 .no-budgets-message p {
-    margin-bottom: 15px;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #555;
 }
+.no-budgets-message .no-data-subtitle {
+  font-size: 0.9rem;
+  color: #777;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  font-weight: normal;
+}
+
+/* Ajustar el botón dentro del mensaje de "sin datos" */
+.no-budgets-message .button-secondary {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    color: white !important;
+    /* Aplicar el mismo tamaño que el botón del header */
+    padding: 8px 15px !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    width: auto !important;
+}
+.no-budgets-message .button-secondary:hover {
+    background-color: #5a6268 !important;
+}
+/* *** FIN DE LA CORRECCIÓN DE ESTILOS DE BOTÓN *** */
 
 
 .budgets-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 20px;
 }
 

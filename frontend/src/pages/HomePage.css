@@ -1,11 +1,11 @@
 /* Ruta: finanzas-app-pro/frontend/src/pages/HomePage.css */
 .homepage-layout {
   display: flex;
-  height: 100vh; /* Mantiene la altura completa del viewport */
+  height: 100vh;
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Evita el scroll en el layout principal */
+  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -14,11 +14,11 @@
   flex-direction: column; 
   justify-content: center; 
   align-items: center; 
-  padding: 40px; /* Reducir padding vertical si es necesario */
+  padding: 40px;
   box-sizing: border-box;
-  overflow-y: auto; /* Permitir scroll SOLO si el contenido interno es realmente más alto que el panel */
+  overflow-y: auto;
   flex-basis: 50%;
-  height: 100vh; /* Asegurar que los paneles ocupen la altura del viewport */
+  height: 100vh;
 }
 
 .homepage-left-panel {
@@ -26,8 +26,6 @@
   color: white;
   text-align: center;
   position: relative;
-  /* Quitar overflow-y: auto; de aquí si ya está en la regla de arriba o si no se quiere scroll NUNCA */
-  /* overflow-y: auto; */ /* <<< ELIMINAR o comentar esta línea si quieres evitar el scroll aquí específicamente */
 }
 
 .homepage-left-panel .panel-content-wrapper {
@@ -37,11 +35,10 @@
   align-items: center;
   flex-grow: 1; 
   width: 100%;
-  max-height: 100%; /* Asegurar que el wrapper no exceda la altura del panel */
-  overflow-y: hidden; /* << AÑADIDO: Evitar que el wrapper interno genere su propio scroll si el panel ya lo tiene */
-  padding-bottom: 70px; /* Espacio para el branding si está absoluto abajo */
+  max-height: 100%;
+  overflow-y: hidden;
+  padding-bottom: 70px;
 }
-
 
 .hero-content {
   max-width: 550px;
@@ -49,15 +46,15 @@
 }
 
 .hero-content h1 {
-  font-size: 2.8rem; /* Ligeramente reducido para pantallas más pequeñas o contenido denso */
-  margin-bottom: 15px; /* Reducido */
+  font-size: 2.8rem;
+  margin-bottom: 15px;
   font-weight: 700;
   line-height: 1.2;
 }
 
 .hero-subtitle {
-  font-size: 1.05rem; /* Ligeramente reducido */
-  margin-bottom: 20px; /* Reducido */
+  font-size: 1.05rem;
+  margin-bottom: 20px;
   line-height: 1.6;
   opacity: 0.95;
   max-width: 480px;
@@ -70,8 +67,8 @@
   text-decoration: none;
   font-weight: 600;
   display: inline-block;
-  margin-bottom: 25px; /* Reducido */
-  padding: 8px 18px; /* Reducido */
+  margin-bottom: 25px;
+  padding: 8px 18px;
   border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 25px;
   transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -83,9 +80,9 @@
 
 .hero-image-container {
   margin-top: 15px; 
-  margin-bottom: 25px; /* Reducido */
-  max-width: 400px; /* Ligeramente reducido */
-  width: 75%; /* Ligeramente reducido */
+  margin-bottom: 25px;
+  max-width: 400px;
+  width: 75%;
   margin-left: auto;
   margin-right: auto;
 }
@@ -97,7 +94,7 @@
 }
 
 .hero-image-caption {
-  font-size: 0.85rem; /* Reducido */
+  font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.8); 
   margin-top: 8px; 
   font-style: italic;
@@ -109,7 +106,7 @@
 }
 
 .cafecito-button-container img {
-  max-width: 180px; /* Reducido */
+  max-width: 180px;
   height: auto;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
@@ -122,25 +119,24 @@
 
 
 .app-branding {
-  /* Si está posicionado absolutamente, asegurarse que el padding del .panel-content-wrapper lo acomode */
   position: absolute;
-  bottom: 20px; /* Reducir si es necesario */
+  bottom: 20px;
   left: 50%;
-  transform: translateX(-50%); /* Centrar el branding */
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   padding-top: 10px; 
-  width: auto; /* Ajustar al contenido */
+  width: auto;
   text-align: center;
 }
 
 .app-brand-icon {
-  font-size: 1.5rem; /* Reducido */
+  font-size: 1.5rem;
   margin-right: 8px;
 }
 
 .app-brand-name {
-  font-size: 1.2rem; /* Reducido */
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
@@ -148,7 +144,6 @@
 .homepage-right-panel {
   background-color: #ffffff;
   color: #333;
-  /* overflow-y: auto; ya está arriba */
 }
 
 .login-form-container-home {
@@ -303,35 +298,99 @@
     text-align: left;
 }
 
+.password-hint {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 5px;
+  margin-bottom: 0;
+  text-align: left;
+}
 
+.password-strength-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.password-strength-bar {
+  display: flex;
+  flex-grow: 1;
+  gap: 3px;
+  height: 6px;
+}
+
+.strength-segment {
+  flex: 1;
+  height: 100%;
+  background-color: #e9ecef;
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.strength-text {
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.strength-1 .strength-segment:first-child,
+.strength-2 .strength-segment:first-child {
+  background-color: #e74c3c;
+}
+.strength-text-1, .strength-text-2 {
+  color: #e74c3c;
+}
+
+.strength-3 .strength-segment:nth-child(-n+2),
+.strength-4 .strength-segment:nth-child(-n+3) {
+  background-color: #f39c12;
+}
+.strength-text-3, .strength-text-4 {
+  color: #f39c12;
+}
+
+.strength-5 .strength-segment:nth-child(-n+4),
+.strength-6 .strength-segment:nth-child(-n+4) {
+  background-color: #2ecc71;
+}
+.strength-text-5, .strength-text-6 {
+  color: #2ecc71;
+}
+
+/* === Media Queries para Responsividad === */
 @media (max-width: 900px) {
   .homepage-layout {
     flex-direction: column;
-    height: auto; /* Permitir que la altura se ajuste al contenido */
-    min-height: 100vh; /* Asegurar que al menos ocupe el viewport */
-    overflow-y: auto; /* Permitir scroll general si el contenido total es muy alto */
+    height: auto; 
+    min-height: 100vh; 
+    overflow-y: auto; 
     overflow-x: hidden;
   }
   .homepage-left-panel,
   .homepage-right-panel {
     flex-basis: auto; 
-    height: auto; /* La altura se ajustará al contenido */
-    min-height: 50vh; /* Una altura mínima para cada panel en móvil */
-    padding: 30px 20px; /* Menos padding en móvil */
-    overflow-y: visible; /* Quitar scroll interno de los paneles, el general lo maneja */
+    height: auto;
+    min-height: auto; /* Dejar que el contenido defina la altura */
+    padding: 40px 20px; /* Reducir padding vertical en móvil */
+    overflow-y: visible;
+  }
+  .homepage-left-panel {
+      min-height: 60vh; /* Darle un poco más de espacio al panel verde */
   }
   .homepage-left-panel .panel-content-wrapper {
-     padding-bottom: 60px; /* Más espacio si el branding es absoluto y no fijo */
+     padding-bottom: 60px;
   }
   .hero-content h1 {
-    font-size: 2rem; /* Reducido para móvil */
+    font-size: 2rem;
   }
   .app-branding {
-    position: relative; /* Cambiar a relativo para que fluya con el contenido */
+    position: relative;
     bottom: auto;
     left: auto;
     transform: none;
-    margin-top: 20px; /* Espacio sobre el branding */
+    margin-top: 20px;
     width: 100%;
     text-align: center;
   }
@@ -345,7 +404,7 @@
 
 @media (max-width: 480px) {
   .hero-content h1 {
-    font-size: 1.8rem; /* Aún más pequeño */
+    font-size: 1.8rem;
   }
   .hero-subtitle {
     font-size: 0.95rem;

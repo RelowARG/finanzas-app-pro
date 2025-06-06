@@ -1,29 +1,52 @@
-// Ruta: finanzas-app-pro/frontend/src/components/transactions/TransactionFilter.jsx
-// ARCHIVO NUEVO
 import React, { useState, useEffect } from 'react';
-import accountService from '../../services/accounts.service'; // Para obtener lista de cuentas
+import accountService from '../../services/accounts.service';
+import categoriesService from '../../services/categories.service'; // <<< AÑADIDO: Importar servicio de categorías
 import './TransactionFilter.css';
-
-// Asumimos que tendrás un categories.service.js en el futuro
-const mockCategories = ['Sueldo', 'Supermercado', 'Transporte', 'Varios', 'Intereses', 'Restaurantes', 'Servicios', 'Kiosco', 'Salud', 'Educación', 'Regalos'];
 
 const TransactionFilter = ({ onFilterChange, initialFilters }) => {
   const [filters, setFilters] = useState(initialFilters || {
-    type: '', // 'ingreso', 'egreso', o '' para todos
+    type: '',
     accountId: '',
-    categoryId: '', // Usaremos nombres de categoría por ahora
+    categoryId: '',
     dateFrom: '',
     dateTo: '',
     searchTerm: '',
   });
+
   const [accounts, setAccounts] = useState([]);
+  const [categories, setCategories] = useState([]); // <<< AÑADIDO: Estado para categorías reales
 
   useEffect(() => {
-    // Cargar cuentas para el selector
-    accountService.getAllAccounts()
-      .then(data => setAccounts(data))
-      .catch(err => console.error("Error cargando cuentas para filtro:", err));
+    // Cargar cuentas y categorías cuando el componente se monta
+    const loadFilterData = async () => {
+        try {
+            const [accData, catData] = await Promise.all([
+                accountService.getAllAccounts(),
+                categoriesService.getAllCategories() // <<< AÑADIDO: Llamada al servicio real
+            ]);
+
+            setAccounts(accData || []);
+
+            // Combinar categorías de ingreso y egreso en una sola lista para el filtro
+            const allCategories = [
+                ...(catData.ingreso || []),
+                ...(catData.egreso || [])
+            ].sort((a, b) => a.name.localeCompare(b.name)); // Ordenar alfabéticamente
+            setCategories(allCategories);
+
+        } catch (err) {
+            console.error("Error cargando datos para los filtros:", err);
+        }
+    };
+    
+    loadFilterData();
   }, []);
+
+  useEffect(() => {
+    // Sincronizar el estado del filtro si los filtros iniciales cambian desde la URL
+    setFilters(initialFilters);
+  }, [initialFilters]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,6 +87,7 @@ const TransactionFilter = ({ onFilterChange, initialFilters }) => {
             <option value="">Todos</option>
             <option value="ingreso">Ingreso</option>
             <option value="egreso">Egreso</option>
+            <option value="transferencia">Transferencia</option>
           </select>
         </div>
         <div className="filter-group">
@@ -75,15 +99,17 @@ const TransactionFilter = ({ onFilterChange, initialFilters }) => {
             ))}
           </select>
         </div>
+        {/* *** INICIO: SELECT DE CATEGORÍAS CORREGIDO *** */}
         <div className="filter-group">
           <label htmlFor="categoryId">Categoría:</label>
           <select id="categoryId" name="categoryId" value={filters.categoryId} onChange={handleChange}>
             <option value="">Todas</option>
-            {mockCategories.sort().map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </select>
         </div>
+        {/* *** FIN: SELECT DE CATEGORÍAS CORREGIDO *** */}
         <div className="filter-group">
           <label htmlFor="dateFrom">Desde:</label>
           <input type="date" id="dateFrom" name="dateFrom" value={filters.dateFrom} onChange={handleChange} />

@@ -19,47 +19,19 @@ body {
 
 .app-layout {
   min-height: 100vh;
-  /* El .app-layout en sí ya no necesita ser flex si Sidebar, Navbar y Footer son fixed.
-     Solo .main-content está en el flujo normal de este div. */
 }
 
-.sidebar-container-area {
-  /* Este div solo maneja el hover para el sidebar que es position:fixed */
-}
-
-/* Main Content: necesita padding para Navbar, Footer y Sidebar */
 .main-content {
   background-color: var(--background-color, #eef0f2); 
   box-sizing: border-box;
-  transition: padding-left 0.25s ease-in-out; 
-  
-  padding-top: calc(65px + 20px);    /* Navbar (65px) + padding deseado (20px) */
-  padding-bottom: calc(55px + 20px); /* Footer (aprox 55px) + padding deseado (20px) */
-  padding-left: 20px;                /* Padding izquierdo por defecto (cuando no hay sidebar activo) */
-  padding-right: 20px;               /* Padding derecho normal */
-  min-height: 100vh; /* Asegura que el main content ocupe al menos la altura del viewport */
+  padding-top: calc(65px + 20px);
+  padding-bottom: calc(55px + 20px);
+  padding-left: 20px;                
+  padding-right: 20px;               
+  min-height: 100vh;
   overflow-y: auto; 
 }
 
-
-/* --- LÓGICA DE SIDEBAR ACTIVO Y EXPANDIDO (SOLO AFECTA A MAIN-CONTENT aquí) --- */
-/* Navbar y Footer ahora manejan su propio padding-left en sus respectivos CSS
-   basado en estas clases de .app-layout */
-
-.app-layout:not(.sidebar-active) .main-content {
-  padding-left: 20px; 
-}
-
-.app-layout.sidebar-active:not(.sidebar-expanded) .main-content {
-  padding-left: calc(70px + 20px); 
-}
-
-.app-layout.sidebar-expanded .main-content {
-  padding-left: calc(240px + 20px); 
-}
-
-
-/* Para HomePage o vistas sin chrome */
 .app-layout.app-chrome-hidden .main-content.no-padding-main { 
   padding: 0 !important; 
   min-height: 100vh; 
@@ -67,21 +39,11 @@ body {
   background-color: transparent; 
 }
 
-
-/* Media queries para ajustar paddings del main-content */
+/* === Media Queries para Responsividad === */
 @media (max-width: 768px) {
-  .app-layout.sidebar-active:not(.sidebar-expanded) .main-content {
-    padding-left: calc(65px + 20px); 
-  }
-  .app-layout.sidebar-expanded .main-content {
-    padding-left: calc(220px + 20px); 
-  }
-}
-
-@media (max-width: 576px) {
-  /* En móvil, si el sidebar se superpone */
-  .app-layout.sidebar-active .main-content,
-  .app-layout.sidebar-expanded .main-content {
-    padding-left: 20px; 
+  .main-content {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: calc(65px + 15px);
   }
 }

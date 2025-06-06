@@ -1,5 +1,4 @@
 // Ruta: finanzas-app-pro/frontend/src/components/budgets/BudgetItem.jsx
-// ACTUALIZA ESTE ARCHIVO
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './BudgetItem.css';
@@ -10,8 +9,7 @@ const formatCurrency = (amount, currency = 'ARS') => {
   return `${symbol} ${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-// Añadimos onDeleteBudget como prop
-const BudgetItem = ({ budget, onDeleteBudget }) => {
+const BudgetItem = ({ budget, onDeleteBudget, onEditBudget }) => {
   if (!budget) return null;
 
   const progress = Math.min(Math.max(budget.progress || 0, 0), 100);
@@ -59,17 +57,19 @@ const BudgetItem = ({ budget, onDeleteBudget }) => {
       </div>
 
       <div className="budget-item-actions">
-        <Link to={`/budgets/edit/${budget.id}`} className="button button-small button-edit">
+        <button onClick={() => onEditBudget(budget)} className="button button-small button-edit">
           Ajustar
-        </Link>
+        </button>
+        {/* *** INICIO DE LA MODIFICACIÓN *** */}
         <Link 
           to={`/transactions?categoryId=${budget.categoryId}&dateFrom=${budget.startDate.split('T')[0]}&dateTo=${budget.endDate.split('T')[0]}`} 
           className="button button-small button-view"
         >
           Ver Gastos
         </Link>
+        {/* *** FIN DE LA MODIFICACIÓN *** */}
         <button 
-          onClick={() => onDeleteBudget(budget.id)} // Llamar a la función pasada por props
+          onClick={() => onDeleteBudget(budget.id)}
           className="button button-small button-delete"
         >
           Eliminar

@@ -65,20 +65,21 @@ const HomePage = () => {
             <p className="hero-subtitle">
               Sumérgete en tus datos, crea presupuestos, sincroniza con tus bancos (próximamente) y disfruta de la categorización automática.
             </p>
+            
+            {/* CONTENEDOR DEL LOGO PEQUEÑO MODIFICADO */}
+            <div className="small-logo-container"> {/* Cambiamos o reutilizamos la clase del contenedor si es necesario */}
+              <img
+                src="/img/Finanzasapp-logo.png"    // Esta es tu imagen de logo circular
+                alt="FinanzasApp Pro Logo"          // Texto Alt más simple
+                className="sitelogo-petit"          // NUEVA CLASE CSS para el tamaño pequeño
+              />
+              {/* Eliminamos la <p className="hero-image-caption">...</p> */}
+            </div>
             {/* --- ENLACE A "CÓMO FUNCIONA" AÑADIDO AQUÍ --- */}
             <Link to="/como-funciona" className="learn-more-link">
               ✨ Descubre cómo funciona FinanzasApp Pro
             </Link>
             {/* --- FIN DEL ENLACE --- */}
-            <div className="hero-image-container">
-              <img 
-                src="/img/dashboard-mockup.png" // Asumiendo que tienes una imagen de ejemplo
-                alt="Finanzas App Pro en acción" 
-                className="hero-image"
-              />
-              <p className="hero-image-caption">Finanzas App Pro en acción</p>
-            </div>
-            
             <div className="cafecito-button-container">
               <a href='https://cafecito.app/finanzasapp' rel='noopener noreferrer' target='_blank'>
                 <img 
@@ -89,10 +90,6 @@ const HomePage = () => {
               </a>
             </div>
           </div>
-        </div>
-        <div className="app-branding">
-          <span className="app-brand-icon">💰</span>
-          <span className="app-brand-name">FinanzasApp Pro</span>
         </div>
       </div>
 

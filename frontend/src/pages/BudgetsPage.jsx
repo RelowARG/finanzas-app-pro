@@ -1,15 +1,15 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/BudgetsPage.jsx
-// ACTUALIZA ESTE ARCHIVO
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import budgetsService from '../services/budgets.service';
-import BudgetItem from '../components/budgets/BudgetItem';
+import budgetsService from '../services/budgets.service.js';
+import BudgetItem from '../components/budgets/BudgetItem.jsx';
+import { useModals, MODAL_TYPES } from '../contexts/ModalContext.jsx';
 import './BudgetsPage.css';
 
 const BudgetsPage = () => {
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { openModal } = useModals();
 
   const fetchBudgets = useCallback(async () => {
     setLoading(true);
@@ -17,8 +17,9 @@ const BudgetsPage = () => {
     try {
       const data = await budgetsService.getAllBudgetsWithSpent();
       setBudgets(data || []);
-    } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Error al cargar los presupuestos.');
+    } catch (err) { // <<<--- AQUÍ ESTABA EL ERROR, FALTABA LA LLAVE DE APERTURA
+      const errorMessage = err.response?.data?.message || err.message || 'Error al cargar los presupuestos.';
+      setError(errorMessage);
       setBudgets([]);
     } finally {
       setLoading(false);
@@ -33,15 +34,24 @@ const BudgetsPage = () => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este presupuesto?')) {
       try {
         setLoading(true);
-        setError('');
         await budgetsService.deleteBudget(budgetId);
-        fetchBudgets(); // Recargar la lista
+        fetchBudgets();
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Error al eliminar el presupuesto.');
-        console.error("Error deleting budget:", err.response?.data || err);
         setLoading(false);
       }
     }
+  };
+  
+  const handleBudgetModified = () => {
+    fetchBudgets();
+  };
+
+  const handleOpenEditModal = (budget) => {
+    openModal(MODAL_TYPES.EDIT_BUDGET, {
+      budgetData: budget,
+      onBudgetUpdated: handleBudgetModified
+    });
   };
 
   if (loading && budgets.length === 0) {
@@ -59,9 +69,12 @@ const BudgetsPage = () => {
     <div className="page-container budgets-page">
       <div className="budgets-page-header">
         <h1>Mis Presupuestos</h1>
-        <Link to="/budgets/add" className="button button-primary">
+        <button 
+          onClick={() => openModal(MODAL_TYPES.ADD_BUDGET, { onBudgetCreated: handleBudgetModified })} 
+          className="button button-primary"
+        >
           <span className="icon-add">➕</span> Nuevo Presupuesto
-        </Link>
+        </button>
       </div>
 
       {error && <p className="error-message">{error}</p>}
@@ -72,17 +85,23 @@ const BudgetsPage = () => {
             <BudgetItem 
               key={budget.id} 
               budget={budget} 
-              onDeleteBudget={handleDeleteBudget} // Pasar la función
+              onDeleteBudget={handleDeleteBudget}
+              onEditBudget={handleOpenEditModal}
             />
           ))}
         </div>
       ) : (
         !loading && !error && (
           <div className="no-budgets-message">
-            <p>Aún no has creado ningún presupuesto para el período seleccionado.</p>
-            <Link to="/budgets/add" className="button button-secondary" style={{marginTop: '10px'}}>
+            <div className="no-data-icon">🎯</div>
+            <p>Aún no has creado ningún presupuesto.</p>
+            <p className="no-data-subtitle">Define límites para tus gastos y toma el control.</p>
+            <button 
+                onClick={() => openModal(MODAL_TYPES.ADD_BUDGET, { onBudgetCreated: handleBudgetModified })} 
+                className="button button-secondary" style={{marginTop: '10px'}}
+            >
               Crear mi primer presupuesto
-            </Link>
+            </button>
           </div>
         )
       )}

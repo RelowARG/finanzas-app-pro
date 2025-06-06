@@ -1,16 +1,33 @@
-// Ruta: finanzas-app-pro/frontend/src/pages/TransactionsPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-// import { Link } from 'react-router-dom'; // Ya no se necesita Link para el botón de agregar
-import transactionService from '../services/transactions.service'; 
-import TransactionList from '../components/transactions/TransactionList'; 
-import TransactionFilter from '../components/transactions/TransactionFilter'; 
-import { formatCurrency } from '../utils/formatters'; 
-import { useModals, MODAL_TYPES } from '../contexts/ModalContext'; // *** NUEVO IMPORT ***
-import './TransactionsPage.css'; 
+// *** CORRECCIÓN: Añadir useNavigate a los imports ***
+import { useLocation, useNavigate } from 'react-router-dom';
+import transactionService from '../services/transactions.service';
+import TransactionList from '../components/transactions/TransactionList';
+import TransactionFilter from '../components/transactions/TransactionFilter';
+import { formatCurrency } from '../utils/formatters';
+import { useModals, MODAL_TYPES } from '../contexts/ModalContext';
+import './TransactionsPage.css';
 
-const ITEMS_PER_PAGE = 15; 
+const ITEMS_PER_PAGE = 15;
 
 const TransactionsPage = () => {
+  const location = useLocation();
+  // *** CORRECCIÓN: Declarar la función navigate ***
+  const navigate = useNavigate();
+  const { openModal } = useModals();
+
+  const getInitialFiltersFromURL = useCallback(() => {
+    const params = new URLSearchParams(location.search);
+    return {
+      type: params.get('type') || '',
+      accountId: params.get('accountId') || '',
+      categoryId: params.get('categoryId') || '',
+      dateFrom: params.get('dateFrom') || '',
+      dateTo: params.get('dateTo') || '',
+      searchTerm: params.get('searchTerm') || '',
+    };
+  }, [location.search]);
+
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -23,20 +40,10 @@ const TransactionsPage = () => {
   const [totalExpensesFiltered, setTotalExpensesFiltered] = useState(0);
   const [totalNetFiltered, setTotalNetFiltered] = useState(0);
 
-  const [activeFilters, setActiveFilters] = useState({
-    type: '', 
-    accountId: '', 
-    categoryId: '', 
-    dateFrom: '', 
-    dateTo: '', 
-    searchTerm: '',
-  });
-
+  const [activeFilters, setActiveFilters] = useState(getInitialFiltersFromURL);
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'DESC' });
 
-  const { openModal } = useModals(); // *** USAR EL CONTEXTO DE MODALES ***
-
-  const fetchTransactions = useCallback(async (filters, page = 1, currentSortConfig) => {
+  const fetchTransactions = useCallback(async (filters, page, currentSortConfig) => {
     setLoading(true);
     setError('');
     try {
@@ -69,17 +76,29 @@ const TransactionsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []); 
+  }, []);
+
+  useEffect(() => {
+    setActiveFilters(getInitialFiltersFromURL());
+  }, [location.search, getInitialFiltersFromURL]);
 
   useEffect(() => {
     fetchTransactions(activeFilters, currentPage, sortConfig); 
   }, [fetchTransactions, activeFilters, currentPage, sortConfig]); 
 
   const handleFilterChange = (newFilters) => {
-    setActiveFilters(newFilters);
+    const params = new URLSearchParams();
+    // Limpiamos los parámetros vacíos para no ensuciar la URL
+    for(let key of Object.keys(newFilters)) {
+        if(newFilters[key]) {
+            params.set(key, newFilters[key]);
+        }
+    }
+    // La función navigate ya está declarada arriba y funcionará
+    navigate(`?${params.toString()}`, { replace: true });
     setCurrentPage(1); 
   };
-
+  
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
       setCurrentPage(newPage);
@@ -92,7 +111,6 @@ const TransactionsPage = () => {
   };
   
   const handleDeleteTransaction = async (transactionId) => {
-    // ... (lógica de borrado sin cambios)
     if (window.confirm('¿Estás seguro de que quieres eliminar este movimiento? Esta acción no se puede deshacer y afectará el saldo de la cuenta asociada.')) {
       try {
         setLoading(true); 
@@ -110,13 +128,11 @@ const TransactionsPage = () => {
     }
   };
   
-  // *** FUNCIÓN PARA MANEJAR LA CREACIÓN EXITOSA DESDE EL MODAL ***
   const handleTransactionCreatedFromModal = () => {
-    fetchTransactions(activeFilters, 1, sortConfig); // Volver a la página 1 y recargar
+    fetchTransactions(activeFilters, 1, sortConfig);
   };
 
   const getPaginationNumbers = () => {
-    // ... (lógica de paginación sin cambios)
     const pageNumbers = [];
     const maxPagesToShow = 5; 
     const halfPagesToShow = Math.floor(maxPagesToShow / 2);
@@ -161,11 +177,10 @@ const TransactionsPage = () => {
     <div className="page-container transactions-page">
       <div className="transactions-page-header">
         <h1>Movimientos</h1>
-        {/* *** BOTÓN MODIFICADO PARA ABRIR EL MODAL *** */}
         <button 
           onClick={() => openModal(MODAL_TYPES.ADD_TRANSACTION, { 
             onTransactionCreated: handleTransactionCreatedFromModal,
-            initialTypeFromButton: 'egreso' // O el tipo por defecto que prefieras
+            initialTypeFromButton: 'egreso'
           })} 
           className="button button-primary"
         >
@@ -180,7 +195,7 @@ const TransactionsPage = () => {
         initialFilters={activeFilters} 
       />
 
-      {!loading && !error && (totalIncomeFiltered > 0 || totalExpensesFiltered > 0) && (
+      {!loading && (totalIncomeFiltered > 0 || totalExpensesFiltered > 0) && (
         <div className="transactions-summary">
           <span>
             Ingresos (filtrado): 
@@ -213,7 +228,6 @@ const TransactionsPage = () => {
       {!loading && totalPages > 0 && (
         <>
           <div className="pagination-controls">
-            {/* ... (botones de paginación sin cambios) ... */}
             <button 
               onClick={() => handlePageChange(currentPage - 1)} 
               disabled={currentPage === 1}
@@ -222,7 +236,6 @@ const TransactionsPage = () => {
             >
               &lt;
             </button>
-
             {paginationItems.map((page, index) => 
               page === '...' ? (
                 <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
@@ -237,7 +250,6 @@ const TransactionsPage = () => {
                 </button>
               )
             )}
-
             <button 
               onClick={() => handlePageChange(currentPage + 1)} 
               disabled={currentPage === totalPages}
@@ -252,7 +264,6 @@ const TransactionsPage = () => {
           </p>
         </>
       )}
-      {/* El AddTransactionModal se renderiza globalmente desde Layout.jsx */}
     </div>
   );
 };
