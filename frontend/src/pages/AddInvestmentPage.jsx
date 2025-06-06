@@ -1,46 +1,47 @@
 // Ruta: finanzas-app-pro/frontend/src/pages/AddInvestmentPage.jsx
-// REVISADO Y AJUSTADO PARA BÚSQUEDA DE SÍMBOLOS CON YAHOO FINANCE
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import investmentsService from '../services/investments.service';
 import marketDataService from '../services/marketdata.service';
-import './AddInvestmentPage.css'; // Asegúrate que este CSS exista y esté bien
+import { formatCurrency } from '../utils/formatters';
+import './AddInvestmentPage.css';
 
 const AddInvestmentPage = () => {
   const navigate = useNavigate();
 
-  const [investmentType, setInvestmentType] = useState('acciones');
+  const [investmentType, setInvestmentType] = useState('fci'); // Default a FCI para que sea más evidente
   const [name, setName] = useState('');
-  const [entity, setEntity] = useState(''); // Banco, Broker, Exchange
-  const [currency, setCurrency] = useState('ARS'); // Moneda de la inversión
+  const [entity, setEntity] = useState('');
+  const [currency, setCurrency] = useState('ARS');
   const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
-  const [icon, setIcon] = useState('📊');
+  const [icon, setIcon] = useState('💰');
   const [notes, setNotes] = useState('');
   
-  // Campos para Plazo Fijo
-  const [amountInvested, setAmountInvested] = useState(''); // También para FCI, ON, Otro
+  const [amountInvested, setAmountInvested] = useState('');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState('');
-  const [interestRate, setInterestRate] = useState(''); // TNA %
+  const [interestRate, setInterestRate] = useState('');
 
-  // Campos para Acciones / Criptomonedas
   const [quantity, setQuantity] = useState('');
-  const [purchasePrice, setPurchasePrice] = useState(''); // Precio por unidad
-  const [ticker, setTicker] = useState(''); // Símbolo/Ticker
+  const [purchasePrice, setPurchasePrice] = useState('');
+  const [ticker, setTicker] = useState('');
+
+  const [autoRenew, setAutoRenew] = useState(false);
+  const [renewWithInterest, setRenewWithInterest] = useState(false);
+  const [estimatedGain, setEstimatedGain] = useState(0);
+  const [finalAmount, setFinalAmount] = useState(0);
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Estados para la búsqueda de símbolos
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
 
   const investmentTypeOptions = [
+    { value: 'plazo_fijo', label: 'Plazo Fijo', icon: '📜' },
     { value: 'acciones', label: 'CEDEAR', icon: '📊' },
     { value: 'criptomonedas', label: 'Criptomonedas', icon: '₿' },
-    { value: 'plazo_fijo', label: 'Plazo Fijo', icon: '📜' },
     { value: 'fci', label: 'Fondo Común de Inversión', icon: '💰' },
     { value: 'obligaciones', label: 'Obligaciones Negociables', icon: '📄' },
     { value: 'otro', label: 'Otra Inversión', icon: '⭐' },
@@ -48,15 +49,12 @@ const AddInvestmentPage = () => {
   const currencyOptions = [
     { value: 'ARS', label: 'ARS - Peso Argentino' },
     { value: 'USD', label: 'USD - Dólar Estadounidense' },
-    // Podrías añadir más monedas si es necesario
   ];
   
-  // Actualizar icono por defecto al cambiar tipo de inversión
   useEffect(() => {
     const selectedType = investmentTypeOptions.find(opt => opt.value === investmentType);
     if (selectedType) setIcon(selectedType.icon);
     
-    // Limpiar campos específicos del tipo anterior al cambiar
     setSearchKeyword(''); 
     setSearchResults([]); 
     setShowSearchResults(false);
@@ -66,15 +64,43 @@ const AddInvestmentPage = () => {
       setPurchasePrice('');
     }
     if(investmentType !== 'plazo_fijo') {
-      // setStartDate(new Date().toISOString().split('T')[0]); // Podría mantenerse o resetearse
       setEndDate('');
-      setInterestRate('');
+      setAutoRenew(false);
+      setRenewWithInterest(false);
+    }
+    if (investmentType !== 'plazo_fijo' && investmentType !== 'fci') {
+        setInterestRate('');
     }
     if(investmentType !== 'fci' && investmentType !== 'obligaciones' && investmentType !== 'otro' && investmentType !== 'plazo_fijo') {
         setAmountInvested('');
     }
-
   }, [investmentType]);
+  
+  useEffect(() => {
+    if (investmentType === 'plazo_fijo' && amountInvested && interestRate && startDate && endDate) {
+        const principal = parseFloat(amountInvested);
+        const tna = parseFloat(interestRate);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (!isNaN(principal) && !isNaN(tna) && start <= end) {
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            
+            const dailyRate = (tna / 100) / 365;
+            const totalInterest = principal * dailyRate * diffDays;
+
+            setEstimatedGain(totalInterest);
+            setFinalAmount(principal + totalInterest);
+        } else {
+            setEstimatedGain(0);
+            setFinalAmount(0);
+        }
+    } else {
+        setEstimatedGain(0);
+        setFinalAmount(0);
+    }
+  }, [investmentType, amountInvested, interestRate, startDate, endDate]);
 
   const handleSearchSymbols = useCallback(async () => {
     if (searchKeyword.trim().length < 2) {
@@ -95,12 +121,11 @@ const AddInvestmentPage = () => {
     setIsSearching(false);
   }, [searchKeyword]);
   
-  // Debounce para la búsqueda automática
   useEffect(() => {
     if ((investmentType === 'acciones' || investmentType === 'criptomonedas') && searchKeyword.trim().length > 1) {
       const timerId = setTimeout(() => {
         handleSearchSymbols();
-      }, 600); // Esperar 600ms
+      }, 600);
       return () => clearTimeout(timerId);
     } else {
       setSearchResults([]);
@@ -112,12 +137,6 @@ const AddInvestmentPage = () => {
   const handleSelectSymbol = (selectedSymbol) => {
     setTicker(selectedSymbol.symbol); 
     setName(selectedSymbol.name); 
-    // Yahoo search a veces no devuelve la moneda o devuelve 'N/A'.
-    // Es mejor que el usuario seleccione la moneda de la inversión.
-    // Si se quisiera usar la moneda del resultado (con precaución):
-    // if (selectedSymbol.currency && selectedSymbol.currency !== 'N/A') {
-    //   setCurrency(selectedSymbol.currency);
-    // }
     setSearchKeyword(selectedSymbol.symbol); 
     setSearchResults([]); 
     setShowSearchResults(false); 
@@ -135,7 +154,6 @@ const AddInvestmentPage = () => {
       currency,
       icon,
       notes: notes.trim(),
-      // purchaseDate se añade abajo según el tipo
     };
 
     if (!investmentDataPayload.name || !investmentDataPayload.entity) {
@@ -150,7 +168,9 @@ const AddInvestmentPage = () => {
           amountInvested: parseFloat(amountInvested) || 0, 
           startDate: startDate || null, 
           endDate: endDate || null, 
-          interestRate: interestRate ? parseFloat(interestRate) : null, 
+          interestRate: interestRate ? parseFloat(interestRate) : null,
+          autoRenew: autoRenew,
+          renewWithInterest: autoRenew ? renewWithInterest : false,
         };
         if (!amountInvested || !startDate || !endDate) { 
           setError('Para Plazo Fijo: monto, fecha de inicio y fin son requeridos.'); 
@@ -171,7 +191,21 @@ const AddInvestmentPage = () => {
            setLoading(false); return; 
           }
         break;
-      case 'fci': case 'obligaciones': case 'otro':
+      case 'fci':
+        investmentDataPayload = { 
+          ...investmentDataPayload, 
+          amountInvested: parseFloat(amountInvested) || 0, 
+          purchaseDate: purchaseDate || null,
+          interestRate: interestRate ? parseFloat(interestRate) : null,
+          // Un FCI con TNA también necesita una fecha de inicio para el cálculo
+          startDate: purchaseDate || null, 
+        };
+        if (!amountInvested || !purchaseDate) { 
+          setError(`Para este tipo de inversión, el monto invertido y la fecha de compra son requeridos.`); 
+          setLoading(false); return; 
+        }
+        break;
+      case 'obligaciones': case 'otro':
         investmentDataPayload = { 
           ...investmentDataPayload, 
           amountInvested: parseFloat(amountInvested) || 0, 
@@ -289,7 +323,7 @@ const AddInvestmentPage = () => {
 
           {(investmentType === 'acciones' || investmentType === 'criptomonedas' || investmentType === 'fci' || investmentType === 'obligaciones' || investmentType === 'otro') && (
             <div className="form-group">
-              <label htmlFor="purchaseDate">Fecha de Compra/Suscripción (*):</label>
+              <label htmlFor="purchaseDate">{investmentType === 'fci' ? 'Fecha de Compra/Suscripción (Inicio para TNA) (*)' : 'Fecha de Compra/Suscripción (*)'}</label>
               <input type="date" id="purchaseDate" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} required={investmentType !== 'plazo_fijo'} />
             </div>
           )}
@@ -304,11 +338,57 @@ const AddInvestmentPage = () => {
                 <label htmlFor="endDate">Fecha de Vencimiento (*):</label>
                 <input type="date" id="endDate" value={endDate} onChange={(e) => setEndDate(e.target.value)} required={investmentType === 'plazo_fijo'}/>
               </div>
-              <div className="form-group">
-                <label htmlFor="interestRate">Tasa de Interés Anual (TNA %):</label>
-                <input type="number" step="0.01" id="interestRate" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} placeholder="Ej: 30.5"/>
-              </div>
             </>
+          )}
+          
+          {(investmentType === 'plazo_fijo' || investmentType === 'fci') && (
+            <div className="form-group">
+              <label htmlFor="interestRate">Tasa de Interés Anual (TNA %):</label>
+              <input type="number" step="0.01" id="interestRate" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} placeholder="Ej: 30.5"/>
+            </div>
+          )}
+
+          {investmentType === 'plazo_fijo' && finalAmount > 0 && (
+            <div className="form-section read-only-section">
+              <h4>Estimación de Rendimiento</h4>
+              <div className="detail-grid">
+                <div className="detail-grid-item">
+                    <span className="label">Ganancia Estimada:</span>
+                    <span className="value profit-positive">{formatCurrency(estimatedGain, currency)}</span>
+                </div>
+                <div className="detail-grid-item">
+                    <span className="label">Monto Final a Recibir:</span>
+                    <span className="value">{formatCurrency(finalAmount, currency)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {investmentType === 'plazo_fijo' && (
+            <div className="form-section">
+              <h4>Opciones de Renovación Automática</h4>
+              <div className="form-group">
+                  <label htmlFor="autoRenew" className="checkbox-label">
+                      <input type="checkbox" id="autoRenew" checked={autoRenew} onChange={(e) => setAutoRenew(e.target.checked)} />
+                      Renovar automáticamente al finalizar
+                  </label>
+              </div>
+              {autoRenew && (
+                  <div className="form-group renewal-options">
+                      <label>¿Qué deseas renovar?</label>
+                      <div className="radio-group">
+                          <label htmlFor="renewCapital">
+                              <input type="radio" id="renewCapital" name="renewalType" value="capital" checked={!renewWithInterest} onChange={() => setRenewWithInterest(false)} />
+                              Renovar solo el capital inicial
+                          </label>
+                          <label htmlFor="renewAll">
+                              <input type="radio" id="renewAll" name="renewalType" value="all" checked={renewWithInterest} onChange={() => setRenewWithInterest(true)} />
+                              Renovar capital + intereses generados
+                          </label>
+                      </div>
+                  </div>
+              )}
+            </div>
           )}
           
           <div className="form-group">

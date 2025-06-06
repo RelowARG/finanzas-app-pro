@@ -58,6 +58,17 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
     amountInvested: { // Si es un monto único y no por cantidad/precio
         type: DataTypes.DECIMAL(15,2),
         allowNull: true
+    },
+    // *** NUEVOS CAMPOS PARA RENOVACIÓN AUTOMÁTICA ***
+    autoRenew: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
+    renewWithInterest: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
     }
     // userId se añadirá por la asociación
   }, {

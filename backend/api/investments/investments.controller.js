@@ -12,7 +12,8 @@ const createInvestment = async (req, res, next) => {
   const {
     name, type, entity, currency, initialInvestment, currentValue, purchaseDate,
     icon, notes, startDate, endDate, interestRate, quantity, purchasePrice,
-    currentPrice, ticker, amountInvested // amountInvested es para FCI/Obligaciones/Otro
+    currentPrice, ticker, amountInvested,
+    autoRenew, renewWithInterest
   } = req.body;
   const userId = req.user.id;
 
@@ -53,7 +54,9 @@ const createInvestment = async (req, res, next) => {
       icon, notes,
       startDate: type === 'plazo_fijo' ? startDate : null,
       endDate: type === 'plazo_fijo' ? endDate : null,
-      interestRate: type === 'plazo_fijo' && interestRate ? parseFloat(interestRate) : null,
+      interestRate: (type === 'plazo_fijo' || type === 'fci') && interestRate ? parseFloat(interestRate) : null,
+      autoRenew: type === 'plazo_fijo' ? (autoRenew || false) : false,
+      renewWithInterest: type === 'plazo_fijo' ? (renewWithInterest || false) : false,
       quantity: (type === 'acciones' || type === 'criptomonedas') && quantity ? parseFloat(quantity) : null,
       purchasePrice: (type === 'acciones' || type === 'criptomonedas') && purchasePrice ? parseFloat(purchasePrice) : null,
       currentPrice: finalCurrentPriceForNew,
@@ -128,7 +131,7 @@ const updateInvestment = async (req, res, next) => {
     // Lista de campos que se pueden actualizar directamente
     const directUpdateFields = [
       'name', 'entity', 'currency', 'icon', 'notes', 'purchaseDate', 
-      'startDate', 'endDate', 'ticker'
+      'startDate', 'endDate', 'ticker', 'autoRenew', 'renewWithInterest'
     ];
     directUpdateFields.forEach(field => {
       if (updateData[field] !== undefined) {

@@ -4,121 +4,125 @@ const Investment = db.Investment;
 const { Op } = require('sequelize');
 
 /**
- * Actualiza el currentValue de los Plazos Fijos activos basado en su TNA.
+ * Actualiza el currentValue de los Plazos Fijos y FCI con TNA activos, y procesa las renovaciones de Plazos Fijos vencidos.
  * @param {boolean} isStartupCatchUp - Indica si se está ejecutando al inicio para procesar pendientes.
  */
 const updateActiveFixedTermValues = async (isStartupCatchUp = false) => {
-  console.log(`[InvestmentUpdateService] Iniciando actualización de Plazos Fijos (Catch-up: ${isStartupCatchUp})...`);
+  console.log(`[InvestmentUpdateService] Iniciando actualización de Plazos Fijos y FCI con TNA (Catch-up: ${isStartupCatchUp})...`);
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0); 
   const todayDateString = today.toISOString().split('T')[0];
 
   try {
-    // Para el catch-up o ejecución normal, la lógica es la misma: actualizar hasta 'today'.
-    // Se buscan plazos fijos cuyo período de vigencia incluya 'today' o que hayan terminado pero
-    // su 'currentValue' podría no estar reflejando el valor final.
-    const fixedTermsToReview = await Investment.findAll({
+    const investmentsToReview = await Investment.findAll({
       where: {
-        type: 'plazo_fijo',
-        startDate: { [Op.lte]: todayDateString }, 
+        [Op.or]: [
+          // Opción 1: Inversiones activas con TNA para actualizar valor diario
+          {
+            type: { [Op.in]: ['plazo_fijo', 'fci'] },
+            interestRate: { [Op.ne]: null, [Op.gt]: 0 },
+            startDate: { [Op.lte]: todayDateString },
+            endDate: { [Op.gte]: todayDateString } 
+          },
+          // Opción 2: Plazos Fijos vencidos con renovación automática pendiente
+          {
+            type: 'plazo_fijo',
+            autoRenew: true,
+            endDate: { [Op.lt]: todayDateString }
+          }
+        ]
       }
     });
 
-    if (fixedTermsToReview.length === 0) {
-      console.log('[InvestmentUpdateService] No hay Plazos Fijos para revisar/actualizar.');
+    if (investmentsToReview.length === 0) {
+      console.log('[InvestmentUpdateService] No hay Plazos Fijos o FCI con TNA para revisar/actualizar.');
       return { updatedCount: 0, errors: 0 };
     }
 
-    console.log(`[InvestmentUpdateService] Se encontraron ${fixedTermsToReview.length} Plazos Fijos para revisar.`);
+    console.log(`[InvestmentUpdateService] Se encontraron ${investmentsToReview.length} Plazos Fijos o FCI para revisar.`);
     let updatedCount = 0;
     let errorCount = 0;
 
-    for (const ft of fixedTermsToReview) {
+    for (const inv of investmentsToReview) {
       try {
-        const principal = parseFloat(ft.initialInvestment) || parseFloat(ft.amountInvested) || 0;
-        const tna = parseFloat(ft.interestRate);
-        const startDate = new Date(ft.startDate + 'T00:00:00Z'); 
-        const endDate = ft.endDate ? new Date(ft.endDate + 'T00:00:00Z') : null;
+        const principal = parseFloat(inv.initialInvestment) || parseFloat(inv.amountInvested) || 0;
+        const tna = parseFloat(inv.interestRate);
+        const startDate = new Date(inv.startDate + 'T00:00:00Z'); 
+        const endDate = inv.endDate ? new Date(inv.endDate + 'T00:00:00Z') : null;
 
         if (principal <= 0 || isNaN(tna) || tna <= 0) {
-          console.log(`[InvestmentUpdateService] Saltando Plazo Fijo ID ${ft.id} ("${ft.name}"): principal (${principal}) o TNA (${tna}) inválidos.`);
+          console.log(`[InvestmentUpdateService] Saltando Inversión ID ${inv.id} ("${inv.name}"): principal (${principal}) o TNA (${tna}) inválidos.`);
           continue;
         }
 
+        // ---- LÓGICA DE RENOVACIÓN PARA PLAZOS FIJOS VENCIDOS ----
+        if (inv.type === 'plazo_fijo' && endDate && today > endDate && inv.autoRenew) {
+          console.log(`[InvestmentUpdateService] Procesando renovación para Plazo Fijo ID ${inv.id} ("${inv.name}").`);
+          
+          const termTimeDifference = endDate.getTime() - startDate.getTime();
+          const termDays = Math.round(termTimeDifference / (1000 * 60 * 60 * 24));
+
+          const dailyRate = (tna / 100) / 365;
+          const totalInterest = principal * dailyRate * (termDays + 1);
+          const finalValue = principal + totalInterest;
+
+          const newPrincipal = inv.renewWithInterest ? finalValue : principal;
+          const newStartDate = new Date(endDate);
+          newStartDate.setUTCDate(newStartDate.getUTCDate() + 1);
+          const newEndDate = new Date(newStartDate);
+          newEndDate.setUTCDate(newStartDate.getUTCDate() + termDays);
+
+          await Investment.create({
+            name: `${inv.name} (Renovación)`,
+            type: 'plazo_fijo',
+            entity: inv.entity,
+            currency: inv.currency,
+            initialInvestment: newPrincipal,
+            currentValue: newPrincipal,
+            startDate: newStartDate.toISOString().split('T')[0],
+            endDate: newEndDate.toISOString().split('T')[0],
+            interestRate: inv.interestRate,
+            autoRenew: inv.autoRenew,
+            renewWithInterest: inv.renewWithInterest,
+            icon: inv.icon,
+            notes: `Renovación automática del Plazo Fijo ID: ${inv.id}.`,
+            userId: inv.userId,
+          });
+
+          await inv.update({ autoRenew: false, currentValue: finalValue.toFixed(2) });
+          updatedCount++;
+          console.log(`[InvestmentUpdateService] Plazo Fijo ID ${inv.id} renovado. Nuevo PF creado.`);
+          continue; // Saltar al siguiente item
+        }
+
+        // ---- LÓGICA DE ACTUALIZACIÓN DIARIA (para activos no vencidos) ----
         let calculationUpToDate = new Date(today.getTime()); 
         if (endDate && endDate < today) {
           calculationUpToDate = new Date(endDate.getTime()); 
         }
         
-        if (startDate > calculationUpToDate) {
-          if (ft.currentValue !== null && Math.abs(parseFloat(ft.currentValue) - principal) >= 0.01) {
-              console.log(`[InvestmentUpdateService] Plazo Fijo ID ${ft.id} ("${ft.name}") aún no ha comenzado. Ajustando currentValue a principal.`);
-              await ft.update({ currentValue: principal.toFixed(2) });
-              updatedCount++;
-          }
-          continue;
-        }
-        
-        // Si el PF ya terminó (endDate < today) y su currentValue ya refleja el valor final, no hacer nada más.
-        // Esto previene recálculos innecesarios para PFs ya maduros y correctamente actualizados.
-        if (endDate && endDate < today) {
-            const finalTermTimeDifference = endDate.getTime() - startDate.getTime();
-            let finalTermDaysElapsed = 0;
-            if (finalTermTimeDifference >= 0) {
-                finalTermDaysElapsed = Math.floor(finalTermTimeDifference / (1000 * 3600 * 24)) + 1;
-            }
-            const dailyRateFinal = (tna / 100) / 365;
-            const finalAccruedInterest = principal * dailyRateFinal * finalTermDaysElapsed;
-            const finalValueExpected = principal + finalAccruedInterest;
-
-            if (Math.abs(parseFloat(ft.currentValue) - finalValueExpected) < 0.01) {
-                // console.log(`[InvestmentUpdateService] Plazo Fijo VENCIDO ID ${ft.id} ("${ft.name}") ya tiene valor final correcto. Saltando.`);
-                continue;
-            } else {
-                 console.log(`[InvestmentUpdateService] Corrigiendo valor final para Plazo Fijo VENCIDO ID ${ft.id} ("${ft.name}"): `+
-                             `Valor actual DB=${ft.currentValue}, Debería ser=${finalValueExpected.toFixed(2)}`);
-                 await ft.update({ currentValue: finalValueExpected.toFixed(2) });
-                 updatedCount++;
-                 continue; 
-            }
-        }
-
         const timeDifference = calculationUpToDate.getTime() - startDate.getTime();
-        let daysElapsed = 0;
-        if (timeDifference >= 0) {
-           daysElapsed = Math.floor(timeDifference / (1000 * 3600 * 24)) + 1;
-        }
-
-        if (daysElapsed <= 0) {
-          if (ft.currentValue !== null && Math.abs(parseFloat(ft.currentValue) - principal) >= 0.01) {
-              await ft.update({ currentValue: principal.toFixed(2) });
-              updatedCount++;
-          }
-          continue;
-        }
+        let daysElapsed = (timeDifference >= 0) ? Math.floor(timeDifference / (1000 * 3600 * 24)) + 1 : 0;
 
         const dailyRate = (tna / 100) / 365;
         const accruedInterest = principal * dailyRate * daysElapsed;
         const newCurrentValue = principal + accruedInterest;
 
-        if (ft.currentValue === null || Math.abs(parseFloat(ft.currentValue) - newCurrentValue) >= 0.01) {
-          console.log(`[InvestmentUpdateService] Actualizando Plazo Fijo ID ${ft.id} ("${ft.name}"): ` +
-                      `Principal=${principal.toFixed(2)}, TNA=${tna}%, Días Calc=${daysElapsed}, ` +
-                      `Interés Devengado=${accruedInterest.toFixed(2)}, ` +
-                      `Viejo ValorActual=${ft.currentValue}, Nuevo ValorActual=${newCurrentValue.toFixed(2)}`);
-          await ft.update({ currentValue: newCurrentValue.toFixed(2) });
+        if (inv.currentValue === null || Math.abs(parseFloat(inv.currentValue) - newCurrentValue) >= 0.01) {
+          console.log(`[InvestmentUpdateService] Actualizando Inversión ID ${inv.id} ("${inv.name}"): ValorActual=${newCurrentValue.toFixed(2)}`);
+          await inv.update({ currentValue: newCurrentValue.toFixed(2) });
           updatedCount++;
         }
-      } catch (errorForSingleFt) {
+      } catch (errorForSingleItem) {
         errorCount++;
-        console.error(`[InvestmentUpdateService] Error actualizando Plazo Fijo ID ${ft.id} ("${ft.name}"):`, errorForSingleFt.message);
+        console.error(`[InvestmentUpdateService] Error actualizando Inversión ID ${inv.id} ("${inv.name}"):`, errorForSingleItem.message);
       }
     }
-    console.log(`[InvestmentUpdateService] Actualización de Plazos Fijos completada. ${updatedCount} registros actualizados, ${errorCount} errores.`);
+    console.log(`[InvestmentUpdateService] Actualización de Inversiones con TNA completada. ${updatedCount} registros actualizados, ${errorCount} errores.`);
     return { updatedCount, errors: errorCount };
 
   } catch (error) {
-    console.error('[InvestmentUpdateService] Error general actualizando valores de Plazos Fijos:', error);
+    console.error('[InvestmentUpdateService] Error general actualizando valores de inversiones con TNA:', error);
     return { updatedCount: 0, errors: 1, generalError: error.message };
   }
 };

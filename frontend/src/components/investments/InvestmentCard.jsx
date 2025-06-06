@@ -1,28 +1,8 @@
 // Ruta: finanzas-app-pro/frontend/src/components/investments/InvestmentCard.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './InvestmentCard.css'; // [cite: finanzas-app-pro/frontend/src/components/investments/InvestmentCard.css]
-
-const formatCurrency = (amount, currency = 'ARS') => {
-  const symbol = currency === 'USD' ? 'U$S' : '$';
-  const value = Number(amount) || 0; // Default to 0 if amount is not a valid number
-  return `${symbol} ${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
-
-const formatDate = (dateString) => {
-  if (!dateString) return '-';
-  // Ensure date is parsed correctly, assuming YYYY-MM-DD from backend for DATEONLY
-  const parts = dateString.split('T')[0].split('-');
-  if (parts.length === 3) {
-    const [year, month, day] = parts;
-    return new Date(year, month - 1, day).toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: '2-digit', // 'short' o '2-digit'
-      year: 'numeric',
-    });
-  }
-  return new Date(dateString).toLocaleDateString('es-AR'); // Fallback for full ISO strings
-};
+import './InvestmentCard.css';
+import { formatCurrency, formatDateDMY } from '../../utils/formatters';
 
 const InvestmentCard = ({ investment, onDeleteInvestment }) => {
   if (!investment) return null;
@@ -111,23 +91,27 @@ const InvestmentCard = ({ investment, onDeleteInvestment }) => {
                     <span className="detail-value">{formatCurrency(calculatedInitialValue, investment.currency)}</span>
                 </div>
             )}
-            {investment.type === 'plazo_fijo' && (
-            <>
-                <div className="investment-detail-item">
-                <span className="detail-label">Inicio:</span>
-                <span className="detail-value">{formatDate(investment.startDate)}</span>
-                </div>
-                <div className="investment-detail-item">
-                <span className="detail-label">Fin:</span>
-                <span className="detail-value">{formatDate(investment.endDate)}</span>
-                </div>
+            {(investment.type === 'plazo_fijo' || (investment.type === 'fci' && interestRateNum > 0)) && (
+              <>
+                {investment.type === 'plazo_fijo' && (
+                  <>
+                    <div className="investment-detail-item">
+                      <span className="detail-label">Inicio:</span>
+                      <span className="detail-value">{formatDateDMY(investment.startDate)}</span>
+                    </div>
+                    <div className="investment-detail-item">
+                      <span className="detail-label">Fin:</span>
+                      <span className="detail-value">{formatDateDMY(investment.endDate)}</span>
+                    </div>
+                  </>
+                )}
                 {interestRateNum > 0 && (
                     <div className="investment-detail-item">
                         <span className="detail-label">TNA:</span>
                         <span className="detail-value">{interestRateNum}%</span>
                     </div>
                 )}
-            </>
+              </>
             )}
             {(investment.type === 'acciones' || investment.type === 'criptomonedas') && (
             <>
@@ -151,7 +135,7 @@ const InvestmentCard = ({ investment, onDeleteInvestment }) => {
             {(investment.type === 'acciones' || investment.type === 'criptomonedas' || investment.type === 'fci' || investment.type === 'obligaciones' || (investment.type === 'otro' && investment.purchaseDate) ) && investment.purchaseDate && (
                  <div className="investment-detail-item">
                     <span className="detail-label">Fecha Adq.:</span>
-                    <span className="detail-value">{formatDate(investment.purchaseDate)}</span>
+                    <span className="detail-value">{formatDateDMY(investment.purchaseDate)}</span>
                 </div>
             )}
             {investment.entity && (

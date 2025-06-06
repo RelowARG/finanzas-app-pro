@@ -125,3 +125,61 @@
 .search-results-list li strong {
   color: var(--primary-color);
 }
+.form-section {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+.form-section h4 {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.read-only-section {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: var(--border-radius);
+  border: 1px solid #e9ecef;
+}
+.read-only-section .detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+.read-only-section .detail-grid-item .label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 2px;
+}
+.read-only-section .detail-grid-item .value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--dark-color);
+}
+.read-only-section .profit-positive {
+  color: var(--secondary-color) !important;
+}
+
+.renewal-options {
+  margin-top: 10px;
+  padding-left: 20px;
+}
+.renewal-options .radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.renewal-options .radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  font-size: 0.95rem;
+}
+.renewal-options input[type="radio"] {
+  width: auto;
+  accent-color: var(--primary-color);
+}

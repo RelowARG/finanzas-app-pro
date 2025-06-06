@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatCurrency, formatDateDMY } from '../../utils/formatters';
-import './InvestmentDetailModal.css'; // Asegúrate que este CSS se esté importando
+import './InvestmentDetailModal.css';
 
 const InvestmentDetailModal = ({ isOpen, onClose, investment }) => {
   if (!isOpen || !investment) return null;
@@ -19,8 +19,6 @@ const InvestmentDetailModal = ({ isOpen, onClose, investment }) => {
     calculatedInitialValue = quantityNum * purchasePriceNum;
   }
   
-  // Si es acción/cedear/cripto y tiene precio actual, recalculamos el valor actual
-  // Esto es importante si el `currentValue` de la BD no está al día pero `currentPrice` sí.
   if ((investment.type === 'acciones' || investment.type === 'cedears' || investment.type === 'criptomonedas') && quantityNum > 0 && currentPriceNum > 0) {
     currentValue = quantityNum * currentPriceNum;
   }
@@ -47,7 +45,6 @@ const InvestmentDetailModal = ({ isOpen, onClose, investment }) => {
 
   return (
     <div className="modal-overlay">
-      {/* Aplicar la clase para el tema blanco */}
       <div className="modal-content investment-detail-modal-content white-theme-modal"> 
         <div className="investment-detail-modal-header">
           <span className="modal-icon">{investment.icon || '⭐'}</span>
@@ -97,16 +94,20 @@ const InvestmentDetailModal = ({ isOpen, onClose, investment }) => {
                   </div>
                 </>
               )}
-              {investment.type === 'plazo_fijo' && (
+              {(investment.type === 'plazo_fijo' || (investment.type === 'fci' && interestRateNum > 0)) && (
                 <>
-                  <div className="detail-grid-item">
-                    <span className="label">Fecha Inicio:</span>
-                    <span className="value">{formatDateDMY(investment.startDate)}</span>
-                  </div>
-                  <div className="detail-grid-item">
-                    <span className="label">Fecha Fin:</span>
-                    <span className="value">{formatDateDMY(investment.endDate)}</span>
-                  </div>
+                  {investment.type === 'plazo_fijo' && (
+                    <>
+                      <div className="detail-grid-item">
+                        <span className="label">Fecha Inicio:</span>
+                        <span className="value">{formatDateDMY(investment.startDate)}</span>
+                      </div>
+                      <div className="detail-grid-item">
+                        <span className="label">Fecha Fin:</span>
+                        <span className="value">{formatDateDMY(investment.endDate)}</span>
+                      </div>
+                    </>
+                  )}
                   {interestRateNum > 0 && (
                     <div className="detail-grid-item">
                       <span className="label">TNA:</span>
