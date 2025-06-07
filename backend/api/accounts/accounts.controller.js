@@ -209,85 +209,57 @@ const payCreditCard = async (req, res, next) => {
     }
 
     const numericPaymentAmount = parseFloat(paymentAmount);
+    const description = `Pago Tarjeta ${creditCardAccount.name}`;
 
-    let paymentCategory = await Category.findOne({ 
-        where: { name: 'Pago de Tarjetas', type: 'egreso', [Op.or]: [{ userId: null }, { userId }] },
-        transaction: t
-    });
-    if (!paymentCategory) {
-        paymentCategory = await Category.findOne({ where: { name: 'Transferencias Salientes', type: 'egreso', [Op.or]: [{ userId: null }, { userId }] }, transaction: t}) 
-                       || await Category.findOne({ where: { name: 'Otros Egresos', type: 'egreso', [Op.or]: [{ userId: null }, { userId }] }, transaction: t});
-        if (!paymentCategory) {
-            const categories = await Category.findAll({where: {type: 'egreso', [Op.or]: [{ userId: null }, { userId }]}, limit: 1, transaction: t});
-            if (categories.length > 0) paymentCategory = categories[0];
-            else {
-                await t.rollback();
-                return res.status(500).json({ message: 'No se encontró una categoría de egreso adecuada para el pago.' });
-            }
-        }
-    }
-    
-    const egresoTransaction = await Transaction.create({
-      description: `Pago Tarjeta ${creditCardAccount.name}${notes ? ` (${notes})` : ''}`,
+    // 1. Crear el movimiento de SALIDA de la cuenta pagadora como TRANSFERENCIA
+    const outgoingTransaction = await Transaction.create({
+      description: `${description} desde ${payingAccount.name}`,
       amount: -numericPaymentAmount,
       currency: payingAccount.currency,
       date: paymentDate,
-      type: 'egreso', 
-      accountId: payingAccount.id,
-      categoryId: paymentCategory.id,
+      type: 'transferencia',
+      notes,
       userId,
+      accountId: payingAccount.id,
+      relatedAccountId: creditCardAccount.id,
+      categoryId: null,
     }, { transaction: t });
 
+    // 2. Actualizar saldo de la cuenta pagadora
     payingAccount.balance = parseFloat(payingAccount.balance) - numericPaymentAmount;
     await payingAccount.save({ transaction: t });
 
-     let creditCardPaymentCategory = await Category.findOne({ 
-        where: { name: 'Pago de Tarjetas', type: 'ingreso', [Op.or]: [{ userId: null }, { userId }] },
-        transaction: t
-    });
-     if (!creditCardPaymentCategory) {
-        creditCardPaymentCategory = await Category.findOne({ where: { name: 'Transferencias Entrantes', type: 'ingreso', [Op.or]: [{ userId: null }, { userId }] }, transaction: t})
-                                || await Category.findOne({ where: { name: 'Otros Ingresos', type: 'ingreso', [Op.or]: [{ userId: null }, { userId }] }, transaction: t});
-         if (!creditCardPaymentCategory) {
-            const categories = await Category.findAll({where: {type: 'ingreso', [Op.or]: [{ userId: null }, { userId }]}, limit: 1, transaction: t});
-            if (categories.length > 0) creditCardPaymentCategory = categories[0];
-            else {
-                await t.rollback();
-                return res.status(500).json({ message: 'No se encontró una categoría de ingreso adecuada para el crédito en la tarjeta.' });
-            }
-        }
-    }
-
-    const ingresoTransaction = await Transaction.create({
-      description: `Pago Tarjeta desde ${payingAccount.name}${notes ? ` (${notes})` : ''}`,
+    // 3. Crear el movimiento de ENTRADA a la tarjeta como TRANSFERENCIA
+    const incomingTransaction = await Transaction.create({
+      description: `${description} desde ${payingAccount.name}`,
       amount: numericPaymentAmount, 
       currency: creditCardAccount.currency,
       date: paymentDate,
-      type: 'ingreso', 
-      accountId: creditCardAccount.id,
-      categoryId: creditCardPaymentCategory.id, 
+      type: 'transferencia',
+      notes,
       userId,
+      accountId: creditCardAccount.id,
+      relatedAccountId: payingAccount.id,
+      categoryId: null,
     }, { transaction: t });
 
+    // 4. Actualizar saldo de la tarjeta
     creditCardAccount.balance = parseFloat(creditCardAccount.balance) + numericPaymentAmount;
     
+    // 5. Ajustar el saldo del resumen pendiente
     if (creditCardAccount.statementBalance !== null && creditCardAccount.statementBalance !== undefined) {
-      const currentStatement = Math.abs(parseFloat(creditCardAccount.statementBalance));
-      if (numericPaymentAmount >= currentStatement) {
-        creditCardAccount.statementBalance = 0; 
-      } else {
-        creditCardAccount.statementBalance = currentStatement - numericPaymentAmount;
-      }
+        const currentStatement = Math.abs(parseFloat(creditCardAccount.statementBalance));
+        creditCardAccount.statementBalance = Math.max(0, currentStatement - numericPaymentAmount);
     }
     await creditCardAccount.save({ transaction: t });
 
     await t.commit();
 
     res.status(200).json({
-      message: 'Pago de tarjeta registrado exitosamente.',
+      message: 'Pago de tarjeta registrado exitosamente como una transferencia.',
       payingAccount: payingAccount.toJSON(),
       creditCardAccount: creditCardAccount.toJSON(),
-      transactions: [egresoTransaction.toJSON(), ingresoTransaction.toJSON()]
+      transactions: [outgoingTransaction.toJSON(), incomingTransaction.toJSON()]
     });
 
   } catch (error) {
