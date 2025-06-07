@@ -1,6 +1,4 @@
 /* Ruta: finanzas-app-pro/frontend/src/components/transactions/TransactionItem.css */
-/* ARCHIVO NUEVO */
-
 .transaction-row {
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.15s ease-in-out;
@@ -111,4 +109,25 @@
     font-size: 0.7rem !important;
     margin-left: 5px;
   }
+}
+
+/* --- ESTILOS CORREGIDOS Y AÑADIDOS --- */
+
+.transaction-cell-actions .button-edit {
+  background-color: #6c757d !important;
+  border-color: #6c757d !important;
+  color: white !important;
+}
+.transaction-cell-actions .button-edit:hover {
+  background-color: #5a6268 !important;
+}
+
+.transaction-cell-actions .button-delete {
+  background-color: transparent !important;
+  border: 1px solid var(--danger-color, #e74c3c) !important;
+  color: var(--danger-color, #e74c3c) !important;
+}
+.transaction-cell-actions .button-delete:hover {
+  background-color: rgba(231, 76, 60, 0.1) !important;
+  color: var(--danger-color) !important;
 }
