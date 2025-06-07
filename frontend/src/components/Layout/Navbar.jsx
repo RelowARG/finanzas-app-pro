@@ -69,10 +69,9 @@ const Navbar = () => {
     };
   }, []);
 
-  // Callback genérico para cerrar el modal. Las páginas se encargarán de refrescar sus datos.
   const handleGenericModalClose = () => {
-    // Podríamos añadir una lógica de refresco global aquí si fuera necesario,
-    // pero por ahora no es requerido.
+    // Esta función se puede usar como callback genérico para los modales
+    // que no necesitan refrescar datos en la página actual.
   };
 
   return (
@@ -139,11 +138,9 @@ const Navbar = () => {
                     <button onClick={() => { openModal(MODAL_TYPES.ADD_ACCOUNT, { onAccountCreated: handleGenericModalClose }); closeAllMenus(); }} className="add-menu-item">
                       Nueva Cuenta
                     </button>
-                    {/* ******************* INICIO DE LA CORRECCIÓN ******************* */}
                     <button onClick={() => { openModal(MODAL_TYPES.ADD_INVESTMENT, { onInvestmentCreated: handleGenericModalClose }); closeAllMenus(); }} className="add-menu-item">
                       Nueva Inversión
                     </button>
-                    {/* ******************** FIN DE LA CORRECCIÓN ******************** */}
                     <button onClick={() => { openModal(MODAL_TYPES.ADD_RECURRING_TRANSACTION, { onRecurringTransactionCreated: handleGenericModalClose }); closeAllMenus(); }} className="add-menu-item">
                       Nuevo Recurrente
                     </button>
@@ -166,14 +163,13 @@ const Navbar = () => {
                         <span className="user-menu-email">{user.email}</span>
                       </div>
                     </div>
-                    <div className="user-menu-item with-submenu">
+                    
+                    {/* *** INICIO DE LA CORRECCIÓN *** */}
+                    <Link to="/settings" className="user-menu-item" onClick={closeAllMenus}>
                       <span className="menu-item-icon">⚙️</span> Configuración
-                      <div className="user-submenu">
-                          <Link to="/settings/categories" className="user-submenu-item" onClick={closeAllMenus}>Categorías</Link>
-                          <Link to="/settings/recurring-transactions" className="user-submenu-item" onClick={closeAllMenus}>Mov. Recurrentes</Link>
-                          <Link to="/settings/exchange-rates" className="user-submenu-item" onClick={closeAllMenus}>Tasas de Cambio</Link>
-                      </div>
-                    </div>
+                    </Link>
+                    {/* *** FIN DE LA CORRECCIÓN *** */}
+
                     <Link to="/como-usar" className="user-menu-item" onClick={closeAllMenus}>
                       <span className="menu-item-icon">❓</span> Ayuda
                     </Link>
