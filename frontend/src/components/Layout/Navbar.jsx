@@ -30,7 +30,6 @@ const Navbar = () => {
     setShowMoreMenu(false);
   };
 
-  // *** INICIO: LÓGICA CORREGIDA PARA LOS TOGGLES ***
   const toggleAddMenu = (event) => { 
     event.stopPropagation();
     const isOpening = !showAddMenu;
@@ -51,11 +50,9 @@ const Navbar = () => {
     closeAllMenus();
     if (isOpening) setShowMoreMenu(true);
   };
-  // *** FIN: LÓGICA CORREGIDA PARA LOS TOGGLES ***
   
   useEffect(() => { 
     const handleClickOutside = (event) => {
-      // El chequeo de los refs ya es correcto para cerrar los menús
       if (addMenuRef.current && !addMenuRef.current.contains(event.target)) {
         setShowAddMenu(false);
       }
@@ -72,8 +69,10 @@ const Navbar = () => {
     };
   }, []);
 
+  // Callback genérico para cerrar el modal. Las páginas se encargarán de refrescar sus datos.
   const handleGenericModalClose = () => {
-    // Lógica opcional tras cerrar un modal
+    // Podríamos añadir una lógica de refresco global aquí si fuera necesario,
+    // pero por ahora no es requerido.
   };
 
   return (
@@ -140,9 +139,11 @@ const Navbar = () => {
                     <button onClick={() => { openModal(MODAL_TYPES.ADD_ACCOUNT, { onAccountCreated: handleGenericModalClose }); closeAllMenus(); }} className="add-menu-item">
                       Nueva Cuenta
                     </button>
-                    <Link to="/investments/add" className="add-menu-item" onClick={closeAllMenus}>
+                    {/* ******************* INICIO DE LA CORRECCIÓN ******************* */}
+                    <button onClick={() => { openModal(MODAL_TYPES.ADD_INVESTMENT, { onInvestmentCreated: handleGenericModalClose }); closeAllMenus(); }} className="add-menu-item">
                       Nueva Inversión
-                    </Link>
+                    </button>
+                    {/* ******************** FIN DE LA CORRECCIÓN ******************** */}
                     <button onClick={() => { openModal(MODAL_TYPES.ADD_RECURRING_TRANSACTION, { onRecurringTransactionCreated: handleGenericModalClose }); closeAllMenus(); }} className="add-menu-item">
                       Nuevo Recurrente
                     </button>

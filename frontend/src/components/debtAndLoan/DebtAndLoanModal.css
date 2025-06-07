@@ -1,0 +1,37 @@
+/* Ruta: /frontend/src/components/debtAndLoan/DebtAndLoanModal.css */
+.debt-loan-modal-content.modal-content-atm {
+  max-width: 750px;
+}
+
+.debt-loan-modal-content .transaction-form-atm {
+  padding: 15px 25px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.debt-loan-modal-content .form-group label.checkbox-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.debt-loan-modal-content .form-section {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.debt-loan-modal-content .form-section h5 {
+  font-size: 1rem;
+  color: #e67e22;
+  margin-bottom: 15px;
+  margin-top: 5px;
+  font-weight: 600;
+}
+
+.debt-loan-modal-content .modal-actions-atm .button-primary {
+    background-color: #e67e22 !important;
+    border-color: #e67e22 !important;
+}
+.debt-loan-modal-content .modal-actions-atm .button-primary:hover {
+    background-color: #d35400 !important;
+}
